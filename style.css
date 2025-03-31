@@ -1530,6 +1530,37 @@ h3 {
   transform: scale(1.1);
 }
 
+/* Theme handling */
+[data-theme="red"] {
+  --primary-color: #ED1F27;
+  --primary-dark: #b71c1c;
+  --primary-light: #ff5252;
+}
+
+[data-theme="dark"] {
+  --primary-color: #333;
+  --primary-dark: #121212;
+  --primary-light: #555;
+}
+
+[data-theme="blue"] {
+  --primary-color: #2196F3;
+  --primary-dark: #1976D2;
+  --primary-light: #64B5F6;
+}
+
+[data-theme="green"] {
+  --primary-color: #4CAF50;
+  --primary-dark: #2E7D32;
+  --primary-light: #81C784;
+}
+
+/* Animation handling */
+.disable-animations * {
+  transition: none !important;
+  animation: none !important;
+}
+
 .user-avatar.large {
   width: 80px;
   height: 80px;
