@@ -282,6 +282,7 @@ h3 {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
+  width: 100%;
 }
 
 .refresh-controls::before {
@@ -419,6 +420,7 @@ h3 {
     align-items: stretch;
     gap: 12px;
     padding: 15px;
+    width: 100%;
   }
   
   .refresh-info {
@@ -430,13 +432,9 @@ h3 {
     width: 100%;
     justify-content: center;
   }
-}
-
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .refresh-controls {
-    flex-direction: column;
-    align-items: flex-start;
+  
+  .refresh-info button {
+    margin-left: 10px;
   }
 }
 
