@@ -2,15 +2,26 @@
 // Login System
 document.addEventListener('DOMContentLoaded', () => {
   // Check if already logged in
-  const isLoggedIn = sessionStorage.getItem('staffLoggedIn');
-  const loggedInUser = sessionStorage.getItem('loggedInUser');
+  const isLoggedIn = sessionStorage.getItem('staffLoggedIn') || localStorage.getItem('staffLoggedIn');
+  const loggedInUser = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser');
+  
+  // If logged in via localStorage but not sessionStorage, restore the session
+  if (!sessionStorage.getItem('staffLoggedIn') && localStorage.getItem('staffLoggedIn')) {
+    sessionStorage.setItem('staffLoggedIn', localStorage.getItem('staffLoggedIn'));
+    sessionStorage.setItem('loggedInUser', localStorage.getItem('loggedInUser'));
+  }
   
   if (!isLoggedIn) {
     createLoginOverlay();
   } else if (loggedInUser) {
-    // Show welcome back message with username
+    // Show welcome back message with username and admin status if applicable
     if (typeof showNotification === 'function') {
-      showNotification(`Welcome back, ${loggedInUser}!`, 'success');
+      if (window.ADMIN_ACCOUNTS && window.ADMIN_ACCOUNTS.includes(loggedInUser)) {
+        const adminLevel = window.ADMIN_PERMISSIONS ? window.ADMIN_PERMISSIONS[loggedInUser] : 1;
+        showNotification(`Welcome back, ${loggedInUser}! [Admin Level ${adminLevel}]`, 'success');
+      } else {
+        showNotification(`Welcome back, ${loggedInUser}!`, 'success');
+      }
     }
   }
 
@@ -18,10 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const logoutBtn = document.getElementById('logout-btn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
+      // Clear both session and local storage
       sessionStorage.removeItem('staffLoggedIn');
       sessionStorage.removeItem('loggedInUser');
       sessionStorage.removeItem('loginAttempts');
-      location.reload();
+      localStorage.removeItem('staffLoggedIn');
+      localStorage.removeItem('loggedInUser');
+      showNotification('Logged out successfully', 'info');
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     });
   }
 });
@@ -185,6 +202,34 @@ async function validateLogin() {
 
   // Get attempt count from session storage
   let attemptCount = parseInt(sessionStorage.getItem('loginAttempts') || '0');
+
+// Initialize default preferences for first-time users
+function initializeFirstTimeUserPreferences(username) {
+  // Check if user already has preferences
+  const existingPrefs = localStorage.getItem(`userPrefs_${username}`);
+  
+  // If no preferences exist, create default ones
+  if (!existingPrefs) {
+    // Generate random avatar color with brand colors
+    const brandColors = ['#ED1F27', '#ff5252', '#b71c1c', '#f44336'];
+    const randomColor = brandColors[Math.floor(Math.random() * brandColors.length)];
+    
+    // Default preferences
+    const defaultPrefs = {
+      displayName: username,
+      avatarEmoji: '👤',
+      avatarColor: randomColor,
+      theme: 'red',
+      darkMode: false,
+      notificationsEnabled: true,
+      joinDate: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    localStorage.setItem(`userPrefs_${username}`, JSON.stringify(defaultPrefs));
+  }
+}
+
   attemptCount++;
   sessionStorage.setItem('loginAttempts', attemptCount.toString());
 
@@ -227,10 +272,16 @@ async function validateLogin() {
       }
       
       if (authenticated) {
-        // Store login state and username
+        // Store login state and username in both session and local storage for persistence
         sessionStorage.setItem('staffLoggedIn', 'true');
         sessionStorage.setItem('loggedInUser', authenticatedUsername);
+        // Also store in localStorage for persistent login
+        localStorage.setItem('staffLoggedIn', 'true');
+        localStorage.setItem('loggedInUser', authenticatedUsername);
         sessionStorage.removeItem('loginAttempts');
+
+        // Initialize user preferences if first login
+        initializeFirstTimeUserPreferences(authenticatedUsername);
 
         // Success animation
         const container = document.querySelector('.login-container');
