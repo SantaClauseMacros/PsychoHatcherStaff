@@ -1656,7 +1656,7 @@ function addAccountButton() {
     accountBtn.style.cursor = 'pointer';
     accountBtn.style.pointerEvents = 'all';
     accountBtn.style.zIndex = '100';
-    accountBtn.href = 'account-settings.html';
+    accountBtn.href = 'account-settings.html'; // Direct link to account settings page
 
     // Insert before logout button
     const logoutBtn = document.getElementById('logout-btn');
@@ -1734,315 +1734,7 @@ function loadUserProfileData() {
   }
 }
 
-// Show account settings modal
-function showAccountSettings() {
-  // Get current user preferences
-  const userPrefs = getUserPreferences();
-  const username = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser') || 'Anonymous';
-  const isUserAdmin = isAdmin();
-  const adminLevel = getAdminLevel();
-
-  // Create overlay
-  const overlay = document.createElement('div');
-  overlay.className = 'account-settings-overlay';
-
-  // Create container
-  const container = document.createElement('div');
-  container.className = 'account-settings-container';
-
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'account-settings-header';
-  header.innerHTML = `<h2><i class="fas fa-user-circle"></i> Account Settings</h2>`;
-
-  // Create form
-  const form = document.createElement('div');
-  form.className = 'account-settings-form';
-
-  // Avatar section
-  const avatarSection = document.createElement('div');
-  avatarSection.className = 'account-avatar-section';
-  avatarSection.innerHTML = `
-    <h3>Profile Picture</h3>
-    <div class="avatar-preview user-avatar large" id="avatar-preview" style="background-color: ${userPrefs.avatarColor || '#ED1F27'}">
-      ${userPrefs.avatarEmoji || '👤'}
-    </div>
-    <div class="avatar-options">
-      <div class="form-group">
-        <label>Choose Emoji:</label>
-        <div class="emoji-picker" id="emoji-picker">
-          <span data-emoji="👤">👤</span>
-          <span data-emoji="😎">😎</span>
-          <span data-emoji="🚀">🚀</span>
-          <span data-emoji="🔧">🔧</span>
-          <span data-emoji="👑">👑</span>
-          <span data-emoji="🎮">🎮</span>
-          <span data-emoji="💻">💻</span>
-          <span data-emoji="🛠️">🛠️</span>
-          <span data-emoji="🤖">🤖</span>
-          <span data-emoji="🦸">🦸</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Background Color:</label>
-        <input type="color" id="avatar-color" value="${userPrefs.avatarColor || '#ED1F27'}">
-      </div>
-    </div>
-  `;
-
-  // Account details section
-  const accountSection = document.createElement('div');
-  accountSection.className = 'account-details-section';
-
-  // Base account settings for all users
-  let accountHtml = `
-    <h3>Account Details ${isUserAdmin ? `<span class="admin-badge">Admin Level ${adminLevel}</span>` : ''}</h3>
-    <div class="form-group">
-      <label for="display-name">Display Name:</label>
-      <input type="text" id="display-name" class="form-control" value="${userPrefs.displayName || username}" placeholder="Your display name">
-    </div>
-    <div class="form-group">
-      <label for="theme-select">Theme:</label>
-      <select id="theme-select" class="form-control">
-        <option value="red" ${userPrefs.theme === 'red' ? 'selected' : ''}>Red Theme</option>
-        <option value="black" ${userPrefs.theme === 'black' ? 'selected' : ''}>Black Theme</option>
-        <option value="pureWhite" ${userPrefs.theme === 'pureWhite' ? 'selected' : ''}>White Theme</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>
-        <input type="checkbox" id="dark-mode-toggle" ${userPrefs.darkMode ? 'checked' : ''}>
-        Dark Mode
-      </label>
-    </div>
-  `;
-
-  // Add admin panel for admin users
-  if (isUserAdmin) {
-    accountHtml += `
-      <div class="admin-section">
-        <h3><i class="fas fa-shield-alt"></i> Admin Controls</h3>
-        <p class="info-text">Admin level ${adminLevel} grants you special permissions.</p>
-
-        <div class="admin-tools">
-          <button id="view-all-users" class="btn btn-sm">
-            <i class="fas fa-users"></i> View All Users
-          </button>
-          ${adminLevel >= 2 ? `
-          <button id="manage-suggestions" class="btn btn-sm">
-            <i class="fas fa-tasks"></i> Manage Suggestions
-          </button>` : ''}
-          ${adminLevel >= 3 ? `
-          <button id="reset-all-data" class="btn btn-sm btn-danger">
-            <i class="fas fa-exclamation-triangle"></i> Reset All Data
-          </button>` : ''}
-        </div>
-      </div>
-    `;
-  }
-
-  accountSection.innerHTML = accountHtml;
-
-  // Password change request section
-  const passwordSection = document.createElement('div');
-  passwordSection.className = 'password-section';
-  passwordSection.innerHTML = `
-    <h3>Password Change Request</h3>
-    <p class="info-text">Password change requests are reviewed by Santa for security purposes.</p>
-    <div class="form-group">
-      <label for="current-password">Current Password:</label>
-      <input type="password" id="current-password" class="form-control" placeholder="Enter current password">
-    </div>
-    <div class="form-group">
-      <label for="new-password">New Password:</label>
-      <input type="password" id="new-password" class="form-control" placeholder="Enter new password">
-    </div>
-    <div class="form-group">
-      <label for="confirm-password">Confirm New Password:</label>
-      <input type="password" id="confirm-password" class="form-control" placeholder="Confirm new password">
-    </div>
-    <div class="form-group">
-      <label for="password-reason">Reason for Change:</label>
-      <textarea id="password-reason" class="form-control" placeholder="Please provide a reason for the password change"></textarea>
-    </div>
-    <button id="request-password-change" class="btn">Submit Password Change Request</button>
-    <div id="password-change-status" class="status-message"></div>
-  `;
-
-  // Action buttons
-  const actions = document.createElement('div');
-  actions.className = 'form-actions';
-  actions.innerHTML = `
-    <button id="save-account-settings" class="btn">Save Changes</button>
-    <button id="close-account-settings" class="btn btn-outline">Cancel</button>
-  `;
-
-  // Append all sections
-  form.appendChild(avatarSection);
-  form.appendChild(accountSection);
-  form.appendChild(passwordSection);
-  form.appendChild(actions);
-
-  // Build the modal
-  container.appendChild(header);
-  container.appendChild(form);
-  overlay.appendChild(container);
-  document.body.appendChild(overlay);
-
-  // Add event listeners
-  document.getElementById('close-account-settings').addEventListener('click', () => {
-    document.body.removeChild(overlay);
-  });
-
-  // Emoji picker functionality
-  document.querySelectorAll('#emoji-picker span').forEach(emoji => {
-    emoji.addEventListener('click', function() {
-      const selectedEmoji = this.getAttribute('data-emoji');
-      document.getElementById('avatar-preview').textContent = selectedEmoji;
-
-      // Highlight selected emoji
-      document.querySelectorAll('#emoji-picker span').forEach(e => e.classList.remove('selected'));
-      this.classList.add('selected');
-    });
-  });
-
-  // Avatar color change
-  document.getElementById('avatar-color').addEventListener('input', function() {
-    document.getElementById('avatar-preview').style.backgroundColor = this.value;
-  });
-
-  // Dark mode toggle
-  document.getElementById('dark-mode-toggle').addEventListener('change', function() {
-    if (this.checked) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-  });
-
-  // Theme selector
-  document.getElementById('theme-select').addEventListener('change', function() {
-    switchLogo(this.value);
-  });
-
-  // Password change request
-  document.getElementById('request-password-change').addEventListener('click', function() {
-    const currentPassword = document.getElementById('current-password').value;
-    const newPassword = document.getElementById('new-password').value;
-    const confirmPassword = document.getElementById('confirm-password').value;
-    const reason = document.getElementById('password-reason').value;
-    const statusElement = document.getElementById('password-change-status');
-
-    // Validate fields
-    if (!currentPassword || !newPassword || !confirmPassword || !reason) {
-      statusElement.textContent = 'Please fill in all password fields.';
-      statusElement.className = 'status-message error';
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      statusElement.textContent = 'New passwords do not match.';
-      statusElement.className = 'status-message error';
-      return;
-    }
-
-    // Get password change requests from storage
-    let passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
-
-    // Add new request with more detailed information
-    passwordRequests.push({
-      username: sessionStorage.getItem('loggedInUser') || 'Anonymous',
-      requestDate: new Date().toISOString(),
-      reason: reason,
-      status: 'pending',
-      reviewedBy: null,
-      reviewDate: null,
-      newPasswordHash: 'hashed_' + newPassword, // In a real app, you would properly hash this
-      currentPasswordHash: 'hashed_' + currentPassword
-    });
-
-    // Save requests
-    localStorage.setItem('passwordChangeRequests', JSON.stringify(passwordRequests));
-
-    // Update status
-    statusElement.textContent = 'Password change request submitted for review by Santa.';
-    statusElement.className = 'status-message success';
-
-    // Clear fields
-    document.getElementById('current-password').value = '';
-    document.getElementById('new-password').value = '';
-    document.getElementById('confirm-password').value = '';
-    document.getElementById('password-reason').value = '';
-
-    showNotification('Password change request submitted to Santa for review', 'success');
-  });
-
-  // Admin control event listeners
-  if (isUserAdmin) {
-    // View all users button
-    if (document.getElementById('view-all-users')) {
-      document.getElementById('view-all-users').addEventListener('click', function() {
-        showAllUsersPanel();
-      });
-    }
-
-    // Manage suggestions button (for admin level 2+)
-    if (adminLevel >= 2 && document.getElementById('manage-suggestions')) {
-      document.getElementById('manage-suggestions').addEventListener('click', function() {
-        showSuggestionsManagementPanel();
-      });
-    }
-
-    // Reset all data button (for admin level 3 only)
-    if (adminLevel >= 3 && document.getElementById('reset-all-data')) {
-      document.getElementById('reset-all-data').addEventListener('click', function() {
-        if (confirm('WARNING: This will reset ALL site data including accounts, suggestions, and settings. This action cannot be undone. Continue?')) {
-          resetAllSiteData();
-        }
-      });
-    }
-  }
-
-  // Save account settings
-  document.getElementById('save-account-settings').addEventListener('click', function() {
-    // Gather form data
-    const newPrefs = {
-      displayName: document.getElementById('display-name').value,
-      avatarEmoji: document.getElementById('avatar-preview').textContent,
-      avatarColor: document.getElementById('avatar-color').value,
-      theme: document.getElementById('theme-select').value,
-      darkMode: document.getElementById('dark-mode-toggle').checked,
-      notificationsEnabled: userPrefs.notificationsEnabled,
-      joinDate: userPrefs.joinDate || new Date().toISOString(),
-      adminLevel: isUserAdmin ? adminLevel : 0
-    };
-
-    // Save preferences
-    saveUserPreferences(newPrefs);
-
-    // Update UI immediately
-    const userAvatar = document.querySelector('.user-welcome .user-avatar');
-    if (userAvatar) {
-      userAvatar.textContent = newPrefs.avatarEmoji;
-      userAvatar.style.backgroundColor = newPrefs.avatarColor;
-    }
-
-    // Apply theme
-    switchLogo(newPrefs.theme);
-
-    // Apply dark mode
-    if (newPrefs.darkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-
-    // Close modal
-    document.body.removeChild(overlay);
-
-    showNotification('Account settings saved successfully!', 'success');
-  });
-}
+// Removed showAccountSettings function since we now use the account-settings.html page instead
 
 // Function to handle password change request review for Santa
 function initializePasswordReviewPanel() {
@@ -2050,33 +1742,42 @@ function initializePasswordReviewPanel() {
   const currentUser = sessionStorage.getItem('loggedInUser');
   if (currentUser !== 'Santa') return;
 
-  // Create password review panel if it doesn't exist
-  let reviewPanel = document.getElementById('password-review-panel');
-  if (!reviewPanel) {
-    // Find a good location to insert the panel (before suggestions section)
-    const suggestionsSection = document.getElementById('suggestions');
-    if (!suggestionsSection) return;
-
-    // Create the panel
-    reviewPanel = document.createElement('section');
-    reviewPanel.id = 'password-review-panel';
-    reviewPanel.className = 'section-card';
-    reviewPanel.innerHTML = `
-      <h2><i class="fas fa-key"></i> Password Change Requests</h2>
-      <div class="password-requests-container">
-        <div class="alert-box">
-          <h3><i class="fas fa-shield-alt"></i> Admin Access</h3>
-          <p>As Santa, you can review and approve/reject password change requests from staff members.</p>
-        </div>
-        <div id="password-requests-list"></div>
-      </div>
-    `;
-
-    // Insert before suggestions
-    suggestionsSection.parentNode.insertBefore(reviewPanel, suggestionsSection);
-
-    // Populate with requests
-    populatePasswordRequests();
+  // Add a dedicated button to header for Santa to access password requests
+  const headerActions = document.querySelector('.header-actions');
+  if (headerActions) {
+    const passwordRequestsBtn = document.createElement('a');
+    passwordRequestsBtn.id = 'password-requests-btn';
+    passwordRequestsBtn.className = 'btn btn-outline';
+    passwordRequestsBtn.innerHTML = '<i class="fas fa-key"></i> Password Requests';
+    passwordRequestsBtn.style.cursor = 'pointer';
+    passwordRequestsBtn.href = 'password-requests.html'; // Direct link to password requests page
+    
+    // Add santa-only class for styling
+    passwordRequestsBtn.classList.add('santa-only');
+    
+    // Insert before logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      headerActions.insertBefore(passwordRequestsBtn, logoutBtn);
+    } else {
+      headerActions.appendChild(passwordRequestsBtn);
+    }
+    
+    // Add notification badge if there are pending requests
+    const pendingRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]')
+      .filter(req => req.status === 'pending').length;
+    
+    if (pendingRequests > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'notification-badge';
+      badge.textContent = pendingRequests;
+      passwordRequestsBtn.appendChild(badge);
+      
+      // Add a notification
+      setTimeout(() => {
+        showNotification(`You have ${pendingRequests} pending password change request${pendingRequests > 1 ? 's' : ''}`, 'info');
+      }, 1000);
+    }
   }
 }
 
