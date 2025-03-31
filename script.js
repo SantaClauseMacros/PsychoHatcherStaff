@@ -14,7 +14,7 @@ function updateTimezones() {
     try {
       // Get current UTC time
       const now = new Date();
-    
+      
       // Handle different timezone formats
       if (timezone === 'GMT') {
         time = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
@@ -76,12 +76,12 @@ function addRefreshControls() {
   refreshControls.innerHTML = `
     <div class="refresh-info">
       <span>Last refreshed at: <span id="last-refreshed-time">--:--:--</span></span>
-      <button id="refresh-times-btn" class="btn btn-sm">
+      <button id="refresh-times-btn">
         <i class="fas fa-sync-alt"></i> Refresh Now
       </button>
     </div>
     <div class="auto-refresh-toggle">
-      <label for="auto-refresh-checkbox">Auto-refresh: </label>
+      <label for="auto-refresh-checkbox">Auto-refresh every minute</label>
       <input type="checkbox" id="auto-refresh-checkbox" checked>
     </div>
   `;
@@ -90,14 +90,34 @@ function addRefreshControls() {
   const staffTitle = staffSection.querySelector('h2');
   staffSection.insertBefore(refreshControls, staffTitle.nextSibling);
   
-  // Add event listener for manual refresh
+  // Add event listener for manual refresh with enhanced animation
   document.getElementById('refresh-times-btn').addEventListener('click', function() {
-    updateTimezones();
-    // Add a small animation to the button when clicked
+    // Visual feedback before starting the refresh
     this.classList.add('refreshing');
+    const icon = this.querySelector('i');
+    
+    // Show loading indicator
+    icon.className = 'fas fa-circle-notch fa-spin';
+    this.disabled = true;
+    
+    // Perform the refresh
+    updateTimezones();
+    
+    // Add smooth transition back
     setTimeout(() => {
-      this.classList.remove('refreshing');
-    }, 500);
+      icon.className = 'fas fa-check';
+      this.style.backgroundColor = '#4CAF50';
+      
+      setTimeout(() => {
+        icon.className = 'fas fa-sync-alt';
+        this.classList.remove('refreshing');
+        this.disabled = false;
+        this.style.backgroundColor = '';
+        
+        // Show notification
+        showNotification("Timezone times refreshed successfully!", "success");
+      }, 1000);
+    }, 800);
   });
   
   // Initialize auto-refresh functionality
@@ -105,6 +125,20 @@ function addRefreshControls() {
   
   // Set initial last refreshed time
   updateLastRefreshedTime();
+  
+  // Add subtle pulse animation to the last refreshed time
+  const lastRefreshedTime = document.getElementById('last-refreshed-time');
+  if (lastRefreshedTime) {
+    setInterval(() => {
+      lastRefreshedTime.style.transform = 'scale(1.05)';
+      lastRefreshedTime.style.boxShadow = '0 0 5px rgba(237, 31, 39, 0.3)';
+      
+      setTimeout(() => {
+        lastRefreshedTime.style.transform = '';
+        lastRefreshedTime.style.boxShadow = '';
+      }, 500);
+    }, 60000); // Pulse every minute
+  }
 }
 
 // Function to initialize auto-refresh functionality
