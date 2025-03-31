@@ -1,20 +1,20 @@
 // Function to update timezone times
 function updateTimezones() {
   const staffRows = document.querySelectorAll('.staff-table tbody tr');
-  
+
   staffRows.forEach(row => {
     const timezoneCell = row.querySelector('td:nth-child(3)');
     if (!timezoneCell) return;
-    
+
     const timezone = timezoneCell.textContent.trim();
     if (!timezone || timezone === '-') return;
-    
+
     // Get current time for this timezone
     let time;
     try {
       // Get current UTC time
       const now = new Date();
-      
+
       // Handle different timezone formats
       if (timezone === 'GMT') {
         time = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
@@ -31,12 +31,15 @@ function updateTimezones() {
         const offset = parseFloat(timezone.substring(4));
         time = new Date(now.getTime() + (offset * 60 * 60 * 1000));
       }
-      
-      // Format the time
-      const hours = time.getHours().toString().padStart(2, '0');
+
+      // Format the time in 12-hour format with AM/PM
+      let hours = time.getHours();
       const minutes = time.getMinutes().toString().padStart(2, '0');
-      const formattedTime = `${hours}:${minutes}`;
-      
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      const formattedTime = `${hours}:${minutes} ${ampm}`;
+
       // Update cell content with timezone and current time
       if (!timezoneCell.innerHTML.includes('(')) {
         timezoneCell.innerHTML = `${timezone} <span class="current-time">(${formattedTime})</span>`;
@@ -48,7 +51,7 @@ function updateTimezones() {
       console.error(`Error calculating time for ${timezone}:`, error);
     }
   });
-  
+
   // Update last refreshed indicator
   updateLastRefreshedTime();
 }
@@ -58,10 +61,13 @@ function updateLastRefreshedTime() {
   const lastRefreshedElement = document.getElementById('last-refreshed-time');
   if (lastRefreshedElement) {
     const now = new Date();
-    const hours = now.getHours().toString().padStart(2, '0');
+    let hours = now.getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
-    lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds}`;
+    lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
   }
 }
 
@@ -69,7 +75,7 @@ function updateLastRefreshedTime() {
 function addRefreshControls() {
   const staffSection = document.getElementById('staff-list');
   if (!staffSection) return;
-  
+
   // Create refresh controls container
   const refreshControls = document.createElement('div');
   refreshControls.className = 'refresh-controls';
@@ -85,54 +91,61 @@ function addRefreshControls() {
       <input type="checkbox" id="auto-refresh-checkbox" checked>
     </div>
   `;
-  
+
+  // Create a proper container for the refresh controls
+  const refreshContainer = document.createElement('div');
+  refreshContainer.style.width = '100%';
+  refreshContainer.style.display = 'flex';
+  refreshContainer.style.justifyContent = 'center';
+  refreshContainer.appendChild(refreshControls);
+
   // Insert at the top of the staff list section
   const staffTitle = staffSection.querySelector('h2');
-  staffSection.insertBefore(refreshControls, staffTitle.nextSibling);
-  
+  staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
+
   // Add event listener for manual refresh with enhanced animation
   document.getElementById('refresh-times-btn').addEventListener('click', function() {
     // Visual feedback before starting the refresh
     this.classList.add('refreshing');
     const icon = this.querySelector('i');
-    
+
     // Show loading indicator
     icon.className = 'fas fa-circle-notch fa-spin';
     this.disabled = true;
-    
+
     // Perform the refresh
     updateTimezones();
-    
+
     // Add smooth transition back
     setTimeout(() => {
       icon.className = 'fas fa-check';
       this.style.backgroundColor = '#4CAF50';
-      
+
       setTimeout(() => {
         icon.className = 'fas fa-sync-alt';
         this.classList.remove('refreshing');
         this.disabled = false;
         this.style.backgroundColor = '';
-        
+
         // Show notification
         showNotification("Timezone times refreshed successfully!", "success");
       }, 1000);
     }, 800);
   });
-  
+
   // Initialize auto-refresh functionality
   initAutoRefresh();
-  
+
   // Set initial last refreshed time
   updateLastRefreshedTime();
-  
+
   // Add subtle pulse animation to the last refreshed time
   const lastRefreshedTime = document.getElementById('last-refreshed-time');
   if (lastRefreshedTime) {
     setInterval(() => {
       lastRefreshedTime.style.transform = 'scale(1.05)';
       lastRefreshedTime.style.boxShadow = '0 0 5px rgba(237, 31, 39, 0.3)';
-      
+
       setTimeout(() => {
         lastRefreshedTime.style.transform = '';
         lastRefreshedTime.style.boxShadow = '';
@@ -145,7 +158,7 @@ function addRefreshControls() {
 function initAutoRefresh() {
   let refreshInterval;
   const autoRefreshCheckbox = document.getElementById('auto-refresh-checkbox');
-  
+
   // Function to start or stop the interval
   function toggleAutoRefresh() {
     if (autoRefreshCheckbox.checked) {
@@ -157,10 +170,10 @@ function initAutoRefresh() {
       localStorage.setItem('autoRefreshEnabled', 'false');
     }
   }
-  
+
   // Add event listener for checkbox
   autoRefreshCheckbox.addEventListener('change', toggleAutoRefresh);
-  
+
   // Initialize based on saved preference or default to enabled
   const savedPreference = localStorage.getItem('autoRefreshEnabled');
   if (savedPreference === 'false') {
@@ -168,7 +181,7 @@ function initAutoRefresh() {
   } else {
     autoRefreshCheckbox.checked = true;
   }
-  
+
   // Start auto-refresh if enabled
   toggleAutoRefresh();
 }
@@ -180,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const mobileMenuBtn = document.createElement("button");
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
-  
+
   // Initialize timezone display if the staff list exists
   if (document.querySelector('.staff-table')) {
     // Add refresh controls to the staff list section
@@ -883,14 +896,14 @@ function submitSuggestion() {
 
   // Get current user or use default
   const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
-  
+
   // Format the suggestion with date, time and user
   const now = new Date();
   const formattedDate = now.toLocaleString();
-  
+
   // Get existing suggestions or create new array
   let suggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
-  
+
   // Create new suggestion object
   const newSuggestion = {
     text: suggestionText,
@@ -900,10 +913,10 @@ function submitSuggestion() {
     votes: 0,
     votedUsers: []
   };
-  
+
   // Add to suggestions array
   suggestions.push(newSuggestion);
-  
+
   // Save to localStorage
   localStorage.setItem('staffSuggestions', JSON.stringify(suggestions));
 
