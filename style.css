@@ -43,7 +43,7 @@ header {
   justify-content: space-between;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 header::before {
@@ -80,6 +80,8 @@ header * {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+  z-index: 20;
 }
 
 .btn-outline {
@@ -1127,6 +1129,8 @@ h3 {
   color: white;
   font-weight: 500;
   margin-left: 20px;
+  z-index: 10;
+  position: relative;
 }
 
 .user-avatar {
@@ -1408,7 +1412,7 @@ h3 {
 .user-avatar {
   width: 35px;
   height: 35px;
-  border-radius: 50%;
+  border-radius: 50% !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1417,6 +1421,7 @@ h3 {
   color: white;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform 0.2s ease;
+  overflow: hidden;
 }
 
 .user-avatar:hover {
@@ -1432,6 +1437,9 @@ h3 {
 
 #account-btn {
   margin-right: 5px;
+  cursor: pointer;
+  z-index: 10;
+  position: relative;
 }
 
 @keyframes slide-up {
