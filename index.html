@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ED1F27">
+    <title>Psycho Hatcher Staff Portal</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="icons.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <img id="logo-preview" src="PsychoHatcher.png" alt="Psycho Hatcher Logo">
+            <div class="logo-upload">
+                <label for="logo-upload" class="upload-btn">
+                    <i class="fas fa-upload"></i> Upload Logo
+                </label>
+                <input type="file" id="logo-upload" accept="image/*">
+            </div>
+        </div>
+        <h1>Psycho Hatcher Staff Portal</h1>
+        <div class="header-actions">
+            <button id="logout-btn" class="btn btn-outline">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#guidelines" class="active">Guidelines</a></li>
+            <li><a href="#staff-list">Staff List</a></li>
+            <li><a href="guides.html">Guides Portal</a></li>
+            <li><a href="#scripts">Support Scripts</a></li>
+            <li><a href="#bug-responses">Bug Responses</a></li>
+            <li><a href="#clan-info">Clan Info</a></li>
+            <li><a href="#vip-info">VIP Info</a></li>
+            <li><a href="#interview-questions">Interview Questions</a></li>
+            <li><a href="#templates">Templates</a></li>
+            <li><a href="#suggestions">Suggestions</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="guidelines" class="section-card">
+            <h2><i class="fas fa-book"></i> Staff Guidelines</h2>
+            <div class="alert-box">
+                <h3><i class="fas fa-exclamation-triangle"></i> Important Notice</h3>
+                <p>Please rename support tickets to reflect their subject matter for better organization.</p>
+                <p>Example: Rename "Ticket-567" to "Rankup-567" for a ticket about rankup macro issues.</p>
+            </div>
+
+            <div class="alert-box warning">
+                <h3><i class="fas fa-clock"></i> AFK Policy</h3>
+                <p>If a support team member is unresponsive on their assigned ticket, please tag them with 
+                <span class="highlight">@(Their user)</span>
+                in command-center, and note they have 10 minutes to respond before the ticket may be reassigned to another staff member.
+                </p>
+            </div>
+        </section>
+
+        <section id="staff-list" class="section-card">
+            <h2><i class="fas fa-users"></i> Staff List & Timezones</h2>
+            <div class="staff-container">
+                <table class="staff-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Roblox Username</th>
+                            <th>Timezone</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Dr. Mo Psycho</td>
+                            <td>MoPsychoO</td>
+                            <td>CST</td>
+                        </tr>
+                        <tr>
+                            <td>Dennis</td>
+                            <td>Flowerydennis2608</td>
+                            <td>EST</td>
+                        </tr>
+                        <tr>
+                            <td>Santa</td>
+                            <td>Santa_ClauseYT</td>
+                            <td>EST</td>
+                        </tr>
+                        <tr>
+                            <td>WaterMelone</td>
+                            <td>Bushmills2008</td>
+                            <td>GMT</td>
+                        </tr>
+                        <tr>
+                            <td>Adelnon</td>
+                            <td>adelno912</td>
+                            <td>GMT+1</td>
+                        </tr>
+                        <tr>
+                            <td>Reversals</td>
+                            <td>Swiftstep09</td>
+                            <td>GMT</td>
+                        </tr>
+                        <tr>
+                            <td>Notsus</td>
+                            <td>ZackplaysOfficial_YT</td>
+                            <td>IST</td>
+                        </tr>
+                        <tr>
+                            <td>Mini</td>
+                            <td>-</td>
+                            <td>GMT</td>
+                        </tr>
+                        <tr>
+                            <td>Overworld Creeper</td>
+                            <td>Overworld_Creeper</td>
+                            <td>AEDT</td>
+                        </tr>
+                        <tr>
+                            <td>Makoral</td>
+                            <td>Tygotelindert</td>
+                            <td>TBD</td>
+                        </tr>
+                        <tr>
+                            <td>Waktool</td>
+                            <td>waktool</td>
+                            <td>GMT+9.5</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="troubleshooting" class="section-card">
+            <h2><i class="fas fa-wrench"></i> Troubleshooting Guides</h2>
+
+            <div class="alert-box">
+                <h3><i class="fas fa-exclamation-triangle"></i> Common Issues Across All Modes</h3>
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Display Scaling Issues
+                    </div>
+                    <div class="faq-answer">
+                        <p>Many users forget to set their display scaling to 100%. It is crucial to ensure this setting is correct for the macro to function properly. Check your Windows display settings.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Fullscreen vs. Windowed Mode
+                    </div>
+                    <div class="faq-answer">
+                        <p>The game must be in windowed mode. Users should check if Roblox is in fullscreen mode and switch to windowed mode by pressing Esc, navigating to Settings, and selecting Windowed under Display Mode.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Macro UI Overlap
+                    </div>
+                    <div class="faq-answer">
+                        <p>If the user interface of the macro overlaps with the Roblox game interface, it can lead to functional issues. Adjusting the window size or repositioning the macro can resolve this problem.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Hoverboard Issues
+                    </div>
+                    <div class="faq-answer">
+                        <p>Using a shiny hoverboard can interfere with macro functionality. It's advisable to switch to a basic hoverboard or dismount entirely.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> World Restrictions
+                    </div>
+                    <div class="faq-answer">
+                        <p>Some modes, like the Treehouse Mode, only operate in specific worlds, such as World 1. Users should ensure they are in the correct world.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Web Browser Version Requirement
+                    </div>
+                    <div class="faq-answer">
+                        <p>The web browser version of Roblox is required for optimal performance. If users are using the app version, they should close it and utilize the browser version instead.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> PC Language Settings
+                    </div>
+                    <div class="faq-answer">
+                        <p>It's important to have your PC language set to English (US). Change this in the Settings under Time & Language if needed.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <i class="fas fa-caret-right"></i> Camera Movement
+                    </div>
+                    <div class="faq-answer">
+                        <p>Avoid moving your camera after joining the PS99 game. If you accidentally did this, the solution is to rejoin PS99 without moving your camera.</p>
+                    </div>
+                </div>
+            </div>
+
+            <h3><i class="fas fa-list"></i> Mode-Specific Troubleshooting Guides</h3>
+
+            <div class="guides-link-container">
+                <a href="guides.html" class="btn btn-large">
+                    <i class="fas fa-book-open"></i> View All Troubleshooting Guides
+                </a>
+            </div>
+
+            <div class="guides-container">
+                <!-- Rankup Macro -->
+                <div class="guide-card">
+                    <a href="guide-rankup.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-cog"></i> Rankup Macro Troubleshooting</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Advanced Digging Mode -->
+                <div class="guide-card">
+                    <a href="guide-digging.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-shovel"></i> Advanced Digging Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Clan Mode -->
+                <div class="guide-card">
+                    <a href="guide-clan.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-users"></i> Clan Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Treehouse Mode -->
+                <div class="guide-card">
+                    <a href="guide-treehouse.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-tree"></i> Treehouse Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Deep Fishing Mode -->
+                <div class="guide-card">
+                    <a href="guide-fishing.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-fish"></i> Deep Fishing Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Garden Mode -->
+                <div class="guide-card">
+                    <a href="guide-garden.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-leaf"></i> Garden Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Fuse Pets Mode -->
+                <div class="guide-card">
+                    <a href="guide-fusepets.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-paw"></i> Fuse Pets Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+
+                <!-- Alt Level Up Mode -->
+                <div class="guide-card">
+                    <a href="guide-levelup.html" class="guide-link">
+                        <div class="guide-header">
+                            <h3><i class="fas fa-arrow-up"></i> Alt Level Up Mode</h3>
+                            <i class="fas fa-external-link-alt"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="bug-responses" class="section-card">
+            <h2><i class="fas fa-bug"></i> Bug Response Guidelines</h2>
+            <div class="bug-response-box">
+                <h3>Handling Bug Reports</h3>
+                <p>We may occasionally encounter bugs, issues, or broken features in our software. However,
+                    as a support team, our approach to these situations is crucial for maintaining brand
+                    value and trust.</p>
+
+                <div class="script-section">
+                    <h4>Recommended Response:</h4>
+                    <p class="highlight">"That's strange to hear since everything is working stably right
+                        now. Could you please send us a video so we can learn more about your issue and
+                        provide better support?"</p>
+                </div>
+
+                <div class="script-section">
+                    <h4>After receiving video evidence:</h4>
+                    <p><strong>If you can help:</strong> Provide step-by-step assistance to resolve their
+                        issue.</p>
+                    <p><strong>If it's genuinely unusual:</strong> <em>"Let me share this with the team and
+                            get back to you."</em></p>
+                </div>
+
+                <div class="alert-box warning">
+                    <h4>What NOT to say:</h4>
+                    <p>❌ "Yes, it's bugged"</p>
+                    <p>❌ "Yes, it's broken"</p>
+                    <p>❌ "We know about this issue"</p>
+                    <p>Instead, say: ✅ <em>"That's strange, let me check this for you."</em></p>
+                </div>
+
+                <p class="tooltip">Why this approach? <span class="tooltip-text">This builds brand value and
+                        trust while still addressing the customer's concerns.</span></p>
+            </div>
+        </section>
+
+        <section id="scripts" class="section-card">
+            <h2><i class="fas fa-comment-alt"></i> Support Scripts</h2>
+            <div class="script-container">
+                <div class="alert-box">
+                    <h3><i class="fas fa-info-circle"></i> Using Support Scripts</h3>
+                    <p>These standardized scripts ensure consistent communication across our support team. Feel free to adapt them to your personal style while maintaining the core message.</p>
+                </div>
+
+                <div class="template-card">
+                    <h3>Greeting</h3>
+                    <div class="template-content">
+                        <p>"Hello! This is [Discord Name]. How can we help you today?"</p>
+                        <button class="btn copy-template" data-template="greeting">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Issue Acknowledgment</h3>
+                    <div class="template-content">
+                        <p>"Hello! This is [Discord Name]. I'm glad to help you with your issue. Let's take a look!"</p>
+                        <button class="btn copy-template" data-template="acknowledge">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Requesting Evidence</h3>
+                    <div class="template-content">
+                        <p>"That's new! I believe there might be a mistake or something done wrong. Let's explore this further. Could you please provide a video or stream of the issue?"</p>
+                        <button class="btn copy-template" data-template="evidence">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Common Issue Response</h3>
+                    <div class="template-content">
+                        <p>"I see this is a common issue. Let me guide you through the steps to fix it."</p>
+                        <button class="btn copy-template" data-template="common-issue">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Escalation Response</h3>
+                    <div class="template-content">
+                        <p>"Thank you for your patience. I'll raise this to our developers' team."</p>
+                        <p><em>(Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)</em></p>
+                        <button class="btn copy-template" data-template="escalation">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>VIP Information</h3>
+                    <div class="template-content">
+                        <p>"For VIP access, you can support our community through a donation! There is no fixed donation amount; you decide, so please feel free to donate whatever it is worth to you."</p>
+                        <p>You can use Stripe: <a href="https://donate.stripe.com/00gcPYdimdq0f1m9AA" target="_blank">https://donate.stripe.com/00gcPYdimdq0f1m9AA</a></p>
+                        <p>Once you've donated, please send us a screenshot in a ticket!"</p>
+                        <button class="btn copy-template" data-template="vip-info">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Closing (Individual)</h3>
+                    <div class="template-content">
+                        <p>"I'm glad I was able to assist you with your issue! Thank you for reaching out, and have a great day!"</p>
+                        <button class="btn copy-template" data-template="closing-individual">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Closing (Team)</h3>
+                    <div class="template-content">
+                        <p>"We're glad we were able to assist you with your issue! Thank you for reaching out, and have a great day! This ticket will be closed shortly."</p>
+                        <button class="btn copy-template" data-template="closing-team">
+                            <i class="fas fa-copy"></i> Copy Script
+                        </button>
+                    </div>
+                </div>
+
+                <div class="script-note">
+                    <p><strong>Note:</strong> The scripts are just a guide. You can put your own flair on it, we don't expect you to be a robot!</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="clan-info" class="section-card">
+            <h2><i class="fas fa-users-cog"></i> Clan Information</h2>
+            <div class="template-container">
+                <div class="alert-box">
+                    <h3><i class="fas fa-info-circle"></i> Clan Partnership Requirements</h3>
+                    <p>Use these templates when responding to clan partnership inquiries. Be consistent with our requirements while maintaining a friendly tone.</p>
+                </div>
+
+                <div class="template-card">
+                    <h3>Server Listing Requirements</h3>
+                    <div class="template-content">
+                        <p>Hey! 👋 To get listed in our server, we do have a couple of requirements:</p>
+                        <ul>
+                            <li>Your clan needs to have 1k+ members</li>
+                            <li>Our post needs to be in a space that everyone on your server can access</li>
+                        </ul>
+                        <button class="btn copy-template" data-template="clan-requirements">
+                            <i class="fas fa-copy"></i> Copy Template
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Paid Advertisements</h3>
+                    <div class="template-content">
+                        <p>But if you're interested, we can skip all those requirements if you go for our paid ads! 💸</p>
+                        <p>We can add a banner on our website that links directly to your Discord. Your banner will be on our most visited pages, plus we'll make a post about your clan! 🎉</p>
+                        <p>This will be up for 30 days in both places. The cost is only $5.</p>
+                        <p class="highlight">Let us know if you're interested! 😎</p>
+                        <button class="btn copy-template" data-template="clan-paid">
+                            <i class="fas fa-copy"></i> Copy Template
+                        </button>
+                    </div>
+                </div>
+
+                <div class="template-card">
+                    <h3>Full Partnership Message</h3>
+                    <div class="template-content">
+                        <p>Hey! 👋 Thanks for your interest in partnering with us!</p>
+                        <p>To get listed in our server, we have a couple of requirements:</p>
+                        <ul>
+                            <li>Your clan needs to have 1k+ members</li>
+                            <li>Our post needs to be in a space that everyone on your server can access</li>
+                        </ul>
+                        <p>If you don't meet these requirements, we also offer paid advertisements! 💸</p>
+                        <p>For $5, we can add a banner on our website that links directly to your Discord. Your banner will be on our most visited pages, plus we'll make a post about your clan! This will be up for 30 days in both places.</p>
+                        <p>Let me know which option works best for you! 😎</p>
+                        <button class="btn copy-template" data-template="clan-full">
+                            <i class="fas fa-copy"></i> Copy Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="vip-info" class="section-card">
+            <h2><i class="fas fa-crown"></i> VIP Information</h2>
+            <div class="info-box vip-box">
+                <h3>VIP Login Information</h3>
+                <div class="credential-box">
+                    <p><strong>Username:</strong> supteam@vip.psychohatcher</p>
+                    <p><strong>Password:</strong> uX_5yA^vKkiVuX_5yA^vKkiV</p>
+                </div>
+            </div>
+
+            <div class="vip-welcome-box info-box">
+                <h3><i class="fas fa-gift"></i> VIP Welcome Message</h3>
+                <div class="template-content">
+                    <div class="vip-message-preview">
+                        <div class="vip-message-header">
+                            <img src="PsychoHatcher.png" alt="Profile Image" class="vip-profile-image">
+                            <div class="vip-sender-info">
+                                <span class="vip-sender-name">PsychoHatcher Staff</span>
+                                <span class="vip-timestamp">Today</span>
+                            </div>
+                        </div>
+                        <div class="vip-message-body">
+                            <p>Hey <span class="highlight">@Username</span>, thanks so much for supporting our community, we really appreciate it!</p>
+                            <p>Here is your login to the VIP hall, kindly keep it safe your <span class="vip-trial-tag">30 days trial</span> starts now pls enjoy!</p>
+                            <div class="vip-credentials">
+                                <p>User ID: example1234@vip.psychohatcher</p>
+                                <p>Password: ExamplePass123</p>
+                            </div>
+                            <p>Also, if you have any question we have made a <span class="vip-support-tag">vip-support-zone</span> for almost 24/7 support. Kindly reach out any time ❤️</p>
+                        </div>
+                    </div>
+                    <button class="btn copy-template" data-template="vip-welcome">
+                        <i class="fas fa-copy"></i> Copy Template
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="interview-questions" class="section-card">
+            <h2><i class="fas fa-clipboard-check"></i> Staff Interview Questions</h2>
+            <div class="info-box">
+                <div class="template-card">
+                    <h3>Interview Questions Template</h3>
+                    <div class="template-content">
+                        <p>Hi, please answer these questions below so we can get a better understanding of your knowledge!</p>
+                        <ol class="interview-list">
+                            <li>How well do you understand Psycho Hatcher? (How to run it, the different modes, different buttons to click.)</li>
+                            <li>Do you understand some solutions for issues with Psycho Hatcher?</li>
+                            <li>How patient are you /10?</li>
+                            <li>How active are /10?</li>
+                            <li>How professional would you say you are /10?</li>
+                            <li>Scenario: A member is asking how to change their font, how do you approach this situation and what steps would you give to the member to help them revert their font?</li>
+                            <li>If you are unsure on a solution, what would you do?</li>
+                            <li>Anything to add?</li>
+                            <li>What would you say to members if one of the macros is broken and doesn't work?</li>
+                            <li>What would you tell members if Psycho Hatcher is down completely?</li>
+                            <li>How would you fix Multi-Roblox errors?</li>
+                            <li>What would you tell someone asking if they can download Psycho Hatcher on MacBook/Mac?</li>
+                            <li>How would you help someone who doesn't know how to download Psycho Hatcher?</li>
+                            <li>What would you tell someone wanting to donate for VIP who doesn't know the link?</li>
+                            <li>How would you handle someone being rude to you in a ticket or public chat?</li>
+                            <li>What would you say to someone asking if they can pay with huges for VIP?</li>
+                        </ol>
+                        <button class="btn copy-template" data-template="interview">
+                            <i class="fas fa-copy"></i> Copy Template
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    <section id="templates" class="section-card">
+        <h2><i class="fas fa-clipboard-list"></i> Ticket Templates</h2>
+        <div class="alert-box">
+            <h3><i class="fas fa-star"></i> Template Benefits</h3>
+            <p>Using standardized templates ensures consistent communication and helps resolve tickets faster. Simply click
+                the "Copy Template" button to use any template.</p>
+        </div>
+
+        <div class="templates-container">
+            <div class="template-card">
+                <h3>General Help Response</h3>
+                <div class="template-content">
+                    <p>Hello @username!</p>
+                    <p>Thank you for reaching out to the Psycho Hatcher support team. I'd be happy to help you with your
+                        issue.</p>
+                    <p>[Provide solution steps here]</p>
+                    <p>Let me know if you have any questions!</p>
+                    <button class="btn copy-template" data-template="general">
+                        <i class="fas fa-copy"></i> Copy Template
+                    </button>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <h3>Macro Not Working</h3>
+                <div class="template-content">
+                    <p>Hello @username!</p>
+                    <p>I understand you're having trouble with the macro. Let's troubleshoot this together:</p>
+                    <p>1. Is your display scaling set to 100%?</p>
+                    <p>2. Are you using Roblox in windowed mode?</p>
+                    <p>3. Are you using the browser version of Roblox?</p>
+                    <p>If possible, could you please provide a video showing the issue so I can better assist you?</p>
+                    <button class="btn copy-template" data-template="macro">
+                        <i class="fas fa-copy"></i> Copy Template
+                    </button>
+                </div>
+            </div>
+
+            <div class="template-card">
+                <h3>VIP Request</h3>
+                <div class="template-content">
+                    <p>Hello @username!</p>
+                    <p>For VIP access, you can support our community through a donation! There is no fixed donation amount;
+                        you decide, so please feel free to donate whatever it is worth to you.</p>
+                    <p>Donation link: https://donate.stripe.com/00gcPYdimdq0f1m9AA</p>
+                    <p>Once you've donated, please send us a screenshot in this ticket!</p>
+                    <button class="btn copy-template" data-template="vip">
+                        <i class="fas fa-copy"></i> Copy Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="suggestions" class="section-card">
+        <h2><i class="fas fa-lightbulb"></i> Staff Suggestions Board</h2>
+        <div class="suggestion-box">
+            <h3>Submit & View Team Suggestions</h3>
+            <p>Have an idea to improve our support process? Submit it here and share it with the entire team.</p>
+
+            <div class="alert-box">
+                <h3><i class="fas fa-info-circle"></i> Public Suggestion Board</h3>
+                <p>Your feedback helps us continually improve our support workflow and tools. All suggestions are visible to all staff members and can be voted on by the team.</p>
+            </div>
+
+            <div class="suggestion-form">
+                <textarea id="suggestion-text" placeholder="Enter your suggestion here..." rows="5"></textarea>
+                <button id="submit-suggestion" class="btn">
+                    <i class="fas fa-paper-plane"></i> Submit Suggestion
+                </button>
+            </div>
+
+            <h3><i class="fas fa-list"></i> Current Suggestions</h3>
+            <div id="suggestion-status"></div>
+        </div>
+    </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Psycho Hatcher Staff Portal. All rights reserved.</p>
+        <div class="footer-logo">
+            <img id="footer-logo" src="PsychoHatcher.png" alt="Psycho Hatcher">
+        </div>
+    </footer>
+
+    <script>
+        // Set current year in footer
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+
+    <script src="script.js"></script>
+    <script src="login.js"></script>
+</body>
+
+</html>
