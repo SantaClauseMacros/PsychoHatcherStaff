@@ -1,3 +1,55 @@
+// Function to update timezone times
+function updateTimezones() {
+  const staffRows = document.querySelectorAll('.staff-table tbody tr');
+  
+  staffRows.forEach(row => {
+    const timezoneCell = row.querySelector('td:nth-child(3)');
+    if (!timezoneCell) return;
+    
+    const timezone = timezoneCell.textContent.trim();
+    if (!timezone || timezone === '-') return;
+    
+    // Get current time for this timezone
+    let time;
+    try {
+      // Get current UTC time
+      const now = new Date();
+      
+      // Handle different timezone formats
+      if (timezone === 'GMT') {
+        time = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
+      } else if (timezone === 'EST') {
+        time = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+      } else if (timezone === 'CST') {
+        time = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+      } else if (timezone === 'IST') {
+        time = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
+      } else if (timezone === 'AEDT') {
+        time = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+      } else if (timezone.startsWith('GMT+')) {
+        // Handle GMT+ offsets
+        const offset = parseFloat(timezone.substring(4));
+        time = new Date(now.getTime() + (offset * 60 * 60 * 1000));
+      }
+      
+      // Format the time
+      const hours = time.getHours().toString().padStart(2, '0');
+      const minutes = time.getMinutes().toString().padStart(2, '0');
+      const formattedTime = `${hours}:${minutes}`;
+      
+      // Update cell content with timezone and current time
+      if (!timezoneCell.innerHTML.includes('(')) {
+        timezoneCell.innerHTML = `${timezone} <span class="current-time">(${formattedTime})</span>`;
+      } else {
+        // Update just the time part
+        timezoneCell.querySelector('.current-time').textContent = `(${formattedTime})`;
+      }
+    } catch (error) {
+      console.error(`Error calculating time for ${timezone}:`, error);
+    }
+  });
+}
+
 // Mobile navigation enhancement
 document.addEventListener("DOMContentLoaded", function () {
   // Add mobile menu toggle button
@@ -5,6 +57,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const mobileMenuBtn = document.createElement("button");
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+  
+  // Initialize timezone display if the staff list exists
+  if (document.querySelector('.staff-table')) {
+    updateTimezones();
+    // Update times every minute
+    setInterval(updateTimezones, 60000);
+  }
 
   if (window.innerWidth <= 768) {
     // Insert before the navigation
