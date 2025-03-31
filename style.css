@@ -267,6 +267,92 @@ h3 {
   overflow-x: auto;
 }
 
+/* Refresh Controls Styles */
+.refresh-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.refresh-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.refresh-info button {
+  background-color: var(--primary-light);
+  padding: 6px 12px;
+  border-radius: 4px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+}
+
+.refresh-info button:hover {
+  background-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.refresh-info button.refreshing {
+  animation: spin 0.5s linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.auto-refresh-toggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.auto-refresh-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
+}
+
+#last-refreshed-time {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.dark-mode .refresh-controls {
+  background-color: #2d2d2d;
+  color: #e0e0e0;
+}
+
+.dark-mode .refresh-info,
+.dark-mode .auto-refresh-toggle {
+  color: #ccc;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .refresh-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
 .staff-table {
   width: 100%;
   border-collapse: collapse;
