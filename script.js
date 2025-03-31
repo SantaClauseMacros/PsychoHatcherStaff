@@ -757,47 +757,62 @@ function submitSuggestion() {
     return;
   }
 
-  // Format the suggestion with date and time
+  // Get current user or use default
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  
+  // Format the suggestion with date, time and user
   const now = new Date();
   const formattedDate = now.toLocaleString();
-  const formattedSuggestion = `[${formattedDate}] ${suggestionText}\n\n---\n\n`;
-
-  // Create file content with the suggestion
-  const fileContent = formattedSuggestion;
-
-  // Create a temporary file for download
-  const blob = new Blob([fileContent], { type: "text/plain" });
-  const url = URL.createObjectURL(blob);
-
-  // Create a link to download the file
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `suggestion_${now.getTime()}.txt`;
-  document.body.appendChild(a);
-  a.click();
-
-  // Clean up
-  setTimeout(() => {
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }, 100);
+  
+  // Get existing suggestions or create new array
+  let suggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  
+  // Create new suggestion object
+  const newSuggestion = {
+    text: suggestionText,
+    author: currentUser,
+    date: now.toISOString(),
+    status: 'pending',
+    votes: 0,
+    votedUsers: []
+  };
+  
+  // Add to suggestions array
+  suggestions.push(newSuggestion);
+  
+  // Save to localStorage
+  localStorage.setItem('staffSuggestions', JSON.stringify(suggestions));
 
   // Show success message
   statusDiv.className = "success";
-  statusDiv.textContent =
-    "Your suggestion has been saved! Thank you for your contribution.";
+  statusDiv.innerHTML = `
+    <p>Your suggestion has been saved! Thank you for your contribution.</p>
+    <div class="suggestion-item">
+      <div class="suggestion-header">
+        <span class="suggestion-author">${currentUser}</span>
+        <span class="suggestion-date">${formattedDate}</span>
+      </div>
+      <div class="suggestion-content">${suggestionText}</div>
+      <div class="suggestion-footer">
+        <span class="suggestion-status pending">Under Review</span>
+      </div>
+    </div>
+  `;
   statusDiv.style.display = "block";
 
   // Clear the input
   document.getElementById("suggestion-text").value = "";
 
-  // Add to navigation
+  // Add to navigation if not already there
   if (!document.querySelector('nav a[href="#suggestions"]')) {
     const navList = document.querySelector("nav ul");
     const newNavItem = document.createElement("li");
     newNavItem.innerHTML = '<a href="#suggestions">Suggestions</a>';
     navList.appendChild(newNavItem);
   }
+
+  // Display all suggestions
+  displaySuggestions();
 
   showNotification("Suggestion submitted successfully!", "success");
 }
