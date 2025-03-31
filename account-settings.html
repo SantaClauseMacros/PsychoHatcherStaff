@@ -829,3 +829,854 @@
 </body>
 
 </html>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ED1F27">
+    <title>Account Settings - Psycho Hatcher</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="icons.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-card {
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-top: 5px solid var(--primary-color);
+        }
+        
+        .profile-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+            z-index: 0;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .section-header h2 {
+            color: #fff;
+            margin: 0;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.8rem;
+        }
+        
+        .section-header .icon-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(237, 31, 39, 0.3);
+            margin-right: 15px;
+        }
+        
+        .section-header .icon-circle i {
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        .admin-level {
+            background: linear-gradient(135deg, #ffac33, #ff7e33);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 3px 10px rgba(255, 126, 51, 0.4);
+            margin-left: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 126, 51, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 126, 51, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 126, 51, 0);
+            }
+        }
+        
+        .profile-section {
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .avatar-editor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+        
+        .avatar-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            position: relative;
+            border: 5px solid var(--primary-color);
+            box-shadow: 0 10px 30px rgba(237, 31, 39, 0.4);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .avatar-preview:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(237, 31, 39, 0.5);
+        }
+        
+        .avatar-options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .emoji-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 400px;
+        }
+        
+        .emoji-option {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .emoji-option:hover {
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .emoji-option.selected {
+            background: var(--primary-color);
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(237, 31, 39, 0.3);
+        }
+        
+        .emoji-option.selected::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+        
+        .background-color-picker {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 15px;
+        }
+        
+        .background-color-picker label {
+            color: white;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .color-input {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #ED1F27;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .color-input:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: white;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .custom-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .custom-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(237, 31, 39, 0.3);
+        }
+        
+        .custom-select {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            border-left: 3px solid var(--primary-color);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 20px;
+        }
+        
+        .custom-select:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(237, 31, 39, 0.3);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-right: 15px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: var(--primary-color);
+        }
+        
+        input:focus + .toggle-slider {
+            box-shadow: 0 0 1px var(--primary-color);
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label {
+            color: white;
+            font-weight: 500;
+        }
+        
+        .cta-button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(237, 31, 39, 0.3);
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 20px;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(237, 31, 39, 0.4);
+        }
+        
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: rotate(45deg);
+            transition: all 0.8s;
+        }
+        
+        .cta-button:hover::after {
+            left: 100%;
+        }
+        
+        .cta-button i {
+            margin-right: 10px;
+        }
+        
+        .admin-card {
+            background: linear-gradient(135deg, #3a0101, #5a0101);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border-top: 5px solid #ff3333;
+        }
+        
+        .admin-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(255, 51, 51, 0.2) 0%, rgba(255, 51, 51, 0) 70%);
+            z-index: 0;
+        }
+        
+        .admin-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .admin-tool-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        .admin-tool-button:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .admin-tool-button i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .admin-tool-button.danger {
+            background: rgba(255, 0, 0, 0.1);
+            border-color: rgba(255, 0, 0, 0.3);
+        }
+        
+        .admin-tool-button.danger:hover {
+            background: rgba(255, 0, 0, 0.2);
+        }
+        
+        .password-card {
+            background: linear-gradient(135deg, #1a237e, #0d47a1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-top: 5px solid #2196f3;
+        }
+        
+        .password-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 150px;
+            background: radial-gradient(circle, rgba(33, 150, 243, 0.2) 0%, rgba(33, 150, 243, 0) 70%);
+            z-index: 0;
+        }
+        
+        .password-requirements {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 3px solid #2196f3;
+        }
+        
+        .password-requirements ul {
+            padding-left: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 10px 0;
+        }
+        
+        .password-requirements li {
+            margin-bottom: 5px;
+        }
+        
+        .reason-input {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+            border-left: 3px solid #2196f3;
+            resize: vertical;
+            min-height: 100px;
+            margin-top: 10px;
+        }
+        
+        .reason-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .profile-card, .admin-card, .password-card {
+                padding: 20px;
+            }
+            
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+            
+            .admin-tools {
+                grid-template-columns: 1fr;
+            }
+            
+            .avatar-preview {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+            
+            .emoji-option {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo-container">
+            <img id="logo-preview" src="PsychoHatcher.png" alt="Psycho Hatcher Logo">
+        </div>
+        <h1>Account Settings</h1>
+        <div class="header-actions">
+            <a href="index.html" class="btn btn-outline">
+                <i class="fas fa-home"></i> Main Portal
+            </a>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Main Portal</a></li>
+            <li><a href="guides.html">Guides</a></li>
+            <li><a href="account-settings.html" class="active">Account Settings</a></li>
+            <li><a href="password-requests.html">Password Requests</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="profile-card">
+            <div class="section-header">
+                <div class="icon-circle">
+                    <i class="fas fa-user-gear"></i>
+                </div>
+                <h2>Account Customization</h2>
+                <span class="admin-level"><i class="fas fa-crown"></i> Admin Level 3</span>
+            </div>
+
+            <div class="profile-section">
+                <div class="avatar-editor">
+                    <div class="avatar-preview" id="avatar-preview" style="background-color: #ED1F27;">
+                        👤
+                    </div>
+                    <div class="avatar-options">
+                        <h3 style="color: white; margin-bottom: 15px;">Choose Emoji</h3>
+                        <div class="emoji-selector">
+                            <div class="emoji-option selected" data-emoji="👤">👤</div>
+                            <div class="emoji-option" data-emoji="😎">😎</div>
+                            <div class="emoji-option" data-emoji="🚀">🚀</div>
+                            <div class="emoji-option" data-emoji="🔥">🔥</div>
+                            <div class="emoji-option" data-emoji="💻">💻</div>
+                            <div class="emoji-option" data-emoji="🤖">🤖</div>
+                            <div class="emoji-option" data-emoji="👑">👑</div>
+                            <div class="emoji-option" data-emoji="🎮">🎮</div>
+                            <div class="emoji-option" data-emoji="🧠">🧠</div>
+                            <div class="emoji-option" data-emoji="🎯">🎯</div>
+                        </div>
+                        
+                        <div class="background-color-picker">
+                            <label for="background-color">Background Color:</label>
+                            <input type="color" id="background-color" class="color-input" value="#ED1F27">
+                        </div>
+                    </div>
+                </div>
+
+                <form id="account-details-form">
+                    <div class="form-group">
+                        <label for="display-name">Display Name</label>
+                        <input type="text" id="display-name" class="custom-input" value="Santa" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="theme-select">Theme</label>
+                        <select id="theme-select" class="custom-select">
+                            <option value="red-theme">Red Theme</option>
+                            <option value="dark-theme">Dark Theme</option>
+                            <option value="blue-theme">Blue Theme</option>
+                            <option value="green-theme">Green Theme</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="dark-mode-toggle">Dark Mode</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dark-mode-toggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Enable dark mode across the portal</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="cta-button">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="admin-card">
+            <div class="section-header">
+                <div class="icon-circle" style="background: linear-gradient(135deg, #ff3333, #cc0000);">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h2>Admin Controls</h2>
+            </div>
+
+            <p style="color: white; margin-bottom: 20px;">Special permissions granted based on your admin level.</p>
+
+            <div class="admin-tools">
+                <div class="admin-tool-button">
+                    <i class="fas fa-users"></i> View All Users
+                </div>
+                <div class="admin-tool-button">
+                    <i class="fas fa-comment-dots"></i> Manage Suggestions
+                </div>
+                <div class="admin-tool-button danger">
+                    <i class="fas fa-trash-alt"></i> Reset All Data
+                </div>
+            </div>
+        </section>
+
+        <section class="password-card">
+            <div class="section-header">
+                <div class="icon-circle" style="background: linear-gradient(135deg, #2196f3, #0d47a1);">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h2>Password Change Request</h2>
+            </div>
+
+            <p style="color: white; margin-bottom: 20px;">Password change requests are reviewed by Santa for security purposes.</p>
+
+            <form id="password-change-form">
+                <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" class="custom-input" placeholder="Enter current password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" class="custom-input" placeholder="Enter new password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" class="custom-input" placeholder="Confirm new password" required>
+                </div>
+
+                <div class="password-requirements">
+                    <h4 style="color: white; margin-top: 0;">Password Requirements:</h4>
+                    <ul>
+                        <li>At least 8 characters</li>
+                        <li>Include at least one uppercase letter</li>
+                        <li>Include at least one number</li>
+                        <li>Include at least one special character</li>
+                    </ul>
+                </div>
+
+                <div class="form-group">
+                    <label for="change-reason">Reason for Change</label>
+                    <textarea id="change-reason" class="reason-input" placeholder="Please provide a reason for changing your password" required></textarea>
+                </div>
+
+                <button type="submit" class="cta-button" style="background: linear-gradient(135deg, #2196f3, #0d47a1);">
+                    <i class="fas fa-paper-plane"></i> Submit Password Change Request
+                </button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Psycho Hatcher Staff Portal. All rights reserved.</p>
+        <div class="footer-logo">
+            <img id="footer-logo" src="PsychoHatcher.png" alt="Psycho Hatcher">
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Avatar editor functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarPreview = document.getElementById('avatar-preview');
+            const backgroundColorInput = document.getElementById('background-color');
+            const emojiOptions = document.querySelectorAll('.emoji-option');
+            
+            // Initialize with default values
+            let currentEmoji = '👤';
+            let currentColor = '#ED1F27';
+            
+            // Update avatar preview
+            function updateAvatarPreview() {
+                avatarPreview.style.backgroundColor = currentColor;
+                avatarPreview.textContent = currentEmoji;
+            }
+            
+            // Handle emoji selection
+            emojiOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove selected class from all options
+                    emojiOptions.forEach(opt => opt.classList.remove('selected'));
+                    // Add selected class to clicked option
+                    this.classList.add('selected');
+                    // Update emoji
+                    currentEmoji = this.getAttribute('data-emoji');
+                    updateAvatarPreview();
+                });
+            });
+            
+            // Handle background color change
+            backgroundColorInput.addEventListener('input', function() {
+                currentColor = this.value;
+                updateAvatarPreview();
+            });
+            
+            // Form submission
+            const accountForm = document.getElementById('account-details-form');
+            accountForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const displayName = document.getElementById('display-name').value;
+                const theme = document.getElementById('theme-select').value;
+                const darkMode = document.getElementById('dark-mode-toggle').checked;
+                
+                // Save to localStorage (in a real app, you'd save to a database)
+                const userData = {
+                    displayName,
+                    theme,
+                    darkMode,
+                    avatar: {
+                        emoji: currentEmoji,
+                        backgroundColor: currentColor
+                    }
+                };
+                
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                // Show success message
+                alert('Account settings saved successfully!');
+            });
+            
+            // Password form submission
+            const passwordForm = document.getElementById('password-change-form');
+            passwordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form values
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                const changeReason = document.getElementById('change-reason').value;
+                
+                // Validate passwords match
+                if (newPassword !== confirmPassword) {
+                    alert('New passwords do not match!');
+                    return;
+                }
+                
+                // Basic password validation
+                const passwordRegex = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(.{8,})$/;
+                if (!passwordRegex.test(newPassword)) {
+                    alert('Password does not meet requirements!');
+                    return;
+                }
+                
+                // Submit password change request (in a real app, you'd send to server)
+                alert('Password change request submitted successfully!');
+                passwordForm.reset();
+            });
+            
+            // Admin tools functionality
+            const adminTools = document.querySelectorAll('.admin-tool-button');
+            adminTools.forEach(tool => {
+                tool.addEventListener('click', function() {
+                    const action = this.textContent.trim();
+                    if (action.includes('Reset All Data')) {
+                        if (confirm('Are you sure you want to reset all data? This action cannot be undone.')) {
+                            alert('All data has been reset.');
+                        }
+                    } else if (action.includes('View All Users')) {
+                        alert('Redirecting to User Management...');
+                        // In a real app, you would redirect to user management page
+                    } else if (action.includes('Manage Suggestions')) {
+                        alert('Redirecting to Suggestion Management...');
+                        // In a real app, you would redirect to suggestion management page
+                    }
+                });
+            });
+            
+            // Load saved user data (if available)
+            const savedUserData = localStorage.getItem('userData');
+            if (savedUserData) {
+                const userData = JSON.parse(savedUserData);
+                
+                document.getElementById('display-name').value = userData.displayName || '';
+                document.getElementById('theme-select').value = userData.theme || 'red-theme';
+                document.getElementById('dark-mode-toggle').checked = userData.darkMode || false;
+                
+                if (userData.avatar) {
+                    currentEmoji = userData.avatar.emoji;
+                    currentColor = userData.avatar.backgroundColor;
+                    
+                    // Update selected emoji
+                    emojiOptions.forEach(option => {
+                        if (option.getAttribute('data-emoji') === currentEmoji) {
+                            option.classList.add('selected');
+                        } else {
+                            option.classList.remove('selected');
+                        }
+                    });
+                    
+                    backgroundColorInput.value = currentColor;
+                    updateAvatarPreview();
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
