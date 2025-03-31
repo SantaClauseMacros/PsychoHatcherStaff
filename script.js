@@ -1149,6 +1149,23 @@ document.addEventListener("click", function (e) {
  * Handles submission, display, and management of staff suggestions
  */
 
+// Admin accounts that can delete suggestions
+const ADMIN_ACCOUNTS = ['Santa', 'Dr. Mo Psycho', 'WaterMelone', 'Waktool'];
+
+// Suppress error messages from images
+window.addEventListener('error', function(e) {
+  // Check if the error is related to image loading or decoding
+  if (e.message && (
+      e.message.includes('decode file') || 
+      e.message.includes('Unable to decode') || 
+      e.message.includes('NON-UTF8'))) {
+    // Prevent the error from showing in console
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  }
+}, true);
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize suggestion system if on the correct page
     initializeSuggestionSystem();
@@ -1217,6 +1234,42 @@ function submitNewSuggestion(suggestionText) {
 }
 
 /**
+ * Check if current user is an admin
+ * @returns {boolean} True if current user is an admin
+ */
+function isAdmin() {
+    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+    return ADMIN_ACCOUNTS.includes(currentUser);
+}
+
+/**
+ * Delete a suggestion by index
+ * @param {number} index - The index of the suggestion to delete
+ */
+function deleteSuggestion(index) {
+    // Verify admin status
+    if (!isAdmin()) {
+        showNotification('Only administrators can delete suggestions.', 'error');
+        return;
+    }
+
+    // Get suggestions
+    let staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+    
+    // Remove the suggestion
+    staffSuggestions.splice(index, 1);
+    
+    // Save back to localStorage
+    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+    
+    // Show success message
+    showNotification('Suggestion deleted successfully.', 'success');
+    
+    // Update the display
+    displaySuggestions();
+}
+
+/**
  * Display all suggestions in the suggestion status area
  */
 function displaySuggestions() {
@@ -1238,6 +1291,9 @@ function displaySuggestions() {
     let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
     suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
     suggestionsHTML += '<ul class="suggestions-list">';
+
+    // Check if current user is admin
+    const userIsAdmin = isAdmin();
 
     staffSuggestions.forEach((suggestion, index) => {
         // Format date for better readability
@@ -1262,6 +1318,12 @@ function displaySuggestions() {
                 statusText = 'Under Review';
         }
 
+        // Add delete button for admins
+        const adminControls = userIsAdmin ? 
+            `<button class="btn-delete" data-index="${index}">
+                <i class="fas fa-trash"></i> Delete
+            </button>` : '';
+
         suggestionsHTML += `
             <li>
                 <div class="suggestion-header">
@@ -1275,6 +1337,7 @@ function displaySuggestions() {
                         <button class="btn-vote upvote" data-index="${index}">
                             <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
                         </button>
+                        ${adminControls}
                     </div>
                 </div>
             </li>
@@ -1286,8 +1349,23 @@ function displaySuggestions() {
     // Update the DOM
     suggestionStatus.innerHTML = suggestionsHTML;
 
-    // Add event listeners for voting
+    // Add event listeners for voting and admin actions
     attachVoteEventListeners();
+    if (userIsAdmin) {
+        attachAdminEventListeners();
+    }
+}
+
+/**
+ * Attach admin event listeners (delete buttons)
+ */
+function attachAdminEventListeners() {
+    document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            deleteSuggestion(index);
+        });
+    });
 }
 
 /**
