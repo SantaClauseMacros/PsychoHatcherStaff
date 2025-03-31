@@ -854,42 +854,46 @@ document.addEventListener("DOMContentLoaded", function () {
     submitBtn.addEventListener("click", submitSuggestion);
   }
 
+  // Initialize suggestion area if it exists
+  const suggestionStatus = document.getElementById("suggestion-status");
+  if (suggestionStatus) {
+    displaySuggestions();
+  }
+
   // Copy template functionality
-      document.querySelectorAll(".copy-template").forEach((button) => {
-        button.addEventListener("click", function () {
-          const templateType = this.getAttribute("data-template");
-          const contentDiv = this.closest(".template-content");
-          const paragraphs = contentDiv.querySelectorAll("p");
+  document.querySelectorAll(".copy-template").forEach((button) => {
+    button.addEventListener("click", function () {
+      const templateType = this.getAttribute("data-template");
+      const contentDiv = this.closest(".template-content");
+      const paragraphs = contentDiv.querySelectorAll("p");
 
-          let templateText = "";
-          paragraphs.forEach((p) => {
-            // Remove quotes from the text
-            let cleanText = p.textContent.replace(/["']/g, '');
-            templateText += cleanText + "\n\n";
-          });
-
-          navigator.clipboard.writeText(templateText.trim()).then(() => {
-            showNotification("Template copied to clipboard!", "success");
-
-            // Visual feedback
-            this.textContent = "Copied!";
-            setTimeout(() => {
-              this.textContent = "Copy Template";
-            }, 2000);
-          });
-        });
+      let templateText = "";
+      paragraphs.forEach((p) => {
+        // Remove quotes from the text
+        let cleanText = p.textContent.replace(/["']/g, '');
+        templateText += cleanText + "\n\n";
       });
+
+      navigator.clipboard.writeText(templateText.trim()).then(() => {
+        showNotification("Template copied to clipboard!", "success");
+
+        // Visual feedback
+        this.textContent = "Copied!";
+        setTimeout(() => {
+          this.textContent = "Copy Template";
+        }, 2000);
+      });
+    });
+  });
 });
 
 function submitSuggestion() {
-  const suggestionText = document
-    .getElementById("suggestion-text")
-    .value.trim();
+  const suggestionText = document.getElementById("suggestion-text").value.trim();
   const statusDiv = document.getElementById("suggestion-status");
 
   if (!suggestionText) {
     statusDiv.className = "error";
-    statusDiv.textContent = "Please enter a suggestion before submitting.";
+    statusDiv.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
     statusDiv.style.display = "block";
     return;
   }
@@ -940,18 +944,120 @@ function submitSuggestion() {
   // Clear the input
   document.getElementById("suggestion-text").value = "";
 
-  // Add to navigation if not already there
-  if (!document.querySelector('nav a[href="#suggestions"]')) {
-    const navList = document.querySelector("nav ul");
-    const newNavItem = document.createElement("li");
-    newNavItem.innerHTML = '<a href="#suggestions">Suggestions</a>';
-    navList.appendChild(newNavItem);
-  }
-
   // Display all suggestions
   displaySuggestions();
 
   showNotification("Suggestion submitted successfully!", "success");
+}
+
+// Function to display all suggestions
+function displaySuggestions() {
+  const suggestionStatus = document.getElementById("suggestion-status");
+  if (!suggestionStatus) return;
+
+  // Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+
+  if (staffSuggestions.length === 0) {
+    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
+    return;
+  }
+
+  // Sort suggestions by date (newest first)
+  staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Build HTML for suggestions list
+  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  suggestionsHTML += '<ul class="suggestions-list">';
+
+  staffSuggestions.forEach((suggestion, index) => {
+    // Format date for better readability
+    const date = new Date(suggestion.date);
+    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+    // Create status badge
+    let statusClass = '';
+    let statusText = '';
+
+    switch(suggestion.status) {
+      case 'approved':
+        statusClass = 'approved';
+        statusText = 'Approved';
+        break;
+      case 'rejected':
+        statusClass = 'rejected';
+        statusText = 'Rejected';
+        break;
+      default:
+        statusClass = 'pending';
+        statusText = 'Under Review';
+    }
+
+    suggestionsHTML += `
+      <li>
+        <div class="suggestion-header">
+          <span class="suggestion-author">${suggestion.author}</span>
+          <span class="suggestion-date">${formattedDate}</span>
+        </div>
+        <div class="suggestion-content">${suggestion.text}</div>
+        <div class="suggestion-footer">
+          <span class="suggestion-status ${statusClass}">${statusText}</span>
+          <div class="suggestion-actions">
+            <button class="btn-vote upvote" data-index="${index}">
+              <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
+            </button>
+          </div>
+        </div>
+      </li>
+    `;
+  });
+
+  suggestionsHTML += '</ul>';
+
+  // Update the DOM
+  suggestionStatus.innerHTML = suggestionsHTML;
+
+  // Add event listeners for voting
+  document.querySelectorAll('.btn-vote').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      handleVote(index, this);
+    });
+  });
+}
+
+// Handle voting on suggestions
+function handleVote(index, buttonElement) {
+  // Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  if (!staffSuggestions[index]) return;
+
+  // Get the current user
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+
+  // Initialize votedUsers array if it doesn't exist
+  if (!staffSuggestions[index].votedUsers) {
+    staffSuggestions[index].votedUsers = [];
+  }
+
+  // Check if user already voted
+  if (staffSuggestions[index].votedUsers.includes(currentUser)) {
+    showNotification('You have already voted on this suggestion.', 'info');
+    return;
+  }
+
+  // Increment vote count and add user to voted list
+  staffSuggestions[index].votes++;
+  staffSuggestions[index].votedUsers.push(currentUser);
+
+  // Save updated suggestions
+  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+
+  // Update the display
+  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
+
+  showNotification('Your vote has been counted!', 'success');
 }
 
 // Add guide content toggle with smooth animation
