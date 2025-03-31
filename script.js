@@ -190,7 +190,7 @@ function initAutoRefresh() {
 document.addEventListener("DOMContentLoaded", function () {
   // Check for logged in user and initialize account customization
   initializeAccountCustomization();
-  
+
   // Initialize password review panel for Santa
   initializePasswordReviewPanel();
 
@@ -357,6 +357,8 @@ function switchLogo(style) {
     // Update logos with error handling
     if (logoPreview) {
       logoPreview.src = logos[style].path;
+      logoPreview.style.objectFit = "contain";
+      logoPreview.style.padding = "4px";
       logoPreview.onerror = function () {
         console.error(`Failed to load logo-preview: ${logos[style].path}`);
         this.src = "PsychoHatcher.png"; // Fallback
@@ -1647,14 +1649,15 @@ function addAccountButton() {
   const headerActions = document.querySelector('.header-actions');
   if (headerActions) {
     // Create account button before logout button
-    const accountBtn = document.createElement('button');
+    const accountBtn = document.createElement('a');
     accountBtn.id = 'account-btn';
     accountBtn.className = 'btn btn-outline';
     accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
     accountBtn.style.cursor = 'pointer';
     accountBtn.style.pointerEvents = 'all';
-    accountBtn.addEventListener('click', showAccountSettings);
-    
+    accountBtn.style.zIndex = '100';
+    accountBtn.href = 'account-settings.html';
+
     // Insert before logout button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -1662,22 +1665,23 @@ function addAccountButton() {
     } else {
       headerActions.appendChild(accountBtn);
     }
-    
+
     // Add user welcome with avatar
     const username = sessionStorage.getItem('loggedInUser') || 'Staff';
     const userPrefs = getUserPreferences();
-    
+
     const userWelcome = document.createElement('div');
     userWelcome.className = 'user-welcome';
-    
+
     const userAvatar = document.createElement('div');
     userAvatar.className = 'user-avatar';
     userAvatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
+    userAvatar.style.borderRadius = '50%';
     userAvatar.textContent = userPrefs.avatarEmoji || '👤';
-    
+
     userWelcome.appendChild(userAvatar);
     userWelcome.appendChild(document.createTextNode(`Welcome, ${username}!`));
-    
+
     headerActions.prepend(userWelcome);
   }
 }
@@ -1694,7 +1698,7 @@ function getUserPreferences() {
     notificationsEnabled: true,
     joinDate: new Date().toISOString()
   };
-  
+
   try {
     const savedPrefs = localStorage.getItem(`userPrefs_${username}`);
     return savedPrefs ? JSON.parse(savedPrefs) : defaultPrefs;
@@ -1713,12 +1717,12 @@ function saveUserPreferences(prefs) {
 // Load user profile data like theme preferences
 function loadUserProfileData() {
   const userPrefs = getUserPreferences();
-  
+
   // Apply theme based on user preference
   if (userPrefs.theme) {
     switchLogo(userPrefs.theme);
   }
-  
+
   // Apply dark mode if enabled
   if (userPrefs.darkMode) {
     document.body.classList.add('dark-mode');
@@ -1737,24 +1741,24 @@ function showAccountSettings() {
   const username = sessionStorage.getItem('loggedInUser') || localStorage.getItem('loggedInUser') || 'Anonymous';
   const isUserAdmin = isAdmin();
   const adminLevel = getAdminLevel();
-  
+
   // Create overlay
   const overlay = document.createElement('div');
   overlay.className = 'account-settings-overlay';
-  
+
   // Create container
   const container = document.createElement('div');
   container.className = 'account-settings-container';
-  
+
   // Create header
   const header = document.createElement('div');
   header.className = 'account-settings-header';
   header.innerHTML = `<h2><i class="fas fa-user-circle"></i> Account Settings</h2>`;
-  
+
   // Create form
   const form = document.createElement('div');
   form.className = 'account-settings-form';
-  
+
   // Avatar section
   const avatarSection = document.createElement('div');
   avatarSection.className = 'account-avatar-section';
@@ -1785,11 +1789,11 @@ function showAccountSettings() {
       </div>
     </div>
   `;
-  
+
   // Account details section
   const accountSection = document.createElement('div');
   accountSection.className = 'account-details-section';
-  
+
   // Base account settings for all users
   let accountHtml = `
     <h3>Account Details ${isUserAdmin ? `<span class="admin-badge">Admin Level ${adminLevel}</span>` : ''}</h3>
@@ -1812,14 +1816,14 @@ function showAccountSettings() {
       </label>
     </div>
   `;
-  
+
   // Add admin panel for admin users
   if (isUserAdmin) {
     accountHtml += `
       <div class="admin-section">
         <h3><i class="fas fa-shield-alt"></i> Admin Controls</h3>
         <p class="info-text">Admin level ${adminLevel} grants you special permissions.</p>
-        
+
         <div class="admin-tools">
           <button id="view-all-users" class="btn btn-sm">
             <i class="fas fa-users"></i> View All Users
@@ -1836,9 +1840,9 @@ function showAccountSettings() {
       </div>
     `;
   }
-  
+
   accountSection.innerHTML = accountHtml;
-  
+
   // Password change request section
   const passwordSection = document.createElement('div');
   passwordSection.className = 'password-section';
@@ -1864,7 +1868,7 @@ function showAccountSettings() {
     <button id="request-password-change" class="btn">Submit Password Change Request</button>
     <div id="password-change-status" class="status-message"></div>
   `;
-  
+
   // Action buttons
   const actions = document.createElement('div');
   actions.className = 'form-actions';
@@ -1872,41 +1876,41 @@ function showAccountSettings() {
     <button id="save-account-settings" class="btn">Save Changes</button>
     <button id="close-account-settings" class="btn btn-outline">Cancel</button>
   `;
-  
+
   // Append all sections
   form.appendChild(avatarSection);
   form.appendChild(accountSection);
   form.appendChild(passwordSection);
   form.appendChild(actions);
-  
+
   // Build the modal
   container.appendChild(header);
   container.appendChild(form);
   overlay.appendChild(container);
   document.body.appendChild(overlay);
-  
+
   // Add event listeners
   document.getElementById('close-account-settings').addEventListener('click', () => {
     document.body.removeChild(overlay);
   });
-  
+
   // Emoji picker functionality
   document.querySelectorAll('#emoji-picker span').forEach(emoji => {
     emoji.addEventListener('click', function() {
       const selectedEmoji = this.getAttribute('data-emoji');
       document.getElementById('avatar-preview').textContent = selectedEmoji;
-      
+
       // Highlight selected emoji
       document.querySelectorAll('#emoji-picker span').forEach(e => e.classList.remove('selected'));
       this.classList.add('selected');
     });
   });
-  
+
   // Avatar color change
   document.getElementById('avatar-color').addEventListener('input', function() {
     document.getElementById('avatar-preview').style.backgroundColor = this.value;
   });
-  
+
   // Dark mode toggle
   document.getElementById('dark-mode-toggle').addEventListener('change', function() {
     if (this.checked) {
@@ -1915,12 +1919,12 @@ function showAccountSettings() {
       document.body.classList.remove('dark-mode');
     }
   });
-  
+
   // Theme selector
   document.getElementById('theme-select').addEventListener('change', function() {
     switchLogo(this.value);
   });
-  
+
   // Password change request
   document.getElementById('request-password-change').addEventListener('click', function() {
     const currentPassword = document.getElementById('current-password').value;
@@ -1928,49 +1932,51 @@ function showAccountSettings() {
     const confirmPassword = document.getElementById('confirm-password').value;
     const reason = document.getElementById('password-reason').value;
     const statusElement = document.getElementById('password-change-status');
-    
+
     // Validate fields
     if (!currentPassword || !newPassword || !confirmPassword || !reason) {
       statusElement.textContent = 'Please fill in all password fields.';
       statusElement.className = 'status-message error';
       return;
     }
-    
+
     if (newPassword !== confirmPassword) {
       statusElement.textContent = 'New passwords do not match.';
       statusElement.className = 'status-message error';
       return;
     }
-    
+
     // Get password change requests from storage
     let passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
-    
-    // Add new request
+
+    // Add new request with more detailed information
     passwordRequests.push({
       username: sessionStorage.getItem('loggedInUser') || 'Anonymous',
       requestDate: new Date().toISOString(),
       reason: reason,
       status: 'pending',
       reviewedBy: null,
-      reviewDate: null
+      reviewDate: null,
+      newPasswordHash: 'hashed_' + newPassword, // In a real app, you would properly hash this
+      currentPasswordHash: 'hashed_' + currentPassword
     });
-    
+
     // Save requests
     localStorage.setItem('passwordChangeRequests', JSON.stringify(passwordRequests));
-    
+
     // Update status
     statusElement.textContent = 'Password change request submitted for review by Santa.';
     statusElement.className = 'status-message success';
-    
+
     // Clear fields
     document.getElementById('current-password').value = '';
     document.getElementById('new-password').value = '';
     document.getElementById('confirm-password').value = '';
     document.getElementById('password-reason').value = '';
-    
+
     showNotification('Password change request submitted to Santa for review', 'success');
   });
-  
+
   // Admin control event listeners
   if (isUserAdmin) {
     // View all users button
@@ -1979,14 +1985,14 @@ function showAccountSettings() {
         showAllUsersPanel();
       });
     }
-    
+
     // Manage suggestions button (for admin level 2+)
     if (adminLevel >= 2 && document.getElementById('manage-suggestions')) {
       document.getElementById('manage-suggestions').addEventListener('click', function() {
         showSuggestionsManagementPanel();
       });
     }
-    
+
     // Reset all data button (for admin level 3 only)
     if (adminLevel >= 3 && document.getElementById('reset-all-data')) {
       document.getElementById('reset-all-data').addEventListener('click', function() {
@@ -1996,7 +2002,7 @@ function showAccountSettings() {
       });
     }
   }
-  
+
   // Save account settings
   document.getElementById('save-account-settings').addEventListener('click', function() {
     // Gather form data
@@ -2010,30 +2016,30 @@ function showAccountSettings() {
       joinDate: userPrefs.joinDate || new Date().toISOString(),
       adminLevel: isUserAdmin ? adminLevel : 0
     };
-    
+
     // Save preferences
     saveUserPreferences(newPrefs);
-    
+
     // Update UI immediately
     const userAvatar = document.querySelector('.user-welcome .user-avatar');
     if (userAvatar) {
       userAvatar.textContent = newPrefs.avatarEmoji;
       userAvatar.style.backgroundColor = newPrefs.avatarColor;
     }
-    
+
     // Apply theme
     switchLogo(newPrefs.theme);
-    
+
     // Apply dark mode
     if (newPrefs.darkMode) {
       document.body.classList.add('dark-mode');
     } else {
       document.body.classList.remove('dark-mode');
     }
-    
+
     // Close modal
     document.body.removeChild(overlay);
-    
+
     showNotification('Account settings saved successfully!', 'success');
   });
 }
@@ -2043,14 +2049,14 @@ function initializePasswordReviewPanel() {
   // Only show for Santa's account
   const currentUser = sessionStorage.getItem('loggedInUser');
   if (currentUser !== 'Santa') return;
-  
+
   // Create password review panel if it doesn't exist
   let reviewPanel = document.getElementById('password-review-panel');
   if (!reviewPanel) {
     // Find a good location to insert the panel (before suggestions section)
     const suggestionsSection = document.getElementById('suggestions');
     if (!suggestionsSection) return;
-    
+
     // Create the panel
     reviewPanel = document.createElement('section');
     reviewPanel.id = 'password-review-panel';
@@ -2065,10 +2071,10 @@ function initializePasswordReviewPanel() {
         <div id="password-requests-list"></div>
       </div>
     `;
-    
+
     // Insert before suggestions
     suggestionsSection.parentNode.insertBefore(reviewPanel, suggestionsSection);
-    
+
     // Populate with requests
     populatePasswordRequests();
   }
@@ -2078,26 +2084,26 @@ function initializePasswordReviewPanel() {
 function populatePasswordRequests() {
   const requestsList = document.getElementById('password-requests-list');
   if (!requestsList) return;
-  
+
   // Get password requests
   const passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
-  
+
   if (passwordRequests.length === 0) {
     requestsList.innerHTML = '<p class="no-requests">No password change requests pending.</p>';
     return;
   }
-  
+
   // Build requests HTML
   let requestsHTML = '';
-  
+
   passwordRequests.forEach((request, index) => {
     // Format date for display
     const requestDate = new Date(request.requestDate);
     const formattedDate = requestDate.toLocaleDateString() + ' ' + requestDate.toLocaleTimeString();
-    
+
     let statusClass = '';
     let statusText = '';
-    
+
     switch(request.status) {
       case 'approved':
         statusClass = 'approved';
@@ -2111,7 +2117,7 @@ function populatePasswordRequests() {
         statusClass = 'pending';
         statusText = 'Pending Review';
     }
-    
+
     // Build request card
     requestsHTML += `
       <div class="request-card ${statusClass}">
@@ -2141,17 +2147,17 @@ function populatePasswordRequests() {
       </div>
     `;
   });
-  
+
   // Update the DOM
   requestsList.innerHTML = requestsHTML;
-  
+
   // Add event listeners for approve/reject buttons
   document.querySelectorAll('.btn-approve').forEach(btn => {
     btn.addEventListener('click', function() {
       handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'approved');
     });
   });
-  
+
   document.querySelectorAll('.btn-reject').forEach(btn => {
     btn.addEventListener('click', function() {
       handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'rejected');
@@ -2163,20 +2169,20 @@ function populatePasswordRequests() {
 function handlePasswordRequestAction(index, action) {
   // Get requests
   let passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
-  
+
   if (!passwordRequests[index]) return;
-  
+
   // Update request status
   passwordRequests[index].status = action;
   passwordRequests[index].reviewedBy = sessionStorage.getItem('loggedInUser');
   passwordRequests[index].reviewDate = new Date().toISOString();
-  
+
   // Save updated requests
   localStorage.setItem('passwordChangeRequests', JSON.stringify(passwordRequests));
-  
+
   // Update the display
   populatePasswordRequests();
-  
+
   // Show notification
   const actionText = action === 'approved' ? 'approved' : 'rejected';
   showNotification(`Password change request ${actionText} successfully`, 'success');
@@ -2190,7 +2196,7 @@ function handlePasswordRequestAction(index, action) {
 function showAllUsersPanel() {
   // Create a list of all users who have preferences stored
   const users = [];
-  
+
   // Get all localStorage keys
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -2211,21 +2217,21 @@ function showAllUsersPanel() {
       }
     }
   }
-  
+
   // Sort users by admin status and then by username
   users.sort((a, b) => {
     if (a.isAdmin && !b.isAdmin) return -1;
     if (!a.isAdmin && b.isAdmin) return 1;
     return a.username.localeCompare(b.username);
   });
-  
+
   // Create users panel modal
   const overlay = document.createElement('div');
   overlay.className = 'admin-panel-overlay';
-  
+
   const panel = document.createElement('div');
   panel.className = 'admin-panel-container';
-  
+
   // Create header
   const header = document.createElement('div');
   header.className = 'admin-panel-header';
@@ -2233,18 +2239,18 @@ function showAllUsersPanel() {
     <h2><i class="fas fa-users"></i> User Management</h2>
     <span>${users.length} users registered</span>
   `;
-  
+
   // Create user list
   const userList = document.createElement('div');
   userList.className = 'admin-user-list';
-  
+
   if (users.length === 0) {
     userList.innerHTML = '<p class="no-data">No users found</p>';
   } else {
     // Create table for users
     const table = document.createElement('table');
     table.className = 'admin-users-table';
-    
+
     // Table header
     const thead = document.createElement('thead');
     thead.innerHTML = `
@@ -2256,17 +2262,17 @@ function showAllUsersPanel() {
         <th>Actions</th>
       </tr>
     `;
-    
+
     // Table body
     const tbody = document.createElement('tbody');
-    
+
     users.forEach(user => {
       const tr = document.createElement('tr');
-      
+
       // Format join date
       const joinDate = user.joinDate !== 'Unknown' ? 
         new Date(user.joinDate).toLocaleDateString() : 'Unknown';
-      
+
       tr.innerHTML = `
         <td>${user.username}</td>
         <td>${user.displayName}</td>
@@ -2282,34 +2288,34 @@ function showAllUsersPanel() {
           </button>` : ''}
         </td>
       `;
-      
+
       tbody.appendChild(tr);
     });
-    
+
     table.appendChild(thead);
     table.appendChild(tbody);
     userList.appendChild(table);
   }
-  
+
   // Add close button
   const closeBtn = document.createElement('button');
   closeBtn.className = 'btn';
   closeBtn.textContent = 'Close';
-  
+
   // Add all elements to the panel
   panel.appendChild(header);
   panel.appendChild(userList);
   panel.appendChild(closeBtn);
   overlay.appendChild(panel);
-  
+
   // Add to body
   document.body.appendChild(overlay);
-  
+
   // Add event listeners
   closeBtn.addEventListener('click', () => {
     document.body.removeChild(overlay);
   });
-  
+
   // View user buttons
   document.querySelectorAll('.view-user').forEach(btn => {
     btn.addEventListener('click', function() {
@@ -2317,7 +2323,7 @@ function showAllUsersPanel() {
       viewUserDetails(username);
     });
   });
-  
+
   // Remove user buttons (for super admins only)
   if (getAdminLevel() >= 3) {
     document.querySelectorAll('.remove-user').forEach(btn => {
@@ -2327,12 +2333,12 @@ function showAllUsersPanel() {
           showNotification("You cannot remove your own account!", "error");
           return;
         }
-        
+
         if (confirm(`Are you sure you want to remove user "${username}"? This action cannot be undone.`)) {
           // Remove user preferences
           localStorage.removeItem(`userPrefs_${username}`);
           showNotification(`User "${username}" has been removed.`, "success");
-          
+
           // Reload the panel
           document.body.removeChild(overlay);
           showAllUsersPanel();
@@ -2349,29 +2355,29 @@ function showAllUsersPanel() {
 function viewUserDetails(username) {
   const userPrefsKey = `userPrefs_${username}`;
   const userPrefs = JSON.parse(localStorage.getItem(userPrefsKey) || '{}');
-  
+
   if (!userPrefs) {
     showNotification("User preferences not found", "error");
     return;
   }
-  
+
   // Create user details modal
   const overlay = document.createElement('div');
   overlay.className = 'user-details-overlay';
-  
+
   const panel = document.createElement('div');
   panel.className = 'user-details-container';
-  
+
   // Add user avatar
   const avatar = document.createElement('div');
   avatar.className = 'user-avatar large';
   avatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
   avatar.textContent = userPrefs.avatarEmoji || '👤';
-  
+
   // Format dates
   const joinDate = userPrefs.joinDate ? 
     new Date(userPrefs.joinDate).toLocaleString() : 'Unknown';
-  
+
   // Build details content
   const details = document.createElement('div');
   details.className = 'user-details-content';
@@ -2401,21 +2407,21 @@ function viewUserDetails(username) {
       </div>
     </div>
   `;
-  
+
   // Close button
   const closeBtn = document.createElement('button');
   closeBtn.className = 'btn';
   closeBtn.textContent = 'Close';
-  
+
   // Assemble the panel
   panel.appendChild(avatar);
   panel.appendChild(details);
   panel.appendChild(closeBtn);
   overlay.appendChild(panel);
-  
+
   // Add to body
   document.body.appendChild(overlay);
-  
+
   // Add event listener to close
   closeBtn.addEventListener('click', () => {
     document.body.removeChild(overlay);
@@ -2428,14 +2434,14 @@ function viewUserDetails(username) {
 function showSuggestionsManagementPanel() {
   // Get suggestions
   const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions') || '[]');
-  
+
   // Create panel
   const overlay = document.createElement('div');
   overlay.className = 'admin-panel-overlay';
-  
+
   const panel = document.createElement('div');
   panel.className = 'admin-panel-container wider';
-  
+
   // Create header
   const header = document.createElement('div');
   header.className = 'admin-panel-header';
@@ -2443,21 +2449,21 @@ function showSuggestionsManagementPanel() {
     <h2><i class="fas fa-tasks"></i> Suggestions Management</h2>
     <span>${staffSuggestions.length} suggestions in system</span>
   `;
-  
+
   // Create suggestions list
   const suggestionsList = document.createElement('div');
   suggestionsList.className = 'admin-suggestions-list';
-  
+
   if (staffSuggestions.length === 0) {
     suggestionsList.innerHTML = '<p class="no-data">No suggestions found</p>';
   } else {
     // Sort suggestions by vote count (highest first)
     staffSuggestions.sort((a, b) => b.votes - a.votes);
-    
+
     // Create table
     const table = document.createElement('table');
     table.className = 'admin-suggestions-table';
-    
+
     // Table header
     const thead = document.createElement('thead');
     thead.innerHTML = `
@@ -2470,27 +2476,27 @@ function showSuggestionsManagementPanel() {
         <th>Actions</th>
       </tr>
     `;
-    
+
     // Table body
     const tbody = document.createElement('tbody');
-    
+
     staffSuggestions.forEach((suggestion, index) => {
       const tr = document.createElement('tr');
-      
+
       // Format date
       const date = new Date(suggestion.date);
       const formattedDate = date.toLocaleDateString();
-      
+
       // Set row class based on status
       tr.className = suggestion.status;
-      
+
       // Create status dropdown options
       const statusOptions = ['pending', 'approved', 'rejected']
         .map(status => `<option value="${status}" ${suggestion.status === status ? 'selected' : ''}>${
           status.charAt(0).toUpperCase() + status.slice(1)
         }</option>`)
         .join('');
-      
+
       tr.innerHTML = `
         <td>${suggestion.author}</td>
         <td class="suggestion-text">${suggestion.text}</td>
@@ -2507,71 +2513,71 @@ function showSuggestionsManagementPanel() {
           </button>
         </td>
       `;
-      
+
       tbody.appendChild(tr);
     });
-    
+
     table.appendChild(thead);
     table.appendChild(tbody);
     suggestionsList.appendChild(table);
   }
-  
+
   // Close button
   const closeBtn = document.createElement('button');
   closeBtn.className = 'btn';
   closeBtn.textContent = 'Close';
-  
+
   // Build panel
   panel.appendChild(header);
   panel.appendChild(suggestionsList);
   panel.appendChild(closeBtn);
   overlay.appendChild(panel);
-  
+
   // Add to DOM
   document.body.appendChild(overlay);
-  
+
   // Add event listeners
   closeBtn.addEventListener('click', () => {
     document.body.removeChild(overlay);
   });
-  
+
   // Status select change events
   document.querySelectorAll('.status-select').forEach(select => {
     select.addEventListener('change', function() {
       const index = parseInt(this.getAttribute('data-index'));
       const newStatus = this.value;
-      
+
       // Update status
       staffSuggestions[index].status = newStatus;
       staffSuggestions[index].reviewedBy = sessionStorage.getItem('loggedInUser');
       staffSuggestions[index].reviewDate = new Date().toISOString();
-      
+
       // Save changes
       localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
-      
+
       // Update row class
       this.closest('tr').className = newStatus;
-      
+
       showNotification(`Suggestion status updated to "${newStatus}"`, "success");
     });
   });
-  
+
   // Delete suggestion buttons
   document.querySelectorAll('.delete-suggestion').forEach(btn => {
     btn.addEventListener('click', function() {
       const index = parseInt(this.getAttribute('data-index'));
-      
+
       if (confirm('Are you sure you want to delete this suggestion?')) {
         // Remove the suggestion
         staffSuggestions.splice(index, 1);
-        
+
         // Save changes
         localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
-        
+
         // Refresh panel
         document.body.removeChild(overlay);
         showSuggestionsManagementPanel();
-        
+
         showNotification('Suggestion deleted successfully', 'success');
       }
     });
@@ -2587,7 +2593,7 @@ function resetAllSiteData() {
     showNotification('You do not have permission to perform this action', 'error');
     return;
   }
-  
+
   // Create a backup of critical data
   const backup = {
     timestamp: new Date().toISOString(),
@@ -2595,7 +2601,7 @@ function resetAllSiteData() {
     suggestions: JSON.parse(localStorage.getItem('staffSuggestions') || '[]'),
     backupCreator: sessionStorage.getItem('loggedInUser')
   };
-  
+
   // Backup all user preferences
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
@@ -2603,28 +2609,28 @@ function resetAllSiteData() {
       backup.userData[key] = JSON.parse(localStorage.getItem(key) || '{}');
     }
   }
-  
+
   // Store backup in localStorage
   localStorage.setItem('siteBackup_' + new Date().getTime(), JSON.stringify(backup));
-  
+
   // Clear all localStorage except the backup
   const backupKeys = Object.keys(localStorage).filter(key => key.startsWith('siteBackup_'));
   localStorage.clear();
-  
+
   // Restore backups
   backupKeys.forEach(key => {
     localStorage.setItem(key, backup);
   });
-  
+
   // Keep current user logged in
   const currentUser = sessionStorage.getItem('loggedInUser');
   sessionStorage.setItem('staffLoggedIn', 'true');
   localStorage.setItem('staffLoggedIn', 'true');
   sessionStorage.setItem('loggedInUser', currentUser);
   localStorage.setItem('loggedInUser', currentUser);
-  
+
   showNotification('All site data has been reset. Reloading page...', 'success');
-  
+
   // Reload page after delay
   setTimeout(() => {
     location.reload();
