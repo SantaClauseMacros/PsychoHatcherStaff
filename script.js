@@ -14,7 +14,7 @@ function updateTimezones() {
     try {
       // Get current UTC time
       const now = new Date();
-      
+    
       // Handle different timezone formats
       if (timezone === 'GMT') {
         time = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
