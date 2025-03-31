@@ -36,6 +36,7 @@ header {
   background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: var(--text-light);
   padding: 1.5rem;
+  padding-top: 2rem;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
@@ -2633,6 +2634,8 @@ main section.section-visible {
   transition: all 0.3s ease;
   border: 1px solid #eee;
   position: relative;
+  max-width: 100%;
+  margin-bottom: 1.5rem;
 }
 
 .template-card::after {
