@@ -2392,7 +2392,6 @@ main section.section-visible {
   margin-top: 1.5rem;
   padding: 1rem;
   border-radius: var(--border-radius);
-  display: none;
   animation: fadeIn 0.5s ease;
 }
 
@@ -2409,16 +2408,129 @@ main section.section-visible {
 }
 
 #suggestion-status.success {
-  display: block;
   background-color: #e8f5e9;
   color: #2e7d32;
   border-left: 4px solid #4caf50;
 }
 
 #suggestion-status.error {
-  display: block;
   background-color: #ffebee;
   color: #c62828;
+  border-left: 4px solid #f44336;
+}
+
+.suggestions-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+}
+
+.suggestions-list li {
+  background-color: #fff;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  border-left: 3px solid var(--primary-color);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.suggestions-list li:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestion-author {
+  font-weight: bold;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.suggestion-content {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  margin: 10px 0;
+}
+
+.suggestion-status {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+.suggestion-status.pending {
+  background-color: #fff3e0;
+  color: #ef6c00;
+}
+
+.suggestion-status.approved {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.suggestion-status.rejected {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.suggestion-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.btn-vote {
+  background: none;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  color: #666;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-vote:hover {
+  background-color: #f5f5f5;
+  color: var(--primary-color);
+}
+
+.btn-vote.upvote .fa-thumbs-up {
+  color: #4caf50;
+}
+
+.no-suggestions {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+.suggestions-count {
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+  color: #666;
+  font-size: 0.9rem;
+}
 
   /* Dark Mode Styles */
   .dark-mode {
