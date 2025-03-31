@@ -1651,6 +1651,8 @@ function addAccountButton() {
     accountBtn.id = 'account-btn';
     accountBtn.className = 'btn btn-outline';
     accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
+    accountBtn.style.cursor = 'pointer';
+    accountBtn.style.pointerEvents = 'all';
     accountBtn.addEventListener('click', showAccountSettings);
     
     // Insert before logout button
