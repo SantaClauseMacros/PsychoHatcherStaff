@@ -111,8 +111,8 @@
         }
         
         .avatar-display {
-            width: 100%;
-            height: 100%;
+            width: 150px;
+            height: 150px;
             border-radius: 50%;
             background: #f8f9fa;
             border: 5px solid rgba(255,255,255,0.5);
@@ -360,6 +360,8 @@
             position: relative;
             overflow: hidden;
             transition: all 0.3s ease;
+            aspect-ratio: 1/1;
+            object-fit: cover;
         }
         
         .avatar-preview:hover {
@@ -1154,20 +1156,7 @@
                     <div class="admin-badge-large"><i class="fas fa-crown"></i> Admin Level 3</div>
                 </div>
                 
-                <div class="profile-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">23</div>
-                        <div class="stat-label">Tickets</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">159</div>
-                        <div class="stat-label">Sessions</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">95%</div>
-                        <div class="stat-label">Rating</div>
-                    </div>
-                </div>
+                <!-- Stats section removed -->
                 
                 <div class="profile-links">
                     <a href="#account" class="profile-link active-profile-link">
@@ -1563,6 +1552,52 @@
             
             // Initialize notifications
             initializeNotifications();
+            
+            // Apply saved UI settings
+            applySavedSettings();
+        });
+        
+        function applySavedSettings() {
+            const username = sessionStorage.getItem('loggedInUser');
+            try {
+                // Apply theme from dropdown
+                const savedTheme = localStorage.getItem('selected_theme') || 'red';
+                document.getElementById('theme-select').value = savedTheme;
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                
+                // Apply dark mode setting
+                const darkMode = localStorage.getItem('dark_mode') === 'true';
+                document.getElementById('dark-mode-toggle').checked = darkMode;
+                if (darkMode) {
+                    document.body.classList.add('dark-mode');
+                }
+                
+                // Apply notifications setting
+                const notificationsEnabled = localStorage.getItem('notifications_enabled') !== 'false';
+                document.getElementById('notifications-toggle').checked = notificationsEnabled;
+                
+                // Apply animations setting
+                const animationsEnabled = localStorage.getItem('animations_enabled') !== 'false';
+                document.getElementById('animations-toggle').checked = animationsEnabled;
+                if (!animationsEnabled) {
+                    document.body.classList.add('disable-animations');
+                }
+                
+                // Apply theme style (radio buttons)
+                const themeStyle = localStorage.getItem('theme_style') || 'standard';
+                document.querySelectorAll('.theme-option').forEach(option => {
+                    const radio = option.querySelector('input[type="radio"]');
+                    if (radio.value === themeStyle) {
+                        radio.checked = true;
+                        option.classList.add('selected');
+                    } else {
+                        radio.checked = false;
+                        option.classList.remove('selected');
+                    }
+                });
+            } catch (error) {
+                console.error('Error applying saved settings:', error);
+            }
         });
         
         function initializeAvatarOptions() {
@@ -1629,6 +1664,13 @@
             // In a real app, you would save to a database or API
             // For this demo, we'll use localStorage
             localStorage.setItem(`userSettings_${username}`, JSON.stringify(settings));
+            
+            // Save individual settings for easier access
+            localStorage.setItem('selected_theme', settings.theme);
+            localStorage.setItem('dark_mode', settings.darkMode);
+            localStorage.setItem('notifications_enabled', settings.notifications);
+            localStorage.setItem('animations_enabled', settings.animations);
+            localStorage.setItem('theme_style', settings.themeStyle);
             
             // Apply settings immediately
             applyUserSettings(settings);
@@ -1831,6 +1873,41 @@
                 });
                 this.classList.add('selected');
             });
+        });
+        
+        // UI settings event handlers
+        document.getElementById('dark-mode-toggle').addEventListener('change', function() {
+            if (this.checked) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+        });
+        
+        document.getElementById('notifications-toggle').addEventListener('change', function() {
+            // Store user preference for notifications
+            localStorage.setItem('notifications_enabled', this.checked);
+        });
+        
+        document.getElementById('animations-toggle').addEventListener('change', function() {
+            // Store user preference for animations
+            localStorage.setItem('animations_enabled', this.checked);
+            
+            // Toggle animation classes if needed
+            if (!this.checked) {
+                document.body.classList.add('disable-animations');
+            } else {
+                document.body.classList.remove('disable-animations');
+            }
+        });
+        
+        // Theme select dropdown handler
+        document.getElementById('theme-select').addEventListener('change', function() {
+            const selectedTheme = this.value;
+            // Apply theme immediately
+            document.documentElement.setAttribute('data-theme', selectedTheme);
+            // Store theme preference
+            localStorage.setItem('selected_theme', selectedTheme);
         });
     </script>
 </body>
