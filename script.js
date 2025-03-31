@@ -48,6 +48,95 @@ function updateTimezones() {
       console.error(`Error calculating time for ${timezone}:`, error);
     }
   });
+  
+  // Update last refreshed indicator
+  updateLastRefreshedTime();
+}
+
+// Function to update the last refreshed time indicator
+function updateLastRefreshedTime() {
+  const lastRefreshedElement = document.getElementById('last-refreshed-time');
+  if (lastRefreshedElement) {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds}`;
+  }
+}
+
+// Function to add refresh controls to the staff list section
+function addRefreshControls() {
+  const staffSection = document.getElementById('staff-list');
+  if (!staffSection) return;
+  
+  // Create refresh controls container
+  const refreshControls = document.createElement('div');
+  refreshControls.className = 'refresh-controls';
+  refreshControls.innerHTML = `
+    <div class="refresh-info">
+      <span>Last refreshed at: <span id="last-refreshed-time">--:--:--</span></span>
+      <button id="refresh-times-btn" class="btn btn-sm">
+        <i class="fas fa-sync-alt"></i> Refresh Now
+      </button>
+    </div>
+    <div class="auto-refresh-toggle">
+      <label for="auto-refresh-checkbox">Auto-refresh: </label>
+      <input type="checkbox" id="auto-refresh-checkbox" checked>
+    </div>
+  `;
+  
+  // Insert at the top of the staff list section
+  const staffTitle = staffSection.querySelector('h2');
+  staffSection.insertBefore(refreshControls, staffTitle.nextSibling);
+  
+  // Add event listener for manual refresh
+  document.getElementById('refresh-times-btn').addEventListener('click', function() {
+    updateTimezones();
+    // Add a small animation to the button when clicked
+    this.classList.add('refreshing');
+    setTimeout(() => {
+      this.classList.remove('refreshing');
+    }, 500);
+  });
+  
+  // Initialize auto-refresh functionality
+  initAutoRefresh();
+  
+  // Set initial last refreshed time
+  updateLastRefreshedTime();
+}
+
+// Function to initialize auto-refresh functionality
+function initAutoRefresh() {
+  let refreshInterval;
+  const autoRefreshCheckbox = document.getElementById('auto-refresh-checkbox');
+  
+  // Function to start or stop the interval
+  function toggleAutoRefresh() {
+    if (autoRefreshCheckbox.checked) {
+      // Set to refresh every minute (60000 ms)
+      refreshInterval = setInterval(updateTimezones, 60000);
+      localStorage.setItem('autoRefreshEnabled', 'true');
+    } else {
+      clearInterval(refreshInterval);
+      localStorage.setItem('autoRefreshEnabled', 'false');
+    }
+  }
+  
+  // Add event listener for checkbox
+  autoRefreshCheckbox.addEventListener('change', toggleAutoRefresh);
+  
+  // Initialize based on saved preference or default to enabled
+  const savedPreference = localStorage.getItem('autoRefreshEnabled');
+  if (savedPreference === 'false') {
+    autoRefreshCheckbox.checked = false;
+  } else {
+    autoRefreshCheckbox.checked = true;
+  }
+  
+  // Start auto-refresh if enabled
+  toggleAutoRefresh();
 }
 
 // Mobile navigation enhancement
@@ -60,9 +149,10 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Initialize timezone display if the staff list exists
   if (document.querySelector('.staff-table')) {
+    // Add refresh controls to the staff list section
+    addRefreshControls();
+    // Initial update of timezones
     updateTimezones();
-    // Update times every minute
-    setInterval(updateTimezones, 60000);
   }
 
   if (window.innerWidth <= 768) {
