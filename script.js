@@ -193,6 +193,12 @@ document.addEventListener("DOMContentLoaded", function () {
   
   // Initialize password review panel for Santa
   initializePasswordReviewPanel();
+  
+  // Add account button to header if user is logged in
+  const loggedInUser = sessionStorage.getItem("staffLoggedIn");
+  if (loggedInUser === "true") {
+    addAccountButton();
+  }
 
   // Add mobile menu toggle button
   const nav = document.querySelector("nav");
@@ -1646,20 +1652,22 @@ function initializeAccountCustomization() {
 function addAccountButton() {
   const headerActions = document.querySelector('.header-actions');
   if (headerActions) {
-    // Create account button before logout button
-    const accountBtn = document.createElement('button');
-    accountBtn.id = 'account-btn';
-    accountBtn.className = 'btn btn-outline';
-    accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
-    accountBtn.addEventListener('click', showAccountSettings);
-    
-    // Insert before logout button
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      headerActions.insertBefore(accountBtn, logoutBtn);
-    } else {
-      headerActions.appendChild(accountBtn);
-    }
+    // Check if account button already exists
+    if (!document.getElementById('account-btn')) {
+      // Create account button before logout button
+      const accountBtn = document.createElement('button');
+      accountBtn.id = 'account-btn';
+      accountBtn.className = 'btn btn-outline';
+      accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
+      accountBtn.addEventListener('click', showAccountSettings);
+      
+      // Insert before logout button
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        headerActions.insertBefore(accountBtn, logoutBtn);
+      } else {
+        headerActions.appendChild(accountBtn);
+      }
     
     // Add user welcome with avatar
     const username = sessionStorage.getItem('loggedInUser') || 'Staff';
