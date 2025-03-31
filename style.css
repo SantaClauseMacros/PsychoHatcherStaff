@@ -1131,6 +1131,7 @@ h3 {
   margin-left: 20px;
   z-index: 10;
   position: relative;
+  white-space: nowrap;
 }
 
 .user-avatar {
@@ -1518,11 +1519,11 @@ h3 {
   overflow: hidden;
   border: 2px solid white;
   position: relative;
-  object-fit: contain;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  min-width: 35px;
+  min-height: 35px;
+  max-width: 35px;
+  max-height: 35px;
+  padding: 0;
   top: 0;
 }
 
