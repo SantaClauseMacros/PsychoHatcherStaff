@@ -6,31 +6,38 @@ function updateTimezones() {
     const timezoneCell = row.querySelector('td:nth-child(3)');
     if (!timezoneCell) return;
 
-    const timezone = timezoneCell.textContent.trim();
-    if (!timezone || timezone === '-') return;
+    const timezoneText = timezoneCell.textContent.trim().split(' ')[0]; // Get just the timezone part
+    if (!timezoneText || timezoneText === '-') return;
 
     // Get current time for this timezone
-    let time;
     try {
       // Get current UTC time
       const now = new Date();
+      let time;
+      let offset = 0;
 
       // Handle different timezone formats
-      if (timezone === 'GMT') {
-        time = new Date(now.toLocaleString('en-US', { timeZone: 'GMT' }));
-      } else if (timezone === 'EST') {
-        time = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-      } else if (timezone === 'CST') {
-        time = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
-      } else if (timezone === 'IST') {
-        time = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
-      } else if (timezone === 'AEDT') {
-        time = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
-      } else if (timezone.startsWith('GMT+')) {
-        // Handle GMT+ offsets
-        const offset = parseFloat(timezone.substring(4));
-        time = new Date(now.getTime() + (offset * 60 * 60 * 1000));
+      if (timezoneText === 'GMT') {
+        offset = 0;
+      } else if (timezoneText === 'EST') {
+        offset = -5;
+      } else if (timezoneText === 'CST') {
+        offset = -6;
+      } else if (timezoneText === 'IST') {
+        offset = 5.5;
+      } else if (timezoneText === 'AEDT') {
+        offset = 11;
+      } else if (timezoneText.startsWith('GMT+')) {
+        offset = parseFloat(timezoneText.substring(4));
+      } else if (timezoneText.startsWith('GMT-')) {
+        offset = -parseFloat(timezoneText.substring(4));
+      } else if (timezoneText.includes('+')) {
+        offset = parseFloat(timezoneText.split('+')[1]);
       }
+
+      // Calculate the time with offset
+      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Get UTC time in milliseconds
+      time = new Date(utcTime + (offset * 3600000)); // Apply timezone offset
 
       // Format the time in 12-hour format with AM/PM
       let hours = time.getHours();
@@ -42,13 +49,18 @@ function updateTimezones() {
 
       // Update cell content with timezone and current time
       if (!timezoneCell.innerHTML.includes('(')) {
-        timezoneCell.innerHTML = `${timezone} <span class="current-time">(${formattedTime})</span>`;
+        timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span>`;
       } else {
         // Update just the time part
-        timezoneCell.querySelector('.current-time').textContent = `(${formattedTime})`;
+        const timeSpan = timezoneCell.querySelector('.current-time');
+        if (timeSpan) {
+          timeSpan.textContent = `(${formattedTime})`;
+        } else {
+          timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span>`;
+        }
       }
     } catch (error) {
-      console.error(`Error calculating time for ${timezone}:`, error);
+      console.error(`Error calculating time for ${timezoneText}:`, error);
     }
   });
 
@@ -68,6 +80,17 @@ function updateLastRefreshedTime() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
     lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+    
+    // Add a visual indicator that the refresh occurred
+    lastRefreshedElement.style.color = '#ED1F27';
+    lastRefreshedElement.style.fontWeight = 'bold';
+    
+    setTimeout(() => {
+      lastRefreshedElement.style.color = '';
+      lastRefreshedElement.style.fontWeight = '';
+    }, 2000);
+    
+    console.log("Last refreshed time updated to:", `${hours}:${minutes}:${seconds} ${ampm}`);
   }
 }
 
@@ -101,37 +124,49 @@ function addRefreshControls() {
 
   // Insert at the top of the staff list section
   const staffTitle = staffSection.querySelector('h2');
-  staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
+  if (staffTitle && staffTitle.nextSibling) {
+    staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
+  } else {
+    staffSection.appendChild(refreshContainer);
+  }
 
   // Add event listener for manual refresh with enhanced animation
-  document.getElementById('refresh-times-btn').addEventListener('click', function() {
-    // Visual feedback before starting the refresh
-    this.classList.add('refreshing');
-    const icon = this.querySelector('i');
+  const refreshBtn = document.getElementById('refresh-times-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', function() {
+      // Visual feedback before starting the refresh
+      this.classList.add('refreshing');
+      const icon = this.querySelector('i');
+      if (icon) {
+        // Show loading indicator
+        icon.className = 'fas fa-circle-notch fa-spin';
+      }
+      this.disabled = true;
 
-    // Show loading indicator
-    icon.className = 'fas fa-circle-notch fa-spin';
-    this.disabled = true;
+      // Perform the refresh
+      updateTimezones();
 
-    // Perform the refresh
-    updateTimezones();
-
-    // Add smooth transition back
-    setTimeout(() => {
-      icon.className = 'fas fa-check';
-      this.style.backgroundColor = '#4CAF50';
-
+      // Add smooth transition back
       setTimeout(() => {
-        icon.className = 'fas fa-sync-alt';
-        this.classList.remove('refreshing');
-        this.disabled = false;
-        this.style.backgroundColor = '';
+        if (icon) {
+          icon.className = 'fas fa-check';
+        }
+        this.style.backgroundColor = '#4CAF50';
 
-        // Show notification
-        showNotification("Timezone times refreshed successfully!", "success");
-      }, 1000);
-    }, 800);
-  });
+        setTimeout(() => {
+          if (icon) {
+            icon.className = 'fas fa-sync-alt';
+          }
+          this.classList.remove('refreshing');
+          this.disabled = false;
+          this.style.backgroundColor = '';
+
+          // Show notification
+          showNotification("Timezone times refreshed successfully!", "success");
+        }, 1000);
+      }, 800);
+    });
+  }
 
   // Initialize auto-refresh functionality
   initAutoRefresh();
@@ -139,34 +174,32 @@ function addRefreshControls() {
   // Set initial last refreshed time
   updateLastRefreshedTime();
 
-  // Add subtle pulse animation to the last refreshed time
-  const lastRefreshedTime = document.getElementById('last-refreshed-time');
-  if (lastRefreshedTime) {
-    setInterval(() => {
-      lastRefreshedTime.style.transform = 'scale(1.05)';
-      lastRefreshedTime.style.boxShadow = '0 0 5px rgba(237, 31, 39, 0.3)';
-
-      setTimeout(() => {
-        lastRefreshedTime.style.transform = '';
-        lastRefreshedTime.style.boxShadow = '';
-      }, 500);
-    }, 60000); // Pulse every minute
-  }
+  // Immediately update timezones on page load
+  updateTimezones();
 }
 
 // Function to initialize auto-refresh functionality
 function initAutoRefresh() {
   let refreshInterval;
   const autoRefreshCheckbox = document.getElementById('auto-refresh-checkbox');
+  if (!autoRefreshCheckbox) return;
 
   // Function to start or stop the interval
   function toggleAutoRefresh() {
+    // Clear any existing interval first
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+    
     if (autoRefreshCheckbox.checked) {
       // Set to refresh every minute (60000 ms)
-      refreshInterval = setInterval(updateTimezones, 60000);
+      refreshInterval = setInterval(() => {
+        updateTimezones();
+        console.log("Auto refresh executed at:", new Date().toLocaleTimeString());
+      }, 60000);
       localStorage.setItem('autoRefreshEnabled', 'true');
     } else {
-      clearInterval(refreshInterval);
       localStorage.setItem('autoRefreshEnabled', 'false');
     }
   }
@@ -184,10 +217,15 @@ function initAutoRefresh() {
 
   // Start auto-refresh if enabled
   toggleAutoRefresh();
+  
+  // Force an initial update
+  updateTimezones();
 }
 
 // Mobile navigation enhancement
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOM fully loaded - initializing staff portal");
+  
   // Check for logged in user and initialize account customization
   initializeAccountCustomization();
 
@@ -200,47 +238,59 @@ document.addEventListener("DOMContentLoaded", function () {
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
 
-  // Initialize timezone display if the staff list exists
+  // Initialize timezone display with priority
+  console.log("Checking for staff table");
   if (document.querySelector('.staff-table')) {
-    // Add refresh controls to the staff list section
-    addRefreshControls();
-    // Initial update of timezones
-    updateTimezones();
+    console.log("Staff table found - initializing timezone display");
+    
+    // Delay slightly to ensure DOM is fully processed
+    setTimeout(() => {
+      // Add refresh controls to the staff list section
+      addRefreshControls();
+      
+      // Force initial update of timezones
+      updateTimezones();
+      
+      // Show notification of initialization
+      showNotification("Staff timezone display initialized", "info");
+    }, 500);
   }
 
   if (window.innerWidth <= 768) {
     // Insert before the navigation
-    document.body.insertBefore(mobileMenuBtn, nav);
+    if (nav) {
+      document.body.insertBefore(mobileMenuBtn, nav);
 
-    // Hide nav by default on mobile
-    nav.style.display = "none";
+      // Hide nav by default on mobile
+      nav.style.display = "none";
 
-    // Toggle navigation visibility on mobile
-    mobileMenuBtn.addEventListener("click", function () {
-      if (nav.style.display === "none") {
-        nav.style.display = "block";
-        mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i> Close';
-      } else {
-        nav.style.display = "none";
-        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
-      }
-    });
-
-    // Hide menu when clicking on a nav item
-    const navLinks = document.querySelectorAll("nav a");
-    navLinks.forEach((link) => {
-      link.addEventListener("click", function () {
-        nav.style.display = "none";
-        mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+      // Toggle navigation visibility on mobile
+      mobileMenuBtn.addEventListener("click", function () {
+        if (nav.style.display === "none") {
+          nav.style.display = "block";
+          mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i> Close';
+        } else {
+          nav.style.display = "none";
+          mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+        }
       });
-    });
+
+      // Hide menu when clicking on a nav item
+      const navLinks = document.querySelectorAll("nav a");
+      navLinks.forEach((link) => {
+        link.addEventListener("click", function () {
+          nav.style.display = "none";
+          mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+        });
+      });
+    }
   }
 
   // Add smooth scrolling to navigation links
   document.querySelectorAll("nav a").forEach((anchor) => {
     anchor.addEventListener("click", function (e) {
       const href = this.getAttribute("href");
-      if (href.startsWith("#")) {
+      if (href && href.startsWith("#")) {
         e.preventDefault();
         const targetElement = document.querySelector(href);
         if (targetElement) {
@@ -252,6 +302,16 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+  
+  // Add a direct refresh button click if it exists
+  const refreshButton = document.getElementById('refresh-times-btn');
+  if (refreshButton) {
+    console.log("Found refresh button - triggering initial click");
+    // Force a click after everything is loaded
+    setTimeout(() => {
+      refreshButton.click();
+    }, 1000);
+  }
 });
 
 // Site Security Enhancements
