@@ -888,13 +888,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function submitSuggestion() {
-  const suggestionText = document.getElementById("suggestion-text").value.trim();
+  const suggestionTextarea = document.getElementById("suggestion-text");
+  const suggestionText = suggestionTextarea.value.trim();
   const statusDiv = document.getElementById("suggestion-status");
 
-  if (!suggestionText) {
+  if (suggestionText === '') {
     statusDiv.className = "error";
     statusDiv.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
     statusDiv.style.display = "block";
+    showNotification("Please enter a suggestion before submitting.", "error");
     return;
   }
 
@@ -942,7 +944,7 @@ function submitSuggestion() {
   statusDiv.style.display = "block";
 
   // Clear the input
-  document.getElementById("suggestion-text").value = "";
+  suggestionTextarea.value = "";
 
   // Display all suggestions
   displaySuggestions();
@@ -1185,17 +1187,32 @@ function initializeSuggestionSystem() {
 
     submitSuggestionBtn.addEventListener('click', function() {
         const suggestionTextarea = document.getElementById('suggestion-text');
-        const suggestionText = suggestionTextarea.value;
-
-        if (suggestionText.trim() === '') {
+        const suggestionText = suggestionTextarea.value.trim();
+        const suggestionStatus = document.getElementById('suggestion-status');
+        
+        if (suggestionText === '') {
+            // Show error message in the status div
+            if (suggestionStatus) {
+                suggestionStatus.className = "error";
+                suggestionStatus.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
+                suggestionStatus.style.display = "block";
+            }
+            
             showNotification('Please enter a suggestion before submitting.', 'error');
             return;
         }
 
-        submitNewSuggestion(suggestionText);
-
-        // Clear the input
-        suggestionTextarea.value = '';
+        if (submitNewSuggestion(suggestionText)) {
+            // Clear the input only on success
+            suggestionTextarea.value = '';
+            
+            // Show success in the status div
+            if (suggestionStatus) {
+                suggestionStatus.className = "success";
+                suggestionStatus.innerHTML = "<p>Your suggestion has been submitted successfully!</p>";
+                suggestionStatus.style.display = "block";
+            }
+        }
     });
 }
 
@@ -1204,6 +1221,11 @@ function initializeSuggestionSystem() {
  * @param {string} suggestionText - The text of the suggestion
  */
 function submitNewSuggestion(suggestionText) {
+    if (suggestionText.trim() === '') {
+        showNotification('Please enter a suggestion before submitting.', 'error');
+        return false;
+    }
+    
     // Get current user
     const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
 
@@ -1231,6 +1253,8 @@ function submitNewSuggestion(suggestionText) {
 
     // Update the suggestions list
     displaySuggestions();
+    
+    return true;
 }
 
 /**
