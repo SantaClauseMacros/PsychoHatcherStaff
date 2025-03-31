@@ -46,17 +46,35 @@ function updateTimezones() {
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
       const formattedTime = `${hours}:${minutes} ${ampm}`;
-
-      // Update cell content with timezone and current time
-      if (!timezoneCell.innerHTML.includes('(')) {
-        timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span>`;
+      
+      // Determine time of day indicator
+      let timeOfDay = '';
+      const hour24 = time.getHours();
+      if (hour24 >= 5 && hour24 < 12) {
+        timeOfDay = '<span class="time-day">🌅 Day</span>';
+      } else if (hour24 >= 12 && hour24 < 18) {
+        timeOfDay = '<span class="time-midday">☀️ Mid-day</span>';
       } else {
-        // Update just the time part
+        timeOfDay = '<span class="time-night">🌙 Night</span>';
+      }
+
+      // Update cell content with timezone, current time, and day/night indicator
+      if (!timezoneCell.innerHTML.includes('(')) {
+        timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
+      } else {
+        // Update just the time part and day/night indicator
         const timeSpan = timezoneCell.querySelector('.current-time');
         if (timeSpan) {
+          // Find and remove existing time of day indicator if present
+          const existingTimeOfDay = timezoneCell.querySelector('.time-day, .time-midday, .time-night');
+          if (existingTimeOfDay) {
+            existingTimeOfDay.remove();
+          }
           timeSpan.textContent = `(${formattedTime})`;
+          // Append the time of day indicator after the time span
+          timeSpan.insertAdjacentHTML('afterend', ` ${timeOfDay}`);
         } else {
-          timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span>`;
+          timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
         }
       }
     } catch (error) {
