@@ -1,29 +1,77 @@
-/* Custom Icons for Sections */
+
+/* Advanced Icons with Interactive Effects */
 .section-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: var(--primary-color);
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
   border-radius: 50%;
-  margin-right: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  margin-right: 15px;
+  box-shadow: 0 6px 15px rgba(237, 31, 39, 0.4);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  transform-style: preserve-3d;
+  perspective: 800px;
 }
 
 .section-card:hover .section-icon {
-  transform: rotate(10deg);
-  background-color: var(--primary-dark);
+  transform: scale(1.2) rotate(15deg) translateZ(10px);
+  box-shadow: 0 8px 25px rgba(237, 31, 39, 0.6), 0 0 15px rgba(255, 255, 255, 0.4) inset;
+}
+
+/* Enhanced shine effect */
+.section-icon::before {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: -100%;
+  width: 300%;
+  height: 300%;
+  background: linear-gradient(
+    to right, 
+    rgba(255, 255, 255, 0) 0%, 
+    rgba(255, 255, 255, 0.5) 50%, 
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(45deg);
+  z-index: 1;
+  transition: all 0.8s ease;
+  filter: blur(3px);
+}
+
+.section-card:hover .section-icon::before {
+  left: 100%;
+  top: 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: rotate(45deg) translate(-100%, -100%);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(45deg) translate(100%, 100%);
+    opacity: 0;
+  }
 }
 
 .section-icon svg {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.3));
+  transform: translateZ(5px);
 }
 
-/* Pulsing effect for important sections */
+/* Advanced Pulsing Effect */
 .section-icon.pulse {
   position: relative;
 }
@@ -34,156 +82,562 @@
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
   z-index: -1;
-  animation: pulse-animation 2s infinite;
+  opacity: 0.7;
+  animation: pulse-wave 2.5s infinite cubic-bezier(0.66, 0, 0.34, 1);
 }
 
-@keyframes pulse-animation {
+@keyframes pulse-wave {
   0% {
     transform: scale(1);
-    opacity: 0.6;
+    opacity: 0.7;
   }
-
   50% {
-    transform: scale(1.2);
+    transform: scale(1.8);
     opacity: 0;
   }
-
   100% {
     transform: scale(1);
     opacity: 0;
   }
 }
 
-/* Apply icons to specific sections */
-#guidelines h2 i {
-  color: var(--primary-light);
-}
-
-#staff-list h2 i {
-  color: var(--primary-light);
-}
-
-#troubleshooting h2 i {
-  color: var(--primary-light);
-}
-
-#scripts h2 i {
-  color: var(--primary-light);
-}
-
-#clan-info h2 i {
-  color: var(--primary-light);
-}
-
-#vip-info h2 i {
-  color: var(--primary-light);
-}
-
-#bug-responses h2 i {
-  color: var(--primary-light);
-}
-
-/* Enhance icons with hover effects */
+/* Icon styles for section headers with 3D rotation */
 h2 i {
-  transition: transform 0.3s ease;
+  font-size: 1.8rem;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-color), var(--primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-block;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
 }
 
 h2:hover i {
-  transform: rotate(10deg) scale(1.2);
-}/* Custom Icons for Sections */
-.section-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background-color: var(--primary-color);
-  color: white;
-  border-radius: 50%;
-  margin-right: 10px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  transform: rotate(20deg) scale(1.5) translateZ(20px);
+  filter: drop-shadow(0 5px 12px rgba(237, 31, 39, 0.5));
+  animation: glowing 2s infinite alternate;
 }
 
-.section-card:hover .section-icon {
-  transform: rotate(10deg);
-  background-color: var(--primary-dark);
+@keyframes glowing {
+  0% {
+    filter: drop-shadow(0 5px 12px rgba(237, 31, 39, 0.5));
+  }
+  100% {
+    filter: drop-shadow(0 8px 20px rgba(237, 31, 39, 0.8));
+  }
 }
 
-.section-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* Pulsing effect for important sections */
-.section-icon.pulse {
+/* Super enhanced guide card icons with 3D effect */
+.guide-icon {
+  font-size: 3.2rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   position: relative;
+  transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
 }
 
-.section-icon.pulse::after {
+.guide-card:hover .guide-icon {
+  transform: scale(1.35) translateY(-8px) rotateY(15deg) rotateX(10deg);
+  filter: drop-shadow(0 8px 20px rgba(237, 31, 39, 0.6));
+  animation: float 3s infinite ease-in-out;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: scale(1.35) translateY(-8px) rotateY(15deg) rotateX(10deg);
+  }
+  50% {
+    transform: scale(1.35) translateY(-15px) rotateY(-15deg) rotateX(-5deg);
+  }
+}
+
+.guide-card .guide-icon::after {
   content: '';
   position: absolute;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background-color: var(--primary-color);
+  top: 0;
+  left: 0;
+  background: radial-gradient(circle, rgba(237, 31, 39, 0.2) 0%, rgba(237, 31, 39, 0) 70%);
   z-index: -1;
-  animation: pulse-animation 2s infinite;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.5s ease;
+  filter: blur(10px);
 }
 
-@keyframes pulse-animation {
+.guide-card:hover .guide-icon::after {
+  opacity: 1;
+  transform: scale(2);
+}
+
+/* Interactive glow effect for icon hover */
+.guide-card:hover .guide-icon::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  opacity: 0;
+  filter: blur(15px);
+  animation: pulse-glow 2s infinite alternate;
+}
+
+@keyframes pulse-glow {
   0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-
-  50% {
-    transform: scale(1.2);
     opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
   }
-
   100% {
-    transform: scale(1);
-    opacity: 0;
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(1.2);
   }
 }
 
-/* Apply icons to specific sections */
+/* Apply fancy holographic styles to specific sections */
 #guidelines h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #ff5252, #b71c1c, #ff8a80);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #staff-list h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #9575cd, #5e35b1, #b39ddb);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #troubleshooting h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #4fc3f7, #0288d1, #80d8ff);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #scripts h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #81c784, #388e3c, #a5d6a7);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #clan-info h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #ffb74d, #ef6c00, #ffe0b2);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #vip-info h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #ffdf00, #ffa000, #ffe57f);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
 #bug-responses h2 i {
-  color: var(--primary-light);
+  background-image: linear-gradient(135deg, #f48fb1, #c2185b, #f8bbd0);
+  -webkit-background-clip: text;
+  animation: color-shift 3s infinite alternate;
 }
 
-/* Enhance icons with hover effects */
-h2 i {
-  transition: transform 0.3s ease;
+@keyframes color-shift {
+  0% {
+    filter: hue-rotate(0deg) brightness(1);
+  }
+  100% {
+    filter: hue-rotate(30deg) brightness(1.2);
+  }
 }
 
-h2:hover i {
-  transform: rotate(10deg) scale(1.2);
+/* Mobile mode guide icons with 3D perspective */
+.mobile-guide-icon {
+  margin-right: 12px;
+  font-size: 1.3rem;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #2a2a2a, #111);
+  border-radius: 10px;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transform-style: preserve-3d;
+}
+
+.guide-card:hover .mobile-guide-icon {
+  transform: rotate(15deg) scale(1.15) translateZ(10px);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  box-shadow: 0 6px 15px rgba(237, 31, 39, 0.4);
+}
+
+.mobile-guide-icon::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  top: -100%;
+  left: -100%;
+  transition: all 0.5s ease;
+}
+
+.guide-card:hover .mobile-guide-icon::before {
+  top: 100%;
+  left: 100%;
+}
+
+/* Epic animated guide header icons */
+.guide-header i {
+  margin-right: 12px;
+  font-size: 1.4rem;
+  transform: scale(1);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.guide-header:hover i {
+  transform: scale(1.5) rotate(20deg);
+  animation: vibrate-3d 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  color: var(--primary-color);
+  text-shadow: 0 0 10px rgba(237, 31, 39, 0.5);
+}
+
+@keyframes vibrate-3d {
+  0%, 100% { 
+    transform: scale(1.5) rotate(20deg) translate3d(0, 0, 0); 
+  }
+  20% { 
+    transform: scale(1.5) rotate(15deg) translate3d(-2px, 0, 5px);
+  }
+  40% { 
+    transform: scale(1.5) rotate(25deg) translate3d(2px, 0, 10px);
+  }
+  60% { 
+    transform: scale(1.5) rotate(15deg) translate3d(-2px, 0, 15px);
+  }
+  80% { 
+    transform: scale(1.5) rotate(25deg) translate3d(2px, 0, 5px);
+  }
+}
+
+/* Fancy hover ripple effect for clickable icons */
+.ripple-icon {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1);
+  transition: all 0s;
+}
+
+.ripple-icon:active::after {
+  opacity: 1;
+  transform: scale(20);
+  transition: all 0.6s;
+}
+
+/* Particle effect for special icons */
+.particle-icon {
+  position: relative;
+}
+
+.particle-icon:hover::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    radial-gradient(circle, var(--primary-light) 1px, transparent 1px), 
+    radial-gradient(circle, var(--primary-light) 1px, transparent 1px),
+    radial-gradient(circle, var(--primary-light) 1px, transparent 1px),
+    radial-gradient(circle, var(--primary-light) 1px, transparent 1px);
+  background-size: 10px 10px;
+  background-position: 0 0, 5px 5px, 10px 10px, 15px 15px;
+  animation: particles-out 1s forwards;
+  pointer-events: none;
+}
+
+@keyframes particles-out {
+  0% {
+    background-size: 0px 0px;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    background-size: 40px 40px;
+    opacity: 0;
+  }
+}
+
+/* Neon glow effect for important icons */
+.neon-icon {
+  text-shadow: 0 0 5px var(--primary-light), 
+               0 0 10px var(--primary-light), 
+               0 0 20px var(--primary-light);
+  animation: neon-pulse 2s infinite alternate;
+}
+
+@keyframes neon-pulse {
+  0% {
+    text-shadow: 0 0 5px var(--primary-light), 
+                 0 0 10px var(--primary-light), 
+                 0 0 20px var(--primary-light);
+  }
+  100% {
+    text-shadow: 0 0 10px var(--primary-light), 
+                 0 0 20px var(--primary-light), 
+                 0 0 30px var(--primary-light),
+                 0 0 40px var(--primary-light);
+  }
+}
+
+/* 3D flip effect for interactive icons */
+.flip-icon {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-icon:hover {
+  transform: rotateY(180deg);
+}
+
+/* Futuristic holo effect for special sections */
+.holo-icon {
+  position: relative;
+  overflow: visible;
+}
+
+.holo-icon::before {
+  content: '';
+  position: absolute;
+  top: -30%;
+  left: -30%;
+  width: 160%;
+  height: 160%;
+  background: linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.3) 40%,
+    rgba(255, 255, 255, 0.2) 60%,
+    rgba(255, 255, 255, 0.1) 80%
+  );
+  filter: blur(10px);
+  opacity: 0;
+  transform-origin: center;
+  transform: scale(0.8) rotate(0deg);
+  transition: all 0.5s ease;
+  z-index: -1;
+  border-radius: 50%;
+}
+
+.holo-icon:hover::before {
+  opacity: 1;
+  transform: scale(1) rotate(45deg);
+  animation: holo-rotate 3s linear infinite;
+}
+
+@keyframes holo-rotate {
+  0% {
+    transform: rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: rotate(360deg);
+    opacity: 0.5;
+  }
+}
+
+/* Custom mode-specific icon styles with unique animations */
+.rankup-icon {
+  background-image: linear-gradient(135deg, #ff5252, #b71c1c);
+  animation: rankup-pulse 3s infinite;
+}
+
+@keyframes rankup-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 82, 82, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 82, 82, 0.8), 0 0 40px rgba(255, 82, 82, 0.4);
+  }
+}
+
+.digging-icon {
+  background-image: linear-gradient(135deg, #8d6e63, #4e342e);
+  animation: digging-shake 3s infinite;
+}
+
+@keyframes digging-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px) rotate(-3deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px) rotate(3deg);
+  }
+}
+
+.fishing-icon {
+  background-image: linear-gradient(135deg, #4fc3f7, #0288d1);
+  animation: fishing-bob 4s infinite ease-in-out;
+}
+
+@keyframes fishing-bob {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.clan-icon {
+  background-image: linear-gradient(135deg, #ffb74d, #ef6c00);
+  animation: clan-glow 3s infinite alternate;
+}
+
+@keyframes clan-glow {
+  0% {
+    box-shadow: 0 0 10px rgba(255, 183, 77, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 30px rgba(255, 183, 77, 0.8), 0 0 50px rgba(255, 183, 77, 0.4);
+  }
+}
+
+.treehouse-icon {
+  background-image: linear-gradient(135deg, #81c784, #388e3c);
+  animation: treehouse-grow 5s infinite alternate;
+}
+
+@keyframes treehouse-grow {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.15);
+  }
+}
+
+/* Interactive guide-specific icon improvements */
+.guide-container .fas,
+.guide-container .far,
+.guide-container .fab {
+  transform-style: preserve-3d;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.guide-container:hover .fas,
+.guide-container:hover .far,
+.guide-container:hover .fab {
+  transform: rotateY(360deg) scale(1.2);
+  animation: icon-pop 0.5s ease forwards;
+}
+
+@keyframes icon-pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.4);
+  }
+  75% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1.2);
+  }
+}
+
+/* Fancy tech-inspired hexagon icons */
+.hex-icon {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 15px auto;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hex-icon::before {
+  content: '';
+  position: absolute;
+  width: 90%;
+  height: 90%;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  z-index: -1;
+  opacity: 0.5;
+  filter: blur(8px);
+  transition: all 0.4s ease;
+}
+
+.hex-icon:hover {
+  transform: translateY(-5px) rotate(15deg);
+  box-shadow: 0 15px 30px rgba(237, 31, 39, 0.3);
+}
+
+.hex-icon:hover::before {
+  transform: scale(1.4);
+  opacity: 0.3;
+  filter: blur(15px);
+}
+
+.hex-icon i {
+  color: white;
+  font-size: 1.8rem;
+  transition: all 0.3s ease;
+}
+
+.hex-icon:hover i {
+  transform: scale(1.2);
+  animation: hex-pulse 1s infinite alternate;
+}
+
+@keyframes hex-pulse {
+  0% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+  }
+  100% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.5);
+  }
 }
