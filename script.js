@@ -46,7 +46,7 @@ function updateTimezones() {
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
       const formattedTime = `${hours}:${minutes} ${ampm}`;
-      
+
       // Determine time of day indicator
       let timeOfDay = '';
       const hour24 = time.getHours();
@@ -98,16 +98,16 @@ function updateLastRefreshedTime() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
     lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
-    
+
     // Add a visual indicator that the refresh occurred
     lastRefreshedElement.style.color = '#ED1F27';
     lastRefreshedElement.style.fontWeight = 'bold';
-    
+
     setTimeout(() => {
       lastRefreshedElement.style.color = '';
       lastRefreshedElement.style.fontWeight = '';
     }, 2000);
-    
+
     console.log("Last refreshed time updated to:", `${hours}:${minutes}:${seconds} ${ampm}`);
   }
 }
@@ -209,7 +209,7 @@ function initAutoRefresh() {
       clearInterval(refreshInterval);
       refreshInterval = null;
     }
-    
+
     if (autoRefreshCheckbox.checked) {
       // Set to refresh every minute (60000 ms)
       refreshInterval = setInterval(() => {
@@ -235,7 +235,7 @@ function initAutoRefresh() {
 
   // Start auto-refresh if enabled
   toggleAutoRefresh();
-  
+
   // Force an initial update
   updateTimezones();
 }
@@ -243,12 +243,18 @@ function initAutoRefresh() {
 // Mobile navigation enhancement
 document.addEventListener("DOMContentLoaded", function () {
   console.log("DOM fully loaded - initializing staff portal");
-  
+
   // Check for logged in user and initialize account customization
   initializeAccountCustomization();
 
   // Initialize password review panel for Santa
   initializePasswordReviewPanel();
+  
+  // Initialize scroll animations
+  initScrollAnimations();
+  
+  // Initialize mobile-friendly menu
+  initializeMobileMenu();
 
   // Add mobile menu toggle button
   const nav = document.querySelector("nav");
@@ -260,15 +266,15 @@ document.addEventListener("DOMContentLoaded", function () {
   console.log("Checking for staff table");
   if (document.querySelector('.staff-table')) {
     console.log("Staff table found - initializing timezone display");
-    
+
     // Delay slightly to ensure DOM is fully processed
     setTimeout(() => {
       // Add refresh controls to the staff list section
       addRefreshControls();
-      
+
       // Force initial update of timezones
       updateTimezones();
-      
+
       // Show notification of initialization
       showNotification("Staff timezone display initialized", "info");
     }, 500);
@@ -320,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
-  
+
   // Add a direct refresh button click if it exists
   const refreshButton = document.getElementById('refresh-times-btn');
   if (refreshButton) {
@@ -1829,10 +1835,10 @@ function initializePasswordReviewPanel() {
     passwordRequestsBtn.innerHTML = '<i class="fas fa-key"></i> Password Requests';
     passwordRequestsBtn.style.cursor = 'pointer';
     passwordRequestsBtn.href = 'password-requests.html'; // Direct link to password requests page
-    
+
     // Add santa-only class for styling
     passwordRequestsBtn.classList.add('santa-only');
-    
+
     // Insert before logout button
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
@@ -1840,17 +1846,17 @@ function initializePasswordReviewPanel() {
     } else {
       headerActions.appendChild(passwordRequestsBtn);
     }
-    
+
     // Add notification badge if there are pending requests
     const pendingRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]')
       .filter(req => req.status === 'pending').length;
-    
+
     if (pendingRequests > 0) {
       const badge = document.createElement('span');
       badge.className = 'notification-badge';
       badge.textContent = pendingRequests;
       passwordRequestsBtn.appendChild(badge);
-      
+
       // Add a notification
       setTimeout(() => {
         showNotification(`You have ${pendingRequests} pending password change request${pendingRequests > 1 ? 's' : ''}`, 'info');
@@ -2361,6 +2367,94 @@ function showSuggestionsManagementPanel() {
       }
     });
   });
+}
+
+/**
+ * Initialize enhanced mobile menu for better navigation
+ */
+function initializeMobileMenu() {
+  const nav = document.querySelector('nav');
+  if (!nav) return;
+  
+  // Add mobile class for styling
+  if (window.innerWidth <= 768) {
+    nav.classList.add('mobile-nav');
+    
+    // Create dropdown categorization for mobile
+    const navItems = nav.querySelectorAll('li a');
+    let categories = {
+      'Main': [],
+      'Guides': [],
+      'Support': [],
+      'Admin': []
+    };
+    
+    // Categorize nav items
+    navItems.forEach(item => {
+      const href = item.getAttribute('href');
+      const text = item.textContent;
+      
+      if (href.includes('guide-')) {
+        categories['Guides'].push(item.parentElement);
+      } else if (href.includes('#script') || href.includes('#bug') || href.includes('#template')) {
+        categories['Support'].push(item.parentElement);
+      } else if (href.includes('account') || href.includes('password')) {
+        categories['Admin'].push(item.parentElement);
+      } else {
+        categories['Main'].push(item.parentElement);
+      }
+    });
+    
+    // Clear existing nav
+    nav.querySelector('ul').innerHTML = '';
+    
+    // Rebuild nav with categories for mobile
+    Object.entries(categories).forEach(([category, items]) => {
+      if (items.length === 0) return;
+      
+      const categoryHeader = document.createElement('li');
+      categoryHeader.className = 'nav-category';
+      categoryHeader.innerHTML = `<span>${category}</span>`;
+      nav.querySelector('ul').appendChild(categoryHeader);
+      
+      items.forEach(item => {
+        nav.querySelector('ul').appendChild(item.cloneNode(true));
+      });
+    });
+    
+    // Add swipe gesture support for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+    
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+    
+    const handleSwipe = () => {
+      if (touchEndX < touchStartX && touchStartX - touchEndX > 100) {
+        // Swipe left - close menu
+        nav.style.display = 'none';
+        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
+        if (mobileMenuBtn) {
+          mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
+        }
+      }
+      
+      if (touchEndX > touchStartX && touchEndX - touchStartX > 100) {
+        // Swipe right - open menu
+        nav.style.display = 'block';
+        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
+        if (mobileMenuBtn) {
+          mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i> Close';
+        }
+      }
+    };
+  }
 }
 
 /**
