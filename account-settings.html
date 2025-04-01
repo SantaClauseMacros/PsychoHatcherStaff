@@ -1192,7 +1192,7 @@
                                 <div class="back">Edit<br />Profile</div>
                             </div>
                         </div>
-                        <div class="username" id="profile-username">Santa</div>
+                        <div class="username" id="profile-username"><script>document.write(sessionStorage.getItem('loggedInUser') || 'User')</script></div>
                         <div class="admin-badge-large">
                             <i class="fas fa-crown"></i> Admin Level 3
                         </div>
@@ -1425,7 +1425,7 @@
                                         type="text"
                                         id="display-name"
                                         class="form-control"
-                                        value="Santa"
+                                        value="<script>document.write(sessionStorage.getItem('loggedInUser') || 'User')</script>"
                                         placeholder="Your display name"
                                     />
                                 </div>
