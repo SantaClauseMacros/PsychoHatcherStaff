@@ -1,0 +1,308 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ED1F27">
+    <title>All Knowledge Base Contributions - Psycho Hatcher Staff Portal</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="icons.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body class="kb-contributions-page">
+    <header>
+        <div class="logo-container">
+            <img id="logo-preview" src="PsychoHatcher.png" alt="Psycho Hatcher Logo">
+            <div class="logo-upload">
+                <label for="logo-upload" class="upload-btn">
+                    <i class="fas fa-upload"></i> Upload Logo
+                </label>
+                <input type="file" id="logo-upload" accept="image/*">
+            </div>
+        </div>
+        <h1>Knowledge Base Contributions</h1>
+        <div class="header-actions">
+            <button id="back-btn" class="btn btn-outline" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Back
+            </button>
+            <button id="logout-btn" class="btn btn-outline">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html#guidelines">Guidelines</a></li>
+            <li><a href="index.html#staff-list">Staff List</a></li>
+            <li><a href="guides.html">Guides Portal</a></li>
+            <li><a href="index.html#scripts">Support Scripts</a></li>
+            <li><a href="index.html#bug-responses">Bug Responses</a></li>
+            <li><a href="index.html#clan-info">Clan Info</a></li>
+            <li><a href="index.html#vip-info">VIP Info</a></li>
+            <li><a href="index.html#interview-questions">Interview Questions</a></li>
+            <li><a href="index.html#templates">Templates</a></li>
+            <li><a href="index.html#suggestions">Suggestions</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <div class="section-card">
+            <div class="category-header">
+                <h2><i class="fas fa-book"></i> All Knowledge Base Contributions</h2>
+                <a href="kb-contribute.html?guide=general&name=General%20Knowledge%20Base" class="btn">
+                    <i class="fas fa-plus-circle"></i> New Contribution
+                </a>
+            </div>
+
+            <div class="contributions-filter">
+                <input type="text" id="filter-contributions" placeholder="Search contributions..." class="contributions-search">
+                <select id="filter-status" class="filter-select">
+                    <option value="all">All Statuses</option>
+                    <option value="pending">Pending Review</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                </select>
+                <select id="filter-guide" class="filter-select">
+                    <option value="all">All Guides</option>
+                </select>
+            </div>
+
+            <div id="all-contributions-list" class="all-contributions-list">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Loading contributions...
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Psycho Hatcher Staff Portal. All rights reserved.</p>
+        <div class="footer-logo">
+            <img id="footer-logo" src="PsychoHatcher.png" alt="Psycho Hatcher">
+        </div>
+    </footer>
+
+    <script src="kb-contribution.js"></script>
+    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAllContributions();
+            
+            // Add filter functionality
+            const searchInput = document.getElementById('filter-contributions');
+            const statusFilter = document.getElementById('filter-status');
+            const guideFilter = document.getElementById('filter-guide');
+            
+            if (searchInput && statusFilter && guideFilter) {
+                searchInput.addEventListener('input', filterContributions);
+                statusFilter.addEventListener('change', filterContributions);
+                guideFilter.addEventListener('change', filterContributions);
+            }
+        });
+        
+        function loadAllContributions() {
+            const contributionsList = document.getElementById('all-contributions-list');
+            if (!contributionsList) return;
+            
+            // Get all contributions
+            const contributions = JSON.parse(localStorage.getItem('kbContributions')) || [];
+            
+            if (contributions.length === 0) {
+                contributionsList.innerHTML = '<p class="no-contributions">No contributions yet. Be the first to suggest new knowledge base content!</p>';
+                return;
+            }
+            
+            // Sort by date (newest first)
+            contributions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Group by guide
+            const groupedContributions = {};
+            contributions.forEach(contribution => {
+                if (!groupedContributions[contribution.guideName]) {
+                    groupedContributions[contribution.guideName] = [];
+                }
+                groupedContributions[contribution.guideName].push(contribution);
+            });
+            
+            // Update guide filter options
+            const guideFilter = document.getElementById('filter-guide');
+            if (guideFilter) {
+                Object.keys(groupedContributions).forEach(guide => {
+                    const option = document.createElement('option');
+                    option.value = guide;
+                    option.textContent = guide;
+                    guideFilter.appendChild(option);
+                });
+            }
+            
+            // Build HTML
+            let html = '';
+            
+            // Check if user is an admin
+            const isAdmin = checkIfAdmin();
+            
+            // Add contributions by guide
+            for (const guide in groupedContributions) {
+                html += `<div class="guide-contributions" data-guide="${guide}">
+                    <h3 class="guide-name">${guide} (${groupedContributions[guide].length})</h3>
+                    <div class="contributions-grid">`;
+                
+                groupedContributions[guide].forEach(contribution => {
+                    // Format date
+                    const date = new Date(contribution.date);
+                    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                    
+                    // Status badge
+                    let statusClass = 'pending';
+                    let statusText = 'Pending Review';
+                    
+                    if (contribution.status === 'approved') {
+                        statusClass = 'approved';
+                        statusText = 'Approved';
+                    } else if (contribution.status === 'rejected') {
+                        statusClass = 'rejected';
+                        statusText = 'Rejected';
+                    }
+                    
+                    html += `
+                        <div class="detailed-contribution-card ${statusClass}" data-id="${contribution.id}" data-status="${contribution.status}">
+                            <div class="contribution-header">
+                                <span class="contribution-type">${getTypeLabel(contribution.type)}</span>
+                                <span class="contribution-guide">${contribution.guideName}</span>
+                            </div>
+                            <h4 class="contribution-title">${contribution.title}</h4>
+                            <div class="contribution-content">
+                                <p>${contribution.content}</p>
+                            </div>
+                            <div class="contribution-reason">
+                                <strong>Reason:</strong> ${contribution.reason || 'No reason provided'}
+                            </div>
+                            <div class="contribution-meta">
+                                <span class="contribution-author">${contribution.author}</span>
+                                <span class="contribution-date">${formattedDate}</span>
+                            </div>
+                            <div class="contribution-status ${statusClass}">${statusText}</div>
+                            
+                            ${isAdmin && contribution.status === 'pending' ? `
+                                <div class="admin-actions">
+                                    <button class="btn-sm approve-contribution" data-id="${contribution.id}">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn-sm reject-contribution" data-id="${contribution.id}">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                </div>
+                            ` : ''}
+                            
+                            <div class="contribution-actions">
+                                <button class="btn-vote upvote" data-id="${contribution.id}">
+                                    <i class="fas fa-thumbs-up"></i> <span class="vote-count">${contribution.votes}</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            }
+            
+            // Update the container
+            contributionsList.innerHTML = html;
+            
+            // Add voting functionality
+            const voteButtons = contributionsList.querySelectorAll('.btn-vote');
+            voteButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    handleContributionVote(this.getAttribute('data-id'), this);
+                });
+            });
+            
+            // Add admin action handlers
+            if (isAdmin) {
+                const approveButtons = contributionsList.querySelectorAll('.approve-contribution');
+                const rejectButtons = contributionsList.querySelectorAll('.reject-contribution');
+                
+                approveButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateContributionStatus(this.getAttribute('data-id'), 'approved');
+                        // Update UI
+                        const card = this.closest('.detailed-contribution-card');
+                        card.classList.remove('pending');
+                        card.classList.add('approved');
+                        card.querySelector('.contribution-status').className = 'contribution-status approved';
+                        card.querySelector('.contribution-status').textContent = 'Approved';
+                        this.parentNode.remove();
+                    });
+                });
+                
+                rejectButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        updateContributionStatus(this.getAttribute('data-id'), 'rejected');
+                        // Update UI
+                        const card = this.closest('.detailed-contribution-card');
+                        card.classList.remove('pending');
+                        card.classList.add('rejected');
+                        card.querySelector('.contribution-status').className = 'contribution-status rejected';
+                        card.querySelector('.contribution-status').textContent = 'Rejected';
+                        this.parentNode.remove();
+                    });
+                });
+            }
+        }
+        
+        function getTypeLabel(type) {
+            switch(type) {
+                case 'addition':
+                    return '<i class="fas fa-plus-circle"></i> Addition';
+                case 'correction':
+                    return '<i class="fas fa-edit"></i> Correction';
+                case 'faq':
+                    return '<i class="fas fa-question-circle"></i> FAQ';
+                default:
+                    return '<i class="fas fa-info-circle"></i> Information';
+            }
+        }
+        
+        function filterContributions() {
+            const searchTerm = document.getElementById('filter-contributions').value.toLowerCase();
+            const statusValue = document.getElementById('filter-status').value;
+            const guideValue = document.getElementById('filter-guide').value;
+            
+            const cards = document.querySelectorAll('.detailed-contribution-card');
+            const guideContainers = document.querySelectorAll('.guide-contributions');
+            
+            // Reset guide visibility
+            guideContainers.forEach(guide => {
+                guide.style.display = 'block';
+            });
+            
+            // Filter cards
+            cards.forEach(card => {
+                const title = card.querySelector('.contribution-title').textContent.toLowerCase();
+                const content = card.querySelector('.contribution-content').textContent.toLowerCase();
+                const status = card.getAttribute('data-status');
+                const guide = card.closest('.guide-contributions').getAttribute('data-guide');
+                
+                // Check if card matches all filters
+                const matchesSearch = title.includes(searchTerm) || content.includes(searchTerm);
+                const matchesStatus = statusValue === 'all' || status === statusValue;
+                const matchesGuide = guideValue === 'all' || guide === guideValue;
+                
+                card.style.display = (matchesSearch && matchesStatus && matchesGuide) ? 'block' : 'none';
+            });
+            
+            // Hide empty guide sections
+            guideContainers.forEach(guide => {
+                const visibleCards = guide.querySelectorAll('.detailed-contribution-card[style="display: block;"]');
+                if (visibleCards.length === 0) {
+                    guide.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

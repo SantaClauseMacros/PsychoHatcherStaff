@@ -249,10 +249,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize password review panel for Santa
   initializePasswordReviewPanel();
-  
+
   // Initialize scroll animations
   initScrollAnimations();
-  
+
   // Initialize mobile-friendly menu
   initializeMobileMenu();
 
@@ -962,7 +962,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let templateText = "";
       paragraphs.forEach((p) => {
         // Remove quotes from the text
-        let cleanText = p.textContent.replace(/["']/g, '');
+        letcleanText = p.textContent.replace(/["']/g, '');
         templateText += cleanText + "\n\n";
       });
 
@@ -1375,6 +1375,46 @@ function hasAdminPermission(requiredLevel) {
     return userLevel >= requiredLevel;
 }
 
+// Function to hide all admin-related content from non-admin users
+function hideAdminContentFromNonAdmins() {
+    // Return early if user is an admin
+    if (isAdmin()) {
+        console.log("Admin user detected, showing admin content");
+        return;
+    }
+
+    console.log("Non-admin user detected, hiding admin content");
+
+    // Hide admin panels in account settings
+    const adminPanels = document.querySelectorAll('.admin-panel, #admin');
+    adminPanels.forEach(panel => {
+        if (panel) panel.style.display = 'none';
+    });
+
+    // Hide admin tabs in navigation
+    const adminTabs = document.querySelectorAll('a[href*="admin"], a[href*="password-requests"]');
+    adminTabs.forEach(tab => {
+        if (tab) tab.style.display = 'none';
+    });
+
+    // Hide admin tools and actions
+    const adminTools = document.querySelectorAll('.admin-tools, .admin-actions, .admin-section');
+    adminTools.forEach(tool => {
+        if (tool) tool.style.display = 'none';
+    });
+
+    // Hide admin buttons in knowledge base contributions
+    const adminButtons = document.querySelectorAll('.approve-contribution, .reject-contribution');
+    adminButtons.forEach(button => {
+        if (button) button.style.display = 'none';
+    });
+
+    // Remove admin-only class elements
+    document.querySelectorAll('.admin-only, .santa-only').forEach(element => {
+        if (element) element.style.display = 'none';
+    });
+}
+
 /**
  * Delete a suggestion by index
  * @param {number} index - The index of the suggestion to delete
@@ -1406,111 +1446,111 @@ function deleteSuggestion(index) {
  * Display all suggestions in the suggestion status area
  */
 function displaySuggestions() {
-    const suggestionStatus = document.getElementById('suggestion-status');
-    if (!suggestionStatus) return;
+  const suggestionStatus = document.getElementById('suggestion-status');
+  if (!suggestionStatus) return;
 
-    // Get suggestions from local storage
-    const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  // Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
 
-    if (staffSuggestions.length === 0) {
-        suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
-        return;
+  if (staffSuggestions.length === 0) {
+    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
+    return;
+  }
+
+  // Sort suggestions by date (newest first)
+  staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Build HTML for suggestions list
+  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  suggestionsHTML += '<ul class="suggestions-list">';
+
+  // Check if current user is admin
+  const userIsAdmin = isAdmin();
+
+  staffSuggestions.forEach((suggestion, index) => {
+    // Format date for better readability
+    const date = new Date(suggestion.date);
+    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+
+    // Create status badge
+    let statusClass = '';
+    let statusText = '';
+
+    switch(suggestion.status) {
+      case 'approved':
+        statusClass = 'approved';
+        statusText = 'Approved';
+        break;
+      case 'rejected':
+        statusClass = 'rejected';
+        statusText = 'Rejected';
+        break;
+      default:
+        statusClass = 'pending';
+        statusText = 'Under Review';
     }
 
-    // Sort suggestions by date (newest first)
-    staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    // Add delete button for admins
+    const adminControls = userIsAdmin ? 
+      `<button class="btn-delete" data-index="${index}">
+        <i class="fas fa-trash"></i> Delete
+      </button>` : '';
 
-    // Build HTML for suggestions list
-    let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
-    suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
-    suggestionsHTML += '<ul class="suggestions-list">';
+    suggestionsHTML += `
+      <li>
+        <div class="suggestion-header">
+          <span class="suggestion-author">${suggestion.author}</span>
+          <span class="suggestion-date">${formattedDate}</span>
+        </div>
+        <div class="suggestion-content">${suggestion.text}</div>
+        <div class="suggestion-footer">
+          <span class="suggestion-status ${statusClass}">${statusText}</span>
+          <div class="suggestion-actions">
+            <button class="btn-vote upvote" data-index="${index}">
+              <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
+            </button>
+            ${adminControls}
+          </div>
+        </div>
+      </li>
+    `;
+  });
 
-    // Check if current user is admin
-    const userIsAdmin = isAdmin();
+  suggestionsHTML += '</ul>';
 
-    staffSuggestions.forEach((suggestion, index) => {
-        // Format date for better readability
-        const date = new Date(suggestion.date);
-        const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+  // Update the DOM
+  suggestionStatus.innerHTML = suggestionsHTML;
 
-        // Create status badge
-        let statusClass = '';
-        let statusText = '';
-
-        switch(suggestion.status) {
-            case 'approved':
-                statusClass = 'approved';
-                statusText = 'Approved';
-                break;
-            case 'rejected':
-                statusClass = 'rejected';
-                statusText = 'Rejected';
-                break;
-            default:
-                statusClass = 'pending';
-                statusText = 'Under Review';
-        }
-
-        // Add delete button for admins
-        const adminControls = userIsAdmin ? 
-            `<button class="btn-delete" data-index="${index}">
-                <i class="fas fa-trash"></i> Delete
-            </button>` : '';
-
-        suggestionsHTML += `
-            <li>
-                <div class="suggestion-header">
-                    <span class="suggestion-author">${suggestion.author}</span>
-                    <span class="suggestion-date">${formattedDate}</span>
-                </div>
-                <div class="suggestion-content">${suggestion.text}</div>
-                <div class="suggestion-footer">
-                    <span class="suggestion-status ${statusClass}">${statusText}</span>
-                    <div class="suggestion-actions">
-                        <button class="btn-vote upvote" data-index="${index}">
-                            <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
-                        </button>
-                        ${adminControls}
-                    </div>
-                </div>
-            </li>
-        `;
-    });
-
-    suggestionsHTML += '</ul>';
-
-    // Update the DOM
-    suggestionStatus.innerHTML = suggestionsHTML;
-
-    // Add event listeners for voting and admin actions
-    attachVoteEventListeners();
-    if (userIsAdmin) {
-        attachAdminEventListeners();
-    }
+  // Add event listeners for voting and admin actions
+  attachVoteEventListeners();
+  if (userIsAdmin) {
+    attachAdminEventListeners();
+  }
 }
 
 /**
  * Attach admin event listeners (delete buttons)
  */
 function attachAdminEventListeners() {
-    document.querySelectorAll('.btn-delete').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.getAttribute('data-index'));
-            deleteSuggestion(index);
-        });
+  document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      deleteSuggestion(index);
     });
+  });
 }
 
 /**
  * Attach vote event listeners to suggestion vote buttons
  */
 function attachVoteEventListeners() {
-    document.querySelectorAll('.btn-vote').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const index = parseInt(this.getAttribute('data-index'));
-            handleVote(index, this);
-        });
+  document.querySelectorAll('.btn-vote').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      handleVote(index, this);
     });
+  });
 }
 
 /**
@@ -1519,34 +1559,34 @@ function attachVoteEventListeners() {
  * @param {HTMLElement} buttonElement - The vote button element
  */
 function handleVote(index, buttonElement) {
-    const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions'));
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions'));
 
-    // Get the current user
-    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  // Get the current user
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
 
-    // Check if user already voted
-    if (staffSuggestions[index].votedUsers && staffSuggestions[index].votedUsers.includes(currentUser)) {
-        showNotification('You have already voted on this suggestion.', 'error');
-        return;
-    }
+  // Check if user already voted
+  if (staffSuggestions[index].votedUsers && staffSuggestions[index].votedUsers.includes(currentUser)) {
+    showNotification('You have already voted on this suggestion.', 'error');
+    return;
+  }
 
-    // Increment vote count and add user to voted list
-    staffSuggestions[index].votes++;
+  // Increment vote count and add user to voted list
+  staffSuggestions[index].votes++;
 
-    // Initialize votedUsers array if it doesn't exist
-    if (!staffSuggestions[index].votedUsers) {
-        staffSuggestions[index].votedUsers = [];
-    }
+  // Initialize votedUsers array if it doesn't exist
+  if (!staffSuggestions[index].votedUsers) {
+    staffSuggestions[index].votedUsers = [];
+  }
 
-    staffSuggestions[index].votedUsers.push(currentUser);
+  staffSuggestions[index].votedUsers.push(currentUser);
 
-    // Save updated suggestions
-    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+  // Save updated suggestions
+  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
 
-    // Update the display
-    buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
+  // Update the display
+  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
 
-    showNotification('Your vote has been counted!', 'success');
+  showNotification('Your vote has been counted!', 'success');
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1716,6 +1756,9 @@ document.addEventListener('DOMContentLoaded', function() {
   if (faqQuestions.length > 0) {
     faqQuestions[0].click();
   }
+
+  // Hide admin content if not an admin
+  hideAdminContentFromNonAdmins();
 });
 
 // Account customization system
@@ -1941,9 +1984,7 @@ function populatePasswordRequests() {
     btn.addEventListener('click', function() {
       handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'approved');
     });
-  });
-
-  document.querySelectorAll('.btn-reject').forEach(btn => {
+  });  document.querySelectorAll('.btn-reject').forEach(btn => {
     btn.addEventListener('click', function() {
       handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'rejected');
     });
@@ -2375,11 +2416,11 @@ function showSuggestionsManagementPanel() {
 function initializeMobileMenu() {
   const nav = document.querySelector('nav');
   if (!nav) return;
-  
+
   // Add mobile class for styling
   if (window.innerWidth <= 768) {
     nav.classList.add('mobile-nav');
-    
+
     // Create dropdown categorization for mobile
     const navItems = nav.querySelectorAll('li a');
     let categories = {
@@ -2388,12 +2429,12 @@ function initializeMobileMenu() {
       'Support': [],
       'Admin': []
     };
-    
+
     // Categorize nav items
     navItems.forEach(item => {
       const href = item.getAttribute('href');
       const text = item.textContent;
-      
+
       if (href.includes('guide-')) {
         categories['Guides'].push(item.parentElement);
       } else if (href.includes('#script') || href.includes('#bug') || href.includes('#template')) {
@@ -2404,37 +2445,37 @@ function initializeMobileMenu() {
         categories['Main'].push(item.parentElement);
       }
     });
-    
+
     // Clear existing nav
     nav.querySelector('ul').innerHTML = '';
-    
+
     // Rebuild nav with categories for mobile
     Object.entries(categories).forEach(([category, items]) => {
       if (items.length === 0) return;
-      
+
       const categoryHeader = document.createElement('li');
       categoryHeader.className = 'nav-category';
       categoryHeader.innerHTML = `<span>${category}</span>`;
       nav.querySelector('ul').appendChild(categoryHeader);
-      
+
       items.forEach(item => {
         nav.querySelector('ul').appendChild(item.cloneNode(true));
       });
     });
-    
+
     // Add swipe gesture support for mobile
     let touchStartX = 0;
     let touchEndX = 0;
-    
+
     document.addEventListener('touchstart', e => {
       touchStartX = e.changedTouches[0].screenX;
     }, false);
-    
+
     document.addEventListener('touchend', e => {
       touchEndX = e.changedTouches[0].screenX;
       handleSwipe();
     }, false);
-    
+
     const handleSwipe = () => {
       if (touchEndX < touchStartX && touchStartX - touchEndX > 100) {
         // Swipe left - close menu
@@ -2444,7 +2485,7 @@ function initializeMobileMenu() {
           mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
         }
       }
-      
+
       if (touchEndX > touchStartX && touchEndX - touchStartX > 100) {
         // Swipe right - open menu
         nav.style.display = 'block';
