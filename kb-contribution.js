@@ -39,17 +39,21 @@ function addContributeButton(guideCard) {
   const guideId = guideCard.id;
   const guideName = guideCard.querySelector('h3').textContent;
   
+  // Check if button already exists
+  if (btnContainer.querySelector('.contribute-btn')) return;
+  
   const contributeBtn = document.createElement('button');
   contributeBtn.className = 'btn btn-sm contribute-btn';
   contributeBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Contribute';
   contributeBtn.setAttribute('data-guide', guideId);
   contributeBtn.setAttribute('data-name', guideName);
   
-  contributeBtn.addEventListener('click', function(e) {
+  // Use direct click function
+  contributeBtn.onclick = function(e) {
     e.preventDefault();
     e.stopPropagation();
     showContributionForm(this.getAttribute('data-guide'), this.getAttribute('data-name'));
-  });
+  };
   
   btnContainer.appendChild(contributeBtn);
 }
@@ -79,17 +83,35 @@ function addKnowledgeBaseSection(container) {
   container.appendChild(kbSection);
   
   // Add event listener
+  // Add event listener immediately and also with a fallback timeout
+  const openKbBtn = document.getElementById('open-kb-btn');
+  if (openKbBtn) {
+    openKbBtn.onclick = function() {
+      showContributionForm('general', 'General Knowledge Base');
+    };
+  }
+  
+  // Fallback with timeout in case DOM isn't fully loaded
   setTimeout(() => {
-    const openKbBtn = document.getElementById('open-kb-btn');
-    if (openKbBtn) {
-      openKbBtn.addEventListener('click', function() {
+    const delayedBtn = document.getElementById('open-kb-btn');
+    if (delayedBtn) {
+      delayedBtn.onclick = function() {
         showContributionForm('general', 'General Knowledge Base');
-      });
+      };
     }
-  }, 100);
+  }, 500);
 }
 
 function showContributionForm(guideId, guideName) {
+  console.log("Opening contribution form for:", guideName);
+  
+  // Remove any existing overlays or forms
+  const existingOverlay = document.querySelector('.kb-contribution-overlay');
+  if (existingOverlay) existingOverlay.remove();
+  
+  const existingForm = document.querySelector('.kb-contribution-form');
+  if (existingForm) existingForm.remove();
+  
   // Create overlay
   const overlay = document.createElement('div');
   overlay.className = 'kb-contribution-overlay';
@@ -99,38 +121,72 @@ function showContributionForm(guideId, guideName) {
   form.className = 'kb-contribution-form';
   form.innerHTML = `
     <div class="form-header">
-      <h3><i class="fas fa-book"></i> Contribute to ${guideName}</h3>
+      <h3><i class="fas fa-lightbulb"></i> Share Your Knowledge</h3>
       <button class="close-btn"><i class="fas fa-times"></i></button>
     </div>
     
+    <div class="contribution-info-bar">
+      <div class="contribution-guide-name">
+        <i class="fas fa-book"></i> Contributing to: <strong>${guideName}</strong>
+      </div>
+      <div class="contribution-author">
+        <i class="fas fa-user"></i> Posted as: <strong>${sessionStorage.getItem('loggedInUser') || 'Anonymous'}</strong>
+      </div>
+    </div>
+    
     <div class="form-body">
-      <div class="form-group">
-        <label for="contribution-type">Contribution Type:</label>
-        <select id="contribution-type">
-          <option value="addition">New Information/Tip</option>
-          <option value="correction">Correction to Existing Content</option>
-          <option value="faq">Add FAQ Item</option>
-        </select>
+      <div class="form-section">
+        <div class="form-group">
+          <label for="contribution-type">
+            <i class="fas fa-tag"></i> Contribution Type
+          </label>
+          <select id="contribution-type" class="enhanced-select">
+            <option value="addition">🔆 New Information/Tip</option>
+            <option value="correction">🔧 Correction to Existing Content</option>
+            <option value="faq">❓ Add FAQ Item</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="contribution-title">
+            <i class="fas fa-heading"></i> Title/Subject
+          </label>
+          <input type="text" id="contribution-title" class="enhanced-input" placeholder="Give your contribution a clear title...">
+        </div>
       </div>
       
-      <div class="form-group">
-        <label for="contribution-title">Title/Subject:</label>
-        <input type="text" id="contribution-title" placeholder="Brief title for your contribution">
+      <div class="form-divider">
+        <span>Content Details</span>
       </div>
       
-      <div class="form-group">
-        <label for="contribution-content">Content:</label>
-        <textarea id="contribution-content" rows="6" placeholder="Detailed information for your contribution..."></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="contribution-reason">Reason for Contribution:</label>
-        <textarea id="contribution-reason" rows="3" placeholder="Why should this be added to the knowledge base?"></textarea>
+      <div class="form-section">
+        <div class="form-group">
+          <label for="contribution-content">
+            <i class="fas fa-edit"></i> Content
+          </label>
+          <div class="textarea-container">
+            <textarea id="contribution-content" rows="6" placeholder="Share your knowledge or suggestion in detail..."></textarea>
+            <div class="formatting-tips">
+              <i class="fas fa-info-circle"></i> Tips: Be clear, concise, and factual. Include steps if applicable.
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="contribution-reason">
+            <i class="fas fa-question-circle"></i> Why is this important?
+          </label>
+          <textarea id="contribution-reason" rows="3" placeholder="Explain why this information would be valuable for the knowledge base..."></textarea>
+        </div>
       </div>
       
       <div class="form-actions">
-        <button class="btn btn-secondary cancel-btn">Cancel</button>
-        <button class="btn submit-contribution" data-guide="${guideId}">Submit Contribution</button>
+        <button class="btn btn-outline cancel-btn">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button class="btn submit-contribution pulse-animation" data-guide="${guideId}">
+          <i class="fas fa-paper-plane"></i> Submit Contribution
+        </button>
       </div>
     </div>
   `;
@@ -159,12 +215,24 @@ function showContributionForm(guideId, guideName) {
     }, 300);
   }
   
+  // Prevent form from closing when clicking inside it
+  form.addEventListener('click', function(e) {
+    e.stopPropagation();
+  });
+  
   closeBtn.addEventListener('click', closeForm);
   cancelBtn.addEventListener('click', closeForm);
   overlay.addEventListener('click', closeForm);
   
   submitBtn.addEventListener('click', function() {
-    submitContribution(guideId, guideName);
+    // Add loading state to button
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+    this.disabled = true;
+    
+    // Small delay to show the loading state before submitting
+    setTimeout(() => {
+      submitContribution(guideId, guideName);
+    }, 800);
   });
 }
 
