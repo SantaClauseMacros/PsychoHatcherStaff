@@ -336,6 +336,50 @@ document.addEventListener("DOMContentLoaded", function () {
       refreshButton.click();
     }, 1000);
   }
+  
+  // Add an easily visible account settings button to help users find settings
+  const headerActions = document.querySelector('.header-actions');
+  if (headerActions && !document.getElementById('account-settings-btn')) {
+    const accountBtn = document.createElement('a');
+    accountBtn.id = 'account-settings-btn';
+    accountBtn.className = 'btn btn-primary';
+    accountBtn.href = 'account-settings.html';
+    accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> Account Settings';
+    accountBtn.style.background = '#ED1F27';
+    accountBtn.style.color = 'white';
+    accountBtn.style.fontWeight = 'bold';
+    accountBtn.style.marginRight = '10px';
+    accountBtn.style.position = 'relative';
+    accountBtn.style.zIndex = '999';
+    
+    // Add a small attention-grabbing animation
+    accountBtn.style.animation = 'pulse-attention 2s infinite';
+    
+    // Add the button to the header
+    if (headerActions.firstChild) {
+      headerActions.insertBefore(accountBtn, headerActions.firstChild);
+    } else {
+      headerActions.appendChild(accountBtn);
+    }
+    
+    // Add the animation style if it doesn't exist
+    if (!document.getElementById('attention-animation')) {
+      const style = document.createElement('style');
+      style.id = 'attention-animation';
+      style.textContent = `
+        @keyframes pulse-attention {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(237, 31, 39, 0.7); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    // Show a notification about where to find settings
+    setTimeout(() => {
+      showNotification("Click on 'Account Settings' to access your profile and appearance settings!", "info");
+    }, 2000);
+  }
 });
 
 // Site Security Enhancements
