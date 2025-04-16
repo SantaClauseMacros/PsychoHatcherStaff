@@ -1978,6 +1978,46 @@ input:checked + .slider:before {
   box-shadow: 0 0 0 3px rgba(237, 31, 39, 0.1);
 }
 
+/* Clan Info Layout */
+.clan-info-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.clan-info-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.promotion-section {
+  border-right: 1px solid #eee;
+  padding-right: 20px;
+}
+
+.requirements-section {
+  padding-left: 10px;
+}
+
+@media (max-width: 768px) {
+  .clan-info-container {
+    flex-direction: column;
+  }
+  
+  .promotion-section {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    padding-right: 0;
+    padding-bottom: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .requirements-section {
+    padding-left: 0;
+  }
+}
+
 .btn-sm {
   padding: 8px 12px;
   font-size: 0.9rem;
