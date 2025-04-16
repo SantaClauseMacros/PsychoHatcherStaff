@@ -2582,6 +2582,8 @@ You can still get featured with a paid promo:
 🖼️ We'll place your clan banner on our most visited pages
 📣 We'll make a post about your clan that stays up for 30 days
 
+### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
+
 Let me know if you're interested or have any questions! 😎`;
             }
         });
