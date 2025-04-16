@@ -136,8 +136,8 @@ function setupTimezoneConverter() {
   function getTimezoneOffset(timezone) {
     // Return offset in hours
     if (timezone === 'GMT') return 0;
-    if (timezone === 'EST') return ; // Eastern Standard Time
-    if (timezone === 'CST') return ; // Central Standard Time
+    if (timezone === 'EST') return 0; // Eastern Standard Time
+    if (timezone === 'CST') return -1; // Central Standard Time
     if (timezone === 'IST') return 5.5;
     if (timezone === 'AEDT') return 11;
     
