@@ -4430,6 +4430,7 @@ main section.section-visible {
     --card-bg: #1e1e1e;
     --text-light: #ffffff;
     color: var(--text-light);
+    background-color: var(--bg-light);
   }
 
   .dark-mode .section-card,
@@ -4441,6 +4442,32 @@ main section.section-visible {
   .dark-mode .template-card {
     background-color: #1e1e1e;
     border-color: #333;
+  }
+  
+  .dark-mode h2, 
+  .dark-mode h3, 
+  .dark-mode h4 {
+    color: #f0f0f0;
+  }
+  
+  .dark-mode a {
+    color: #4d9dff;
+  }
+  
+  .dark-mode .staff-table thead {
+    background-color: #333;
+  }
+  
+  .dark-mode .staff-table td {
+    border-bottom: 1px solid #444;
+  }
+  
+  .dark-mode .staff-table tbody tr:nth-child(even) {
+    background-color: #2a2a2a;
+  }
+  
+  .dark-mode .staff-table tbody tr:hover {
+    background-color: #333;
   }
 
   .dark-mode .staff-list li,
