@@ -109,8 +109,6 @@ function updateLastRefreshedTime() {
     }, 2000);
 
     console.log("Last refreshed time updated to:", `${hours}:${minutes}:${seconds} ${ampm}`);
-  } else {
-    console.log("Could not find last-refreshed-time element, skipping update");
   }
 }
 
@@ -258,12 +256,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize mobile-friendly menu
   initializeMobileMenu();
 
-  // Remove any existing search containers
-  const searchContainer = document.getElementById("kb-search-container");
-  if (searchContainer) {
-    searchContainer.remove();
-  }
-
   // Add mobile menu toggle button
   const nav = document.querySelector("nav");
   const mobileMenuBtn = document.createElement("button");
@@ -344,50 +336,6 @@ document.addEventListener("DOMContentLoaded", function () {
       refreshButton.click();
     }, 1000);
   }
-
-  // Add an easily visible account settings button to help users find settings
-  const headerActions = document.querySelector('.header-actions');
-  if (headerActions && !document.getElementById('account-settings-btn')) {
-    const accountBtn = document.createElement('a');
-    accountBtn.id = 'account-settings-btn';
-    accountBtn.className = 'btn btn-primary';
-    accountBtn.href = 'account-settings.html';
-    accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> Account Settings';
-    accountBtn.style.background = '#ED1F27';
-    accountBtn.style.color = 'white';
-    accountBtn.style.fontWeight = 'bold';
-    accountBtn.style.marginRight = '10px';
-    accountBtn.style.position = 'relative';
-    accountBtn.style.zIndex = '999';
-
-    // Add a small attention-grabbing animation
-    accountBtn.style.animation = 'pulse-attention 2s infinite';
-
-    // Add the button to the header
-    if (headerActions.firstChild) {
-      headerActions.insertBefore(accountBtn, headerActions.firstChild);
-    } else {
-      headerActions.appendChild(accountBtn);
-    }
-
-    // Add the animation style if it doesn't exist
-    if (!document.getElementById('attention-animation')) {
-      const style = document.createElement('style');
-      style.id = 'attention-animation';
-      style.textContent = `
-        @keyframes pulse-attention {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.05); box-shadow: 0 0 10px rgba(237, 31, 39, 0.7); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-
-    // Show a notification about where to find settings
-    setTimeout(() => {
-      showNotification("Click on 'Account Settings' to access your profile and appearance settings!", "info");
-    }, 2000);
-  }
 });
 
 // Site Security Enhancements
@@ -407,9 +355,9 @@ document.addEventListener("copy", function (e) {
   }
 });
 
-// Logo references
-let logoPreview = document.getElementById("logo-preview");
-let footerLogo = document.getElementById("footer-logo");
+// Set static logo
+const logoPreview = document.getElementById("logo-preview");
+const footerLogo = document.getElementById("footer-logo");
 
 // Logo switcher functionality with color themes - using the new specified image formats
 const logos = {
@@ -478,7 +426,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   // Initialize suggestion system
-  //initializeSuggestionSystem();
+  initializeSuggestionSystem();
 });
 
 // Function to switch logo throughout the site and update color theme
@@ -950,7 +898,8 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add interactive checklists for guide pages
-document.addEventListener('DOMContentLoaded', function() {  const guidePage = document.querySelector('.guide-content.active');
+document.addEventListener('DOMContentLoaded', function() {
+  const guidePage = document.querySelector('.guide-content.active');
 
   if (guidePage) {
     const checklistItems = guidePage.querySelectorAll('.checklist-item input[type="checkbox"]');
@@ -990,8 +939,309 @@ function initializeTooltips() {
   });
 }
 
-// Removed suggestion system functions
+// Suggestion system
+document.addEventListener("DOMContentLoaded", function () {
+  const submitBtn = document.getElementById("submit-suggestion");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", submitSuggestion);
+  }
 
+  // Initialize suggestion area if it exists
+  const suggestionStatus = document.getElementById("suggestion-status");
+  if (suggestionStatus) {
+    displaySuggestions();
+  }
+
+  // Copy template functionality
+  document.querySelectorAll(".copy-template").forEach((button) => {
+    button.addEventListener("click", function () {
+      const templateType = this.getAttribute("data-template");
+      const contentDiv = this.closest(".template-content");
+      const paragraphs = contentDiv.querySelectorAll("p");
+
+      let templateText = "";
+      paragraphs.forEach((p) => {
+        // Remove quotes from the text
+        letcleanText = p.textContent.replace(/["']/g, '');
+        templateText += cleanText + "\n\n";
+      });
+
+      navigator.clipboard.writeText(templateText.trim()).then(() => {
+        showNotification("Template copied to clipboard!", "success");
+
+        // Visual feedback
+        this.textContent = "Copied!";
+        setTimeout(() => {
+          this.textContent = "Copy Template";
+        }, 2000);
+      });
+    });
+  });
+});
+
+function submitSuggestion() {
+  const suggestionTextarea = document.getElementById("suggestion-text");
+  const suggestionText = suggestionTextarea.value.trim();
+  const statusDiv = document.getElementById("suggestion-status");
+
+  if (suggestionText === '') {
+    statusDiv.className = "error";
+    statusDiv.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
+    statusDiv.style.display = "block";
+    showNotification("Please enter a suggestion before submitting.", "error");
+    return;
+  }
+
+  // Get current user or use default
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+
+  // Format the suggestion with date, time and user
+  const now = new Date();
+  const formattedDate = now.toLocaleString();
+
+  // Get existing suggestions or create new array
+  let suggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+
+  // Create new suggestion object
+  const newSuggestion = {
+    text: suggestionText,
+    author: currentUser,
+    date: now.toISOString(),
+    status: 'pending',
+    votes: 0,
+    votedUsers: []
+  };
+
+  // Add to suggestions array
+  suggestions.push(newSuggestion);
+
+  // Save to localStorage
+  localStorage.setItem('staffSuggestions', JSON.stringify(suggestions));
+
+  // Show success message
+  statusDiv.className = "success";
+  statusDiv.innerHTML = `
+    <p>Your suggestion has been saved! Thank you for your contribution.</p>
+    <div class="suggestion-item">
+      <div class="suggestion-header">
+        <span class="suggestion-author">${currentUser}</span>
+        <span class="suggestion-date">${formattedDate}</span>
+      </div>
+      <div class="suggestion-content">${suggestionText}</div>
+      <div class="suggestion-footer">
+        <span class="suggestion-status pending">Under Review</span>
+      </div>
+    </div>
+  `;
+  statusDiv.style.display = "block";
+
+  // Clear the input
+  suggestionTextarea.value = "";
+
+  // Display all suggestions
+  displaySuggestions();
+
+  showNotification("Suggestion submitted successfully!", "success");
+}
+
+// Function to display all suggestions
+function displaySuggestions() {
+  const suggestionStatus = document.getElementById("suggestion-status");
+  if (!suggestionStatus) return;
+
+  //// Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+
+  if (staffSuggestions.length === 0) {
+    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
+    return;
+  }
+
+  // Sort suggestions by date (newest first)
+  staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Build HTML for suggestions list
+  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  suggestionsHTML += '<ul class="suggestions-list">';
+
+  staffSuggestions.forEach((suggestion, index) => {
+    // Format date for better readability
+    const date = new Date(suggestion.date);
+    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+
+    // Create status badge
+    let statusClass = '';
+    let statusText = '';
+
+    switch(suggestion.status) {
+      case 'approved':
+        statusClass = 'approved';
+        statusText = 'Approved';
+        break;
+      case 'rejected':
+        statusClass = 'rejected';
+        statusText = 'Rejected';
+        break;
+      default:
+        statusClass = 'pending';
+        statusText = 'Under Review';
+    }
+
+    suggestionsHTML += `
+      <li>
+        <div class="suggestion-header">
+          <span class="suggestion-author">${suggestion.author}</span>
+          <span class="suggestion-date">${formattedDate}</span>
+        </div>
+        <div class="suggestion-content">${suggestion.text}</div>
+        <div class="suggestion-footer">
+          <span class="suggestion-status ${statusClass}">${statusText}</span>
+          <div class="suggestion-actions">
+            <button class="btn-vote upvote" data-index="${index}">
+              <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
+            </button>
+          </div>
+        </div>
+      </li>
+    `;
+  });
+
+  suggestionsHTML += '</ul>';
+
+  // Update the DOM
+  suggestionStatus.innerHTML = suggestionsHTML;
+
+  // Add event listeners for voting
+  document.querySelectorAll('.btn-vote').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      handleVote(index, this);
+    });
+  });
+}
+
+// Handle voting on suggestions
+function handleVote(index, buttonElement) {
+  // Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  if (!staffSuggestions[index]) return;
+
+  // Get the current user
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+
+  // Initialize votedUsers array if it doesn't exist
+  if (!staffSuggestions[index].votedUsers) {
+    staffSuggestions[index].votedUsers = [];
+  }
+
+  // Check if user already voted
+  if (staffSuggestions[index].votedUsers.includes(currentUser)) {
+    showNotification('You have already voted on this suggestion.', 'info');
+    return;
+  }
+
+  // Increment vote count and add user to voted list
+  staffSuggestions[index].votes++;
+  staffSuggestions[index].votedUsers.push(currentUser);
+
+  // Save updated suggestions
+  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+
+  // Update the display
+  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
+
+  showNotification('Your vote has been counted!', 'success');
+}
+
+// Add guide content toggle with smooth animation
+document.querySelectorAll(".toggle-guide").forEach((button) => {
+  button.addEventListener("click", function () {
+    const guideType = this.getAttribute("data-guide");
+    const contentElement = document.getElementById(`${guideType}-content`);
+
+    // Smooth toggle
+    if (contentElement.classList.contains("active")) {
+      contentElement.style.maxHeight = contentElement.scrollHeight + "px";
+      setTimeout(() => {
+        contentElement.style.maxHeight = "0px";
+        setTimeout(() => {
+          contentElement.classList.remove("active");
+          this.textContent = "View Guide";
+        }, 300);
+      }, 10);
+    } else {
+      contentElement.classList.add("active");
+      contentElement.style.maxHeight = "0px";
+      setTimeout(() => {
+        contentElement.style.maxHeight = contentElement.scrollHeight + "px";
+        this.textContent = "Hide Guide";
+      }, 10);
+    }
+  });
+});
+
+// Progressive content loading for better performance
+document.addEventListener("DOMContentLoaded", function () {
+  const sections = document.querySelectorAll("main section");
+
+  // Create intersection observer
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("section-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      threshold: 0.1,
+    },
+  );
+
+  // Observe each section
+  sections.forEach((section) => {
+    observer.observe(section);
+  });
+});
+
+// Add copy functionality to credential boxes
+document.querySelectorAll(".credential-box p").forEach((credential) => {
+  const originalHTML = credential.innerHTML;
+  const textToCopy =
+    credential.textContent.split(":")[1]?.trim() || credential.textContent;
+
+  credential.innerHTML = `${originalHTML} <button class="copy-btn" data-copy="${textToCopy}"><i class="fas fa-copy"></i></button>`;
+});
+
+// Initialize copy buttons
+document.addEventListener("click", function (e) {
+  if (e.target.closest(".copy-btn")) {
+    const button = e.target.closest(".copy-btn");
+    const textToCopy = button.getAttribute("data-copy");
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      // Change icon temporarily
+      const originalIcon = button.innerHTML;
+      button.innerHTML = '<i class="fas fa-check"></i>';
+
+      // Show notification
+      showNotification("Copied to clipboard!", "success");
+
+      // Reset icon after a delay
+      setTimeout(() => {
+        button.innerHTML = originalIcon;
+      }, 2000);
+    });
+  }
+});
+
+
+/**
+ * Suggestion System for Psycho Hatcher Staff Portal
+ * Handles submission, display, and management of staff suggestions
+ */
 
 // Admin accounts with enhanced permissions
 const ADMIN_ACCOUNTS = ['Santa', 'Dr. Mo Psycho', 'WaterMelone', 'Waktool'];
@@ -1002,6 +1252,109 @@ const ADMIN_PERMISSIONS = {
   'WaterMelone': 2, // Senior admin
   'Waktool': 1 // Standard admin
 };
+
+// Suppress error messages from images
+window.addEventListener('error', function(e) {
+  // Check if the error is related to image loading or decoding
+  if (e.message && (
+      e.message.includes('decode file') || 
+      e.message.includes('Unable to decode') || 
+      e.message.includes('NON-UTF8'))) {
+    // Prevent the error from showing in console
+    e.preventDefault();
+    e.stopPropagation();
+    return true;
+  }
+}, true);
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize suggestion system if on the correct page
+    initializeSuggestionSystem();
+
+    // Display existing suggestions
+    if (document.getElementById('suggestion-status')) {
+        displaySuggestions();
+    }
+});
+
+/**
+ * Initialize the suggestion submission system
+ */
+function initializeSuggestionSystem() {
+    const submitSuggestionBtn = document.getElementById('submit-suggestion');
+    if (!submitSuggestionBtn) return;
+
+    submitSuggestionBtn.addEventListener('click', function() {
+        const suggestionTextarea = document.getElementById('suggestion-text');
+        const suggestionText = suggestionTextarea.value.trim();
+        const suggestionStatus = document.getElementById('suggestion-status');
+
+        if (suggestionText === '') {
+            // Show error message in the status div
+            if (suggestionStatus) {
+                suggestionStatus.className = "error";
+                suggestionStatus.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
+                suggestionStatus.style.display = "block";
+            }
+
+            showNotification('Please enter a suggestion before submitting.', 'error');
+            return;
+        }
+
+        if (submitNewSuggestion(suggestionText)) {
+            // Clear the input only on success
+            suggestionTextarea.value = '';
+
+            // Show success in the status div
+            if (suggestionStatus) {
+                suggestionStatus.className = "success";
+                suggestionStatus.innerHTML = "<p>Your suggestion has been submitted successfully!</p>";
+                suggestionStatus.style.display = "block";
+            }
+        }
+    });
+}
+
+/**
+ * Submit a new suggestion to the system
+ * @param {string} suggestionText - The text of the suggestion
+ */
+function submitNewSuggestion(suggestionText) {
+    if (suggestionText.trim() === '') {
+        showNotification('Please enter a suggestion before submitting.', 'error');
+        return false;
+    }
+
+    // Get current user
+    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+
+    // Create suggestion object with metadata
+    const newSuggestion = {
+        text: suggestionText,
+        author: currentUser,
+        date: new Date().toISOString(),
+        status: 'pending', // pending, approved, rejected
+        votes: 0,
+        votedUsers: []
+    };
+
+    // Get existing suggestions or initialize empty array
+    let staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+
+    // Add new suggestion to array
+    staffSuggestions.push(newSuggestion);
+
+    // Save back to local storage
+    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+
+    // Show success message
+    showNotification('Your suggestion has been submitted successfully!', 'success');
+
+    // Update the suggestions list
+    displaySuggestions();
+
+    return true;
+}
 
 /**
  * Check if current user is an admin
@@ -1062,331 +1415,69 @@ function hideAdminContentFromNonAdmins() {
     });
 }
 
-// Add copy functionality to credential boxes
-document.querySelectorAll(".credential-box p").forEach((credential) => {
-  const originalHTML = credential.innerHTML;
-  const textToCopy =
-    credential.textContent.split(":")[1]?.trim() || credential.textContent;
+/**
+ * Delete a suggestion by index
+ * @param {number} index - The index of the suggestion to delete
+ */
+function deleteSuggestion(index) {
+    // Verify admin status
+    if (!isAdmin()) {
+        showNotification('Only administrators can delete suggestions.', 'error');
+        return;
+    }
 
-  credential.innerHTML = `${originalHTML} <button class="copy-btn" data-copy="${textToCopy}"><i class="fas fa-copy"></i></button>`;
-});
+    // Get suggestions
+    let staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
 
-// Initialize copy buttons
-document.addEventListener("click", function (e) {
-  if (e.target.closest(".copy-btn")) {
-    const button = e.target.closest(".copy-btn");
-    const textToCopy = button.getAttribute("data-copy");
+    // Remove the suggestion
+    staffSuggestions.splice(index, 1);
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      // Change icon temporarily
-      const originalIcon = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check"></i>';
+    // Save back to localStorage
+    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
 
-      // Show notification
-      showNotification("Copied to clipboard!", "success");
+    // Show success message
+    showNotification('Suggestion deleted successfully.', 'success');
 
-      // Reset icon after a delay
-      setTimeout(() => {
-        button.innerHTML = originalIcon;
-      }, 2000);
-    });
-  }
-});
-
+    // Update the display
+    displaySuggestions();
+}
 
 /**
- * Suggestion System for Psycho Hatcher Staff Portal
- * Handles submission, display, and management of staff suggestions
+ * Display all suggestions in the suggestion status area
  */
+function displaySuggestions() {
+  const suggestionStatus = document.getElementById('suggestion-status');
+  if (!suggestionStatus) return;
 
-// Suppress error messages from images
-window.addEventListener('error', function(e) {
-  // Check if the error is related to image loading or decoding
-  if (e.message && (
-      e.message.includes('decode file') || 
-      e.message.includes('Unable to decode') || 
-      e.message.includes('NON-UTF8'))) {
-    // Prevent the error from showing in console
-    e.preventDefault();
-    e.stopPropagation();
-    return true;
-  }
-}, true);
+  // Get suggestions from local storage
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize suggestion system if on the correct page
-    //initializeSuggestionSystem();
-
-    // Display existing suggestions
-    //if (document.getElementById('suggestion-status')) {
-    //    displaySuggestions();
-    //}
-});
-
-
-// Copy templates to clipboard
-    document.querySelectorAll('.copy-template').forEach(button => {
-        button.addEventListener('click', function() {
-            const templateId = this.dataset.template;
-            let textToCopy = '';
-
-            // Get text based on template ID
-            switch(templateId) {
-                case 'clan-alliance':
-                    textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
-
-### ✅ Clan Requirements:
-
-- 🌟 Your server must have 1,000+ members
-
-- 💬 Your community must be actively engaged and friendly
-## ----------
-### 📣 Promotion & Listing Conditions:
-
-- 📢 Our promo post must be placed in a channel accessible to everyone
-
-- 🔔 You must ping @ everyone, @ here, or a notification role
-## ----------
-### 💸 Don't Meet the Requirements? No Problem!
-
-You can still get featured with a paid promo:
-
-- 💵 Just $5 to bypass all requirements
-
-- 🖼️ We'll place your clan banner on our most visited pages
-
-- 📣 We'll make a post about your clan that stays up for 30 days
-
-Let me know if you're interested or have any questions! 😎`;
-                    break;
-                case 'bubblegum-guide':
-                    textToCopy = `💥 How to Use Bubble Gum Simulator Infinity (PC Guide)
-
-Welcome to the ultimate setup guide for Bubble Gum Simulator Infinity! Follow these simple steps to make sure your game and macros run smoothly.
-
-
-🖥️ PC Settings
-• Display Scaling
-– Set your display scaling to 100%.
-– You can adjust this by going to:
-Right-click Desktop > Display Settings > Scale and Layout > 100%
-• Roblox Installation
-– Make sure you've installed Roblox directly from the official site:
-https://roblox.com/
-– Do NOT use the Microsoft Store version!
-• Full Screen Mode
-– Turn off Full Screen in Roblox.
-– This mode only works when Roblox is in Windowed Mode.
-
-
-🎮 In-Game Settings
-• Camera
-– After joining Bubble Gum Simulator, do not move your camera.
-– The macro depends on the default camera angle.
-• Zone Requirement
-– Make sure you've unlocked the Current Best Zone — this mode only works there!
-• World Teleport
-– You must have the World Teleport feature unlocked.
-• Transparency
-– full is a must.
-
-
-⚙️ Macro Settings
-• Speed Selection
-– Choose your macro speed based on your mastery level:
-Level 1-4: Pick the speed that matches your setup for optimal performance.
-• Auto-Sell Loops
-– Set how often the macro will sell gum:
-5-7 loops is recommended for stable results.
-• Claim Rewards
-– Tick this option ON if you want the macro to automatically claim your playtime rewards.`;
-                    break;
-            }
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showNotification("Template copied to clipboard!", "success");
-
-                // Visual feedback
-                this.textContent = "Copied!";
-                setTimeout(() => {
-                  this.textContent = "Copy Template";
-                }, 2000);
-            });
-        });
-    });
-
-// Account customization system
-function initializeAccountCustomization() {
-  // Add account button to header if user is logged in
-  const loggedInUser = sessionStorage.getItem("staffLoggedIn");
-  if (loggedInUser === "true") {
-    addAccountButton();
-    loadUserProfileData();
-  }
-}
-
-// Add account settings button to header
-function addAccountButton() {
-  const headerActions = document.querySelector('.header-actions');
-  if (headerActions) {
-    // Create account button before logout button
-    const accountBtn = document.createElement('a');
-    accountBtn.id = 'account-btn';
-    accountBtn.className = 'btn btn-outline';
-    accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
-    accountBtn.style.cursor = 'pointer';
-    accountBtn.style.pointerEvents = 'all';
-    accountBtn.style.zIndex = '100';
-    accountBtn.href = 'account-settings.html'; // Direct link to account settings page
-
-    // Insert before logout button
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      headerActions.insertBefore(accountBtn, logoutBtn);
-    } else {
-      headerActions.appendChild(accountBtn);
-    }
-
-    // Add user welcome with avatar
-    const username = sessionStorage.getItem('loggedInUser') || 'Staff';
-    const userPrefs = getUserPreferences();
-
-    const userWelcome = document.createElement('div');
-    userWelcome.className = 'user-welcome';
-
-    const userAvatar = document.createElement('div');
-    userAvatar.className = 'user-avatar';
-    userAvatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
-    userAvatar.style.borderRadius = '50%';
-    userAvatar.textContent = userPrefs.avatarEmoji || '👤';
-
-    userWelcome.appendChild(userAvatar);
-    userWelcome.appendChild(document.createTextNode(`Welcome, ${username}!`));
-
-    headerActions.prepend(userWelcome);
-  }
-}
-
-// Get user preferences from localStorage
-function getUserPreferences() {
-  const username = sessionStorage.getItem('loggedInUser') || 'Anonymous';
-  const defaultPrefs = {
-    displayName: username,
-    avatarEmoji: '👤',
-    avatarColor: '#ED1F27',
-    theme: 'red',
-    darkMode: false,
-    notificationsEnabled: true,
-    joinDate: new Date().toISOString()
-  };
-
-  try {
-    const savedPrefs = localStorage.getItem(`userPrefs_${username}`);
-    return savedPrefs ? JSON.parse(savedPrefs) : defaultPrefs;
-  } catch (e) {
-    console.error('Error loading user preferences:', e);
-    return defaultPrefs;
-  }
-}
-
-// Save user preferences to localStorage
-function saveUserPreferences(prefs) {
-  const username = sessionStorage.getItem('loggedInUser') || 'Anonymous';
-  localStorage.setItem(`userPrefs_${username}`, JSON.stringify(prefs));
-}
-
-// Load user profile data like theme preferences
-function loadUserProfileData() {
-  const userPrefs = getUserPreferences();
-
-  // Apply theme based on user preference
-  if (userPrefs.theme) {
-    switchLogo(userPrefs.theme);
-  }
-
-  // Apply dark mode if enabled
-  if (userPrefs.darkMode) {
-    document.body.classList.add('dark-mode');
-    const darkModeToggle = document.querySelector('.dark-mode-toggle');
-    if (darkModeToggle) {
-      darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-      darkModeToggle.title = 'Toggle Light Mode';
-    }
-  }
-}
-
-// Removed showAccountSettings function since we now use the account-settings.html page instead
-
-// Function to handle password change request review for Santa
-function initializePasswordReviewPanel() {
-  // Only show for Santa's account
-  const currentUser = sessionStorage.getItem('loggedInUser');
-  if (currentUser !== 'Santa') return;
-
-  // Add a dedicated button to header for Santa to access password requests
-  const headerActions = document.querySelector('.header-actions');
-  if (headerActions) {
-    const passwordRequestsBtn = document.createElement('a');
-    passwordRequestsBtn.id = 'password-requests-btn';
-    passwordRequestsBtn.className = 'btn btn-outline';
-    passwordRequestsBtn.innerHTML = '<i class="fas fa-key"></i> Password Requests';
-    passwordRequestsBtn.style.cursor = 'pointer';
-    passwordRequestsBtn.href = 'password-requests.html'; // Direct link to password requests page
-
-    // Add santa-only class for styling
-    passwordRequestsBtn.classList.add('santa-only');
-
-    // Insert before logout button
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      headerActions.insertBefore(passwordRequestsBtn, logoutBtn);
-    } else {
-      headerActions.appendChild(passwordRequestsBtn);
-    }
-
-    // Add notification badge if there are pending requests
-    const pendingRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]')
-      .filter(req => req.status === 'pending').length;
-
-    if (pendingRequests > 0) {
-      const badge = document.createElement('span');
-      badge.className = 'notification-badge';
-      badge.textContent = pendingRequests;
-      passwordRequestsBtn.appendChild(badge);
-
-      // Add a notification
-      setTimeout(() => {
-        showNotification(`You have ${pendingRequests} pending password change request${pendingRequests > 1 ? 's' : ''}`, 'info');
-      }, 1000);
-    }
-  }
-}
-
-// Populate password change requests list
-function populatePasswordRequests() {
-  const requestsList = document.getElementById('password-requests-list');
-  if (!requestsList) return;
-
-  // Get password requests
-  const passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
-
-  if (passwordRequests.length === 0) {
-    requestsList.innerHTML = '<p class="no-requests">No password change requests pending.</p>';
+  if (staffSuggestions.length === 0) {
+    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
     return;
   }
 
-  // Build requests HTML
-  let requestsHTML = '';
+  // Sort suggestions by date (newest first)
+  staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  passwordRequests.forEach((request, index) => {
-    // Format date for display
-    const requestDate = new Date(request.requestDate);
-    const formattedDate = requestDate.toLocaleDateString() + '' + ' ' + requestDate.toLocaleTimeString();
+  // Build HTML for suggestions list
+  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  suggestionsHTML += '<ul class="suggestions-list">';
 
+  // Check if current user is admin
+  const userIsAdmin = isAdmin();
+
+  staffSuggestions.forEach((suggestion, index) => {
+    // Format date for better readability
+    const date = new Date(suggestion.date);
+    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
+
+    // Create status badge
     let statusClass = '';
     let statusText = '';
 
-    switch(request.status) {
+    switch(suggestion.status) {
       case 'approved':
         statusClass = 'approved';
         statusText = 'Approved';
@@ -1397,614 +1488,109 @@ function populatePasswordRequests() {
         break;
       default:
         statusClass = 'pending';
-        statusText = 'Pending Review';
+        statusText = 'Under Review';
     }
 
-    // Build request card
-    requestsHTML += `
-      <div class="request-card ${statusClass}">
-        <div class="request-header">
-          <span class="request-username">${request.username}</span>
-          <span class="request-date">${formattedDate}</span>
+    // Add delete button for admins
+    const adminControls = userIsAdmin ? 
+      `<button class="btn-delete" data-index="${index}">
+        <i class="fas fa-trash"></i> Delete
+      </button>` : '';
+
+    suggestionsHTML += `
+      <li>
+        <div class="suggestion-header">
+          <span class="suggestion-author">${suggestion.author}</span>
+          <span class="suggestion-date">${formattedDate}</span>
         </div>
-        <div class="request-reason">
-          <strong>Reason:</strong> ${request.reason}
+        <div class="suggestion-content">${suggestion.text}</div>
+        <div class="suggestion-footer">
+          <span class="suggestion-status ${statusClass}">${statusText}</span>
+          <div class="suggestion-actions">
+            <button class="btn-vote upvote" data-index="${index}">
+              <i class="fas fa-thumbs-up"></i> <span class="vote-count">${suggestion.votes}</span>
+            </button>
+            ${adminControls}
+          </div>
         </div>
-        <div class="request-status ${statusClass}">${statusText}</div>
-        ${request.status === 'pending' ? `
-        <div class="request-actions">
-          <button class="btn btn-sm btn-approve" data-index="${index}">
-            <i class="fas fa-check"></i> Approve
-          </button>
-          <button class="btn btn-sm btn-reject" data-index="${index}">
-            <i class="fas fa-times"></i> Reject
-          </button>
-        </div>
-        ` : ''}
-        ${request.reviewedBy ? `
-        <div class="request-review-info">
-          Reviewed by ${request.reviewedBy} on ${new Date(request.reviewDate).toLocaleDateString()}
-        </div>
-        ` : ''}
-      </div>
+      </li>
     `;
   });
+
+  suggestionsHTML += '</ul>';
 
   // Update the DOM
-  requestsList.innerHTML = requestsHTML;
+  suggestionStatus.innerHTML = suggestionsHTML;
 
-  // Add event listeners for approve/reject buttons
-  document.querySelectorAll('.btn-approve').forEach(btn => {
+  // Add event listeners for voting and admin actions
+  attachVoteEventListeners();
+  if (userIsAdmin) {
+    attachAdminEventListeners();
+  }
+}
+
+/**
+ * Attach admin event listeners (delete buttons)
+ */
+function attachAdminEventListeners() {
+  document.querySelectorAll('.btn-delete').forEach(btn => {
     btn.addEventListener('click', function() {
-      handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'approved');
-    });
-  });  document.querySelectorAll('.btn-reject').forEach(btn => {
-    btn.addEventListener('click', function() {
-      handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'rejected');
+      const index = parseInt(this.getAttribute('data-index'));
+      deleteSuggestion(index);
     });
   });
 }
 
-// Handle password request approval/rejection
-function handlePasswordRequestAction(index, action) {
-  // Get requests
-  let passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
+/**
+ * Attach vote event listeners to suggestion vote buttons
+ */
+function attachVoteEventListeners() {
+  document.querySelectorAll('.btn-vote').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const index = parseInt(this.getAttribute('data-index'));
+      handleVote(index, this);
+    });
+  });
+}
 
-  if (!passwordRequests[index]) return;
+/**
+ * Handle a vote on a suggestion
+ * @param {number} index - The index of the suggestion
+ * @param {HTMLElement} buttonElement - The vote button element
+ */
+function handleVote(index, buttonElement) {
+  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions'));
 
-  // Update request status
-  passwordRequests[index].status = action;
-  passwordRequests[index].reviewedBy = sessionStorage.getItem('loggedInUser');
-  passwordRequests[index].reviewDate = new Date().toISOString();
+  // Get the current user
+  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
 
-  // Save updated requests
-  localStorage.setItem('passwordChangeRequests', JSON.stringify(passwordRequests));
+  // Check if user already voted
+  if (staffSuggestions[index].votedUsers && staffSuggestions[index].votedUsers.includes(currentUser)) {
+    showNotification('You have already voted on this suggestion.', 'error');
+    return;
+  }
+
+  // Increment vote count and add user to voted list
+  staffSuggestions[index].votes++;
+
+  // Initialize votedUsers array if it doesn't exist
+  if (!staffSuggestions[index].votedUsers) {
+    staffSuggestions[index].votedUsers = [];
+  }
+
+  staffSuggestions[index].votedUsers.push(currentUser);
+
+  // Save updated suggestions
+  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
 
   // Update the display
-  populatePasswordRequests();
+  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
 
-  // Show notification
-  const actionText = action === 'approved' ? 'approved' : 'rejected';
-  showNotification(`Password change request ${actionText} successfully`, 'success');
+  showNotification('Your vote has been counted!', 'success');
 }
 
-// Admin functions for enhanced permissions
-
-/**
- * Show all users panel - Admin function
- */
-function showAllUsersPanel() {
-  // Create a list of all users who have preferences stored
-  const users = [];
-
-  // Get all localStorage keys
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    // Check if it's a user preferences key
-    if (key && key.startsWith('userPrefs_')) {
-      const username = key.replace('userPrefs_', '');
-      try {
-        const userPrefs = JSON.parse(localStorage.getItem(key));
-        users.push({
-          username: username,
-          displayName: userPrefs.displayName || username,
-          joinDate: userPrefs.joinDate || 'Unknown',
-          lastLogin: userPrefs.lastLogin || 'Never',
-          isAdmin: ADMIN_ACCOUNTS.includes(username)
-        });
-      } catch (e) {
-        console.error('Error parsing user data:', e);
-      }
-    }
-  }
-
-  // Sort users by admin status and then by username
-  users.sort((a, b) => {
-    if (a.isAdmin && !b.isAdmin) return -1;
-    if (!a.isAdmin && b.isAdmin) return 1;
-    return a.username.localeCompare(b.username);
-  });
-
-  // Create users panel modal
-  const overlay = document.createElement('div');
-  overlay.className = 'admin-panel-overlay';
-
-  const panel = document.createElement('div');
-  panel.className = 'admin-panel-container';
-
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'admin-panel-header';
-  header.innerHTML = `
-    <h2><i class="fas fa-users"></i> User Management</h2>
-    <span>${users.length} users registered</span>
-  `;
-
-  // Create user list
-  const userList = document.createElement('div');
-  userList.className = 'admin-user-list';
-
-  if (users.length === 0) {
-    userList.innerHTML = '<p class="no-data">No users found</p>';
-  } else {
-    // Create table for users
-    const table = document.createElement('table');
-    table.className = 'admin-users-table';
-
-    // Table header
-    const thead = document.createElement('thead');
-    thead.innerHTML = `
-      <tr>
-        <th>Username</th>
-        <th>Display Name</th>
-        <th>Join Date</th>
-        <th>Admin</th>
-        <th>Actions</th>
-      </tr>
-    `;
-
-    // Table body
-    const tbody = document.createElement('tbody');
-
-    users.forEach(user => {
-      const tr = document.createElement('tr');
-
-      // Format join date
-      const joinDate = user.joinDate !== 'Unknown' ? 
-        new Date(user.joinDate).toLocaleDateString() : 'Unknown';
-
-      tr.innerHTML = `
-        <td>${user.username}</td>
-        <td>${user.displayName}</td>
-        <td>${joinDate}</td>
-        <td>${user.isAdmin ? '<span class="admin-badge">Yes</span>' : 'No'}</td>
-        <td class="actions">
-          <button class="btn-sm view-user" data-username="${user.username}">
-            <i class="fas fa-eye"></i>
-          </button>
-          ${getAdminLevel() >= 3 ? `
-          <button class="btn-sm remove-user" data-username="${user.username}">
-            <i class="fas fa-trash"></i>
-          </button>` : ''}
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(thead);
-    table.appendChild(tbody);
-    userList.appendChild(table);
-  }
-
-  // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
-
-  // Add all elements to the panel
-  panel.appendChild(header);
-  panel.appendChild(userList);
-  panel.appendChild(closeBtn);
-  overlay.appendChild(panel);
-
-  // Add to body
-  document.body.appendChild(overlay);
-
-  // Add event listeners
-  closeBtn.addEventListener('click', () => {
-    document.body.removeChild(overlay);
-  });
-
-  // View user buttons
-  document.querySelectorAll('.view-user').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const username = this.getAttribute('data-username');
-      viewUserDetails(username);
-    });
-  });
-
-  // Remove user buttons (for super admins only)
-  if (getAdminLevel() >= 3) {
-    document.querySelectorAll('.remove-user').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const username = this.getAttribute('data-username');
-        if (username === sessionStorage.getItem('loggedInUser')) {
-          showNotification("You cannot remove your own account!", "error");
-          return;
-        }
-
-        if (confirm(`Are you sure you want to remove user "${username}"? This action cannot be undone.`)) {
-          // Remove user preferences
-          localStorage.removeItem(`userPrefs_${username}`);
-          showNotification(`User "${username}" has been removed.`, "success");
-
-          // Reload the panel
-          document.body.removeChild(overlay);
-          showAllUsersPanel();
-        }
-      });
-    });
-  }
-}
-
-/**
- * View user details - Admin function
- * @param {string} username - The username to view
- */
-function viewUserDetails(username) {
-  const userPrefsKey = `userPrefs_${username}`;
-  const userPrefs = JSON.parse(localStorage.getItem(userPrefsKey) || '{}');
-
-  if (!userPrefs) {
-    showNotification("User preferences not found", "error");
-    return;
-  }
-
-  // Create user details modal
-  const overlay = document.createElement('div');
-  overlay.className = 'user-details-overlay';
-
-  const panel = document.createElement('div');
-  panel.className = 'user-details-container';
-
-  // Add user avatar
-  const avatar = document.createElement('div');
-  avatar.className = 'user-avatar large';
-  avatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
-  avatar.textContent = userPrefs.avatarEmoji || '👤';
-
-  // Format dates
-  const joinDate = userPrefs.joinDate ? 
-    new Date(userPrefs.joinDate).toLocaleString() : 'Unknown';
-
-  // Build details content
-  const details = document.createElement('div');
-  details.className = 'user-details-content';
-  details.innerHTML = `
-    <h2>${username}</h2>
-    <div class="user-info-grid">
-      <div class="info-row">
-        <span class="info-label">Display Name:</span>
-        <span class="info-value">${userPrefs.displayName || username}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Join Date:</span>
-        <span class="info-value">${joinDate}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Admin Status:</span>
-        <span class="info-value">${ADMIN_ACCOUNTS.includes(username) ? 
-          `Admin Level ${ADMIN_PERMISSIONS[username] || 1}` : 'Regular User'}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Theme:</span>
-        <span class="info-value">${userPrefs.theme || 'Default'}</span>
-      </div>
-      <div class="info-row">
-        <span class="info-label">Dark Mode:</span>
-        <span class="info-value">${userPrefs.darkMode ? 'Enabled' : 'Disabled'}</span>
-      </div>
-    </div>
-  `;
-
-  // Close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
-
-  // Assemble the panel
-  panel.appendChild(avatar);
-  panel.appendChild(details);
-  panel.appendChild(closeBtn);
-  overlay.appendChild(panel);
-
-  // Add to body
-  document.body.appendChild(overlay);
-
-  // Add event listener to close
-  closeBtn.addEventListener('click', () => {
-    document.body.removeChild(overlay);
-  });
-}
-
-/**
- * Show suggestions management panel - Admin Level 2+ function
- */
-function showSuggestionsManagementPanel() {
-  // Get suggestions
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions') || '[]');
-
-  // Create panel
-  const overlay = document.createElement('div');
-  overlay.className = 'admin-panel-overlay';
-
-  const panel = document.createElement('div');
-  panel.className = 'admin-panel-container wider';
-
-  // Create header
-  const header = document.createElement('div');
-  header.className = 'admin-panel-header';
-  header.innerHTML = `
-    <h2><i class="fas fa-tasks"></i> Suggestions Management</h2>
-    <span>${staffSuggestions.length} suggestions in system</span>
-  `;
-
-  // Create suggestions list
-  const suggestionsList = document.createElement('div');
-  suggestionsList.className = 'admin-suggestions-list';
-
-  if (staffSuggestions.length === 0) {
-    suggestionsList.innerHTML = '<p class="no-data">No suggestions found</p>';
-  } else {
-    // Sort suggestions by vote count (highest first)
-    staffSuggestions.sort((a, b) => b.votes - a.votes);
-
-    // Create table
-    const table = document.createElement('table');
-    table.className = 'admin-suggestions-table';
-
-    // Table header
-    const thead = document.createElement('thead');
-    thead.innerHTML = `
-      <tr>
-        <th>Author</th>
-        <th>Suggestion</th>
-        <th>Date</th>
-        <th>Votes</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    `;
-
-    // Table body
-    const tbody = document.createElement('tbody');
-
-    staffSuggestions.forEach((suggestion, index) => {
-      const tr = document.createElement('tr');
-
-      // Format date
-      const date = new Date(suggestion.date);
-      const formattedDate = date.toLocaleDateString();
-
-      // Set row class based on status
-      tr.className = suggestion.status;
-
-      // Create status dropdown options
-      const statusOptions = ['pending', 'approved', 'rejected']
-        .map(status => `<option value="${status}" ${suggestion.status === status ? 'selected' : ''}>${
-          status.charAt(0).toUpperCase() + status.slice(1)
-        }</option>`)
-        .join('');
-
-      tr.innerHTML = `
-        <td>${suggestion.author}</td>
-        <td class="suggestion-text">${suggestion.text}</td>
-        <td>${formattedDate}</td>
-        <td>${suggestion.votes}</td>
-        <td>
-          <select class="status-select" data-index="${index}">
-            ${statusOptions}
-          </select>
-        </td>
-        <td class="actions">
-          <button class="btn-sm delete-suggestion" data-index="${index}">
-            <i class="fas fa-trash"></i>
-          </button>
-        </td>
-      `;
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(thead);
-    table.appendChild(tbody);
-    suggestionsList.appendChild(table);
-  }
-
-  // Close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
-
-  // Build panel
-  panel.appendChild(header);
-  panel.appendChild(suggestionsList);
-  panel.appendChild(closeBtn);
-  overlay.appendChild(panel);
-
-  // Add to DOM
-  document.body.appendChild(overlay);
-
-  // Add event listeners
-  closeBtn.addEventListener('click', () => {
-    document.body.removeChild(overlay);
-  });
-
-  // Status select change events
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', function() {
-      const index = parseInt(this.getAttribute('data-index'));
-      const newStatus = this.value;
-
-      // Update status
-      staffSuggestions[index].status = newStatus;
-      staffSuggestions[index].reviewedBy = sessionStorage.getItem('loggedInUser');
-      staffSuggestions[index].reviewDate = new Date().toISOString();
-
-      // Save changes
-      localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
-
-      // Update row class
-      this.closest('tr').className = newStatus;
-
-      showNotification(`Suggestion status updated to "${newStatus}"`, "success");
-    });
-  });
-
-  // Delete suggestion buttons
-  document.querySelectorAll('.delete-suggestion').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
-
-      if (confirm('Are you sure you want to delete this suggestion?')) {
-        // Remove the suggestion
-        staffSuggestions.splice(index, 1);
-
-        // Save changes
-        localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
-
-        // Refresh panel
-        document.body.removeChild(overlay);
-        showSuggestionsManagementPanel();
-
-        showNotification('Suggestion deleted successfully', 'success');
-      }
-    });
-  });
-}
-
-/**
- * Initialize enhanced mobile menu for better navigation
- */
-function initializeMobileMenu() {
-  const nav = document.querySelector('nav');
-  if (!nav) return;
-
-  // Add mobile class for styling
-  if (window.innerWidth <= 768) {
-    nav.classList.add('mobile-nav');
-
-    // Create dropdown categorization for mobile
-    const navItems = nav.querySelectorAll('li a');
-    let categories = {
-      'Main': [],
-      'Guides': [],
-      'Support': [],
-      'Admin': []
-    };
-
-    // Categorize nav items
-    navItems.forEach(item => {
-      const href = item.getAttribute('href');
-      const text = item.textContent;
-
-      if (href.includes('guide-')) {
-        categories['Guides'].push(item.parentElement);
-      } else if (href.includes('#script') || href.includes('#bug') || href.includes('#template')) {
-        categories['Support'].push(item.parentElement);
-      } else if (href.includes('account') || href.includes('password')) {
-        categories['Admin'].push(item.parentElement);
-      } else {
-        categories['Main'].push(item.parentElement);
-      }
-    });
-
-    // Clear existing nav
-    nav.querySelector('ul').innerHTML = '';
-
-    // Rebuild nav with categories for mobile
-    Object.entries(categories).forEach(([category, items]) => {
-      if (items.length === 0) return;
-
-      const categoryHeader = document.createElement('li');
-      categoryHeader.className = 'nav-category';
-      categoryHeader.innerHTML = `<span>${category}</span>`;
-      nav.querySelector('ul').appendChild(categoryHeader);
-
-      items.forEach(item => {
-        nav.querySelector('ul').appendChild(item.cloneNode(true));
-      });
-    });
-
-    // Add swipe gesture support for mobile
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    document.addEventListener('touchstart', e => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
-
-    document.addEventListener('touchend', e => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    }, false);
-
-    const handleSwipe = () => {
-      if (touchEndX < touchStartX && touchStartX - touchEndX > 100) {
-        // Swipe left - close menu
-        nav.style.display = 'none';
-        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
-        if (mobileMenuBtn) {
-          mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
-        }
-      }
-
-      if (touchEndX > touchStartX && touchEndX - touchStartX > 100) {
-        // Swipe right - open menu
-        nav.style.display = 'block';
-        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
-        if (mobileMenuBtn) {
-          mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i> Close';
-        }
-      }
-    };
-  }
-}
-
-/**
- * Reset all site data - Super Admin (Level 3) function
- */
-function resetAllSiteData() {
-  // This is a dangerous action! Only allow for level 3 admins
-  if (getAdminLevel() < 3) {
-    showNotification('You do not have permission to perform this action', 'error');
-    return;
-  }
-
-  // Create a backup of critical data
-  const backup = {
-    timestamp: new Date().toISOString(),
-    userData: {},
-    suggestions: JSON.parse(localStorage.getItem('staffSuggestions') || '[]'),
-    backupCreator: sessionStorage.getItem('loggedInUser')
-  };
-
-  // Backup all user preferences
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (key && key.startsWith('userPrefs_')) {
-      backup.userData[key] = JSON.parse(localStorage.getItem(key) || '{}');
-    }
-  }
-
-  // Store backup in localStorage
-  localStorage.setItem('siteBackup_' + new Date().getTime(), JSON.stringify(backup));
-
-  // Clear all localStorage except the backup
-  const backupKeys = Object.keys(localStorage).filter(key => key.startsWith('siteBackup_'));
-  localStorage.clear();
-
-  // Restore backups
-  backupKeys.forEach(key => {
-    localStorage.setItem(key, backup);
-  });
-
-  // Keep current user logged in
-  const currentUser = sessionStorage.getItem('loggedInUser');
-  sessionStorage.setItem('staffLoggedIn', 'true');
-  localStorage.setItem('staffLoggedIn', 'true');
-  sessionStorage.setItem('loggedInUser', currentUser);
-  localStorage.setItem('loggedInUser', currentUser);
-
-  showNotification('All site data has been reset. Reloading page...', 'success');
-
-  // Reload page after delay
-  setTimeout(() => {
-    location.reload();
-  }, 2000);
-}
-// FAQ Items Toggle
+document.addEventListener('DOMContentLoaded', function() {
+  // FAQ Items Toggle
   const faqQuestions = document.querySelectorAll('.faq-question');
 
   faqQuestions.forEach(question => {
@@ -2104,8 +1690,44 @@ function resetAllSiteData() {
     });
   });
 
-  // Suggestion handling now done via DM to Santa
-  // No form processing needed
+  // Suggestion form handling
+  const suggestionForm = document.getElementById('submit-suggestion');
+  const suggestionText = document.getElementById('suggestion-text');
+  const suggestionStatus = document.getElementById('suggestion-status');
+
+  if (suggestionForm && suggestionText && suggestionStatus) {
+    suggestionForm.addEventListener('click', function() {
+      const suggestion = suggestionText.value.trim();
+
+      if (suggestion === '') {
+        suggestionStatus.innerHTML = '<p class="error-message">Please enter a suggestion before submitting.</p>';
+        suggestionStatus.className = 'error';
+        return;
+      }
+
+      // In a real application, you would send this to a server
+      // For this demo, we'll just show a success message
+      suggestionStatus.innerHTML = '<p class="success-message">Thank you for your suggestion! It has been submitted for review.</p>';
+      suggestionStatus.className = 'success';
+      suggestionText.value = '';
+
+      // Display the suggestion in the list (demo purposes)
+      const now = new Date();
+      const formattedDate = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+
+      const suggestionHTML = `
+        <div class="suggestion-item">
+          <p class="suggestion-text">${suggestion}</p>
+          <p class="suggestion-meta">Submitted by You on ${formattedDate}</p>
+          <div class="suggestion-actions">
+            <span class="suggestion-status pending">Pending Review</span>
+          </div>
+        </div>
+      `;
+
+      suggestionStatus.innerHTML += suggestionHTML;
+    });
+  }
 
   // Logo upload handling
   const logoUpload = document.getElementById('logo-upload');
@@ -2305,7 +1927,7 @@ function populatePasswordRequests() {
   passwordRequests.forEach((request, index) => {
     // Format date for display
     const requestDate = new Date(request.requestDate);
-    const formattedDate = requestDate.toLocaleDateString() + '' + ' ' + requestDate.toLocaleTimeString();
+    const formattedDate = requestDate.toLocaleDateString() + ' ' + requestDate.toLocaleTimeString();
 
     let statusClass = '';
     let statusText = '';
@@ -2928,10 +2550,3 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
-// Set current year in footer if element exists
-document.addEventListener('DOMContentLoaded', function() {
-    const yearElement = document.getElementById('current-year');
-    if (yearElement) {
-        yearElement.textContent = new Date().getFullYear();
-    }
-});

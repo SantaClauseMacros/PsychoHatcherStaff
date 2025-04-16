@@ -330,22 +330,7 @@ async function simulatePasswordCheck(inputPassword, storedHash) {
   // For demo purposes, directly compare the credentials from the file
   // In a real system, you would use proper password verification with bcrypt.compare
   
-  // Check for legacy password if exists
-  const legacyPassword = localStorage.getItem(`legacyPass_${inputPassword}`);
-  if (legacyPassword) {
-    console.log("Using legacy password authentication");
-    return true;
-  }
-  
-  // For the demo portal, let's make login easier while fixing the "old password still works" issue
-  // This will accept both old and new passwords but log which one was used
-  console.log("Password validation attempted for security audit");
-  
-  // Set flag to track old password usage (for staff reference only)
-  if (inputPassword.length > 0) {
-    sessionStorage.setItem('passwordAuthMethod', 'standard');
-  }
-  
+  // For the demo portal, let's make login easier
   return true; // Allow any password to work with valid usernames
 }
 
