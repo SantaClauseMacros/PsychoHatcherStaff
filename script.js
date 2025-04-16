@@ -962,7 +962,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let templateText = "";
       paragraphs.forEach((p) => {
         // Remove quotes from the text
-        letcleanText = p.textContent.replace(/["']/g, '');
+        let cleanText = p.textContent.replace(/["']/g, '');
         templateText += cleanText + "\n\n";
       });
 
@@ -2550,3 +2550,33 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
+// Copy template to clipboard
+    document.querySelectorAll('.copy-template').forEach(button => {
+        button.addEventListener('click', function() {
+            const templateId = this.getAttribute('data-template');
+            let textToCopy = '';
+
+            if (templateId === 'clan-requirements') {
+                textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
+
+✅ Clan Requirements:
+🌟 Your server must have 1,000+ members
+💬 Your community must be actively engaged and friendly
+
+----------
+📣 Promotion & Listing Conditions:
+📢 Our promo post must be placed in a channel accessible to everyone
+🔔 You must ping @everyone, @here, or a notification role
+
+----------
+💸 Don't Meet the Requirements? No Problem!
+You can still get featured with a paid promo:
+
+💵 Just $5 to bypass all requirements
+🖼️ We'll place your clan banner on our most visited pages
+📣 We'll make a post about your clan that stays up for 30 days
+
+Let me know if you're interested or have any questions! 😎`;
+            }
+        });
+    });
