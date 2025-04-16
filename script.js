@@ -109,6 +109,8 @@ function updateLastRefreshedTime() {
     }, 2000);
 
     console.log("Last refreshed time updated to:", `${hours}:${minutes}:${seconds} ${ampm}`);
+  } else {
+    console.log("Could not find last-refreshed-time element, skipping update");
   }
 }
 
@@ -256,6 +258,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Initialize mobile-friendly menu
   initializeMobileMenu();
 
+  // Remove any existing search containers
+  const searchContainer = document.getElementById("kb-search-container");
+  if (searchContainer) {
+    searchContainer.remove();
+  }
+
   // Add mobile menu toggle button
   const nav = document.querySelector("nav");
   const mobileMenuBtn = document.createElement("button");
@@ -399,9 +407,9 @@ document.addEventListener("copy", function (e) {
   }
 });
 
-// Set static logo
-const logoPreview = document.getElementById("logo-preview");
-const footerLogo = document.getElementById("footer-logo");
+// Logo references
+let logoPreview = document.getElementById("logo-preview");
+let footerLogo = document.getElementById("footer-logo");
 
 // Logo switcher functionality with color themes - using the new specified image formats
 const logos = {
@@ -942,8 +950,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Add interactive checklists for guide pages
-document.addEventListener('DOMContentLoaded', function() {
-  const guidePage = document.querySelector('.guide-content.active');
+document.addEventListener('DOMContentLoaded', function() {  const guidePage = document.querySelector('.guide-content.active');
 
   if (guidePage) {
     const checklistItems = guidePage.querySelectorAll('.checklist-item input[type="checkbox"]');
@@ -2921,3 +2928,10 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
+// Set current year in footer if element exists
+document.addEventListener('DOMContentLoaded', function() {
+    const yearElement = document.getElementById('current-year');
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+    }
+});
