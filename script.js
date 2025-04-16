@@ -22,7 +22,7 @@ function updateTimezones() {
       } else if (timezoneText === 'EST') {
         offset = 0; // Fixed to Eastern Standard Time
       } else if (timezoneText === 'CST') {
-        offset = 0; // Fixed to Central Standard Time
+        offset = -1; // Fixed to Central Standard Time
       } else if (timezoneText === 'IST') {
         offset = 5.5;
       } else if (timezoneText === 'AEDT') {
