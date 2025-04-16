@@ -1766,8 +1766,11 @@ function initializeAccountCustomization() {
   // Add account button to header if user is logged in
   const loggedInUser = sessionStorage.getItem("staffLoggedIn");
   if (loggedInUser === "true") {
-    addAccountButton();
-    loadUserProfileData();
+    // Ensure this runs immediately
+    setTimeout(() => {
+      addAccountButton();
+      loadUserProfileData();
+    }, 100);
   }
 }
 
@@ -1804,6 +1807,9 @@ function addAccountButton() {
     userAvatar.className = 'user-avatar';
     userAvatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
     userAvatar.style.borderRadius = '50%';
+    userAvatar.style.width = '35px';
+    userAvatar.style.height = '35px';
+    userAvatar.style.aspectRatio = '1/1';
     userAvatar.textContent = userPrefs.avatarEmoji || '👤';
 
     userWelcome.appendChild(userAvatar);

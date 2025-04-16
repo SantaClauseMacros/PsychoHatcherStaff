@@ -1615,6 +1615,8 @@ h3 {
   max-height: 35px;
   padding: 0;
   top: 0;
+  aspect-ratio: 1/1;
+  object-fit: cover;
 }
 
 .user-avatar:hover {
