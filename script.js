@@ -35,9 +35,16 @@ function updateTimezones() {
         offset = parseFloat(timezoneText.split('+')[1]);
       }
 
-      // Calculate the time with offset
-      const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000); // Get UTC time in milliseconds
-      time = new Date(utcTime + (offset * 3600000)); // Apply timezone offset
+      // Use direct UTC methods for more reliable timezone calculation
+      const utcYear = now.getUTCFullYear();
+      const utcMonth = now.getUTCMonth();
+      const utcDate = now.getUTCDate();
+      const utcHours = now.getUTCHours();
+      const utcMinutes = now.getUTCMinutes();
+      const utcSeconds = now.getUTCSeconds();
+      
+      // Create a new date using UTC time + the timezone offset
+      time = new Date(Date.UTC(utcYear, utcMonth, utcDate, utcHours + offset, utcMinutes, utcSeconds));
 
       // Format the time in 12-hour format with AM/PM
       let hours = time.getHours();
