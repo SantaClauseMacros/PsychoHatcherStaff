@@ -190,6 +190,11 @@ function fetchAllContent() {
         link: "guide-fusepets.html",
       },
       {
+        title: "Bubble Gum Simulator FAQ",
+        description: "Common questions and answers for Bubble Gum Simulator Mode.",
+        link: "guide-bubblegum.html",
+      },
+      {
         title: "Level Up Mode FAQ",
         description: "Frequently asked questions about Alt Level Up Mode.",
         link: "guide-levelup.html",
