@@ -136,8 +136,8 @@ function setupTimezoneConverter() {
   function getTimezoneOffset(timezone) {
     // Return offset in hours
     if (timezone === 'GMT') return 0;
-    if (timezone === 'EST') return -5;
-    if (timezone === 'CST') return -6;
+    if (timezone === 'EST') return -4; // Updated to EDT (summer time)
+    if (timezone === 'CST') return -5; // Updated to CDT (summer time)
     if (timezone === 'IST') return 5.5;
     if (timezone === 'AEDT') return 11;
     

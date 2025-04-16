@@ -20,9 +20,9 @@ function updateTimezones() {
       if (timezoneText === 'GMT') {
         offset = 0;
       } else if (timezoneText === 'EST') {
-        offset = -5;
+        offset = -4; // Updated from -5 to -4 to reflect current EDT
       } else if (timezoneText === 'CST') {
-        offset = -6;
+        offset = -5; // Updated from -6 to -5 to reflect current CDT
       } else if (timezoneText === 'IST') {
         offset = 5.5;
       } else if (timezoneText === 'AEDT') {
