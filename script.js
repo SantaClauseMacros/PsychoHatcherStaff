@@ -18,7 +18,7 @@ function updateTimezones() {
 
       // Handle different timezone formats
       if (timezoneText === 'GMT') {
-        offset = 0;
+        offset = 4;
       } else if (timezoneText === 'EST') {
         offset = 0; // Fixed to Eastern Standard Time
       } else if (timezoneText === 'CST') {
