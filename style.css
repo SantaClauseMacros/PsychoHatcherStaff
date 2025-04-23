@@ -448,6 +448,7 @@ h3 {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
   border-radius: var(--border-radius);
   overflow: hidden;
+  table-layout: fixed;
 }
 
 .staff-table thead {
@@ -461,9 +462,20 @@ h3 {
   font-weight: bold;
 }
 
+.staff-table th:nth-child(1) { width: 20%; } /* Name */
+.staff-table th:nth-child(2) { width: 25%; } /* Roblox Username */
+.staff-table th:nth-child(3) { width: 15%; } /* Emoji */
+.staff-table th:nth-child(4) { width: 40%; } /* Timezone */
+
 .staff-table td {
   padding: 0.8rem 1rem;
   border-bottom: 1px solid #e0e0e0;
+  vertical-align: middle;
+}
+
+.staff-table td:nth-child(3) { 
+  font-size: 1.5rem;
+  text-align: center;
 }
 
 .current-time {
