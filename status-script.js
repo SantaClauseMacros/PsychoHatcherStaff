@@ -802,6 +802,12 @@ function addStatusStyles() {
     document.head.appendChild(styleElement);
 }
 
+// Empty notification function to prevent notifications
+function showNotification(message, type = "info") {
+  // Notification functionality disabled
+  console.log(`Notification (${type}): ${message}`);
+}
+
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     // Add styles
