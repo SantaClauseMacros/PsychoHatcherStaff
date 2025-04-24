@@ -1,13 +1,13 @@
 // Function to update timezone times
 function updateTimezones() {
-  const staffRows = document.querySelectorAll('.staff-table tbody tr');
+  const staffRows = document.querySelectorAll(".staff-table tbody tr");
 
-  staffRows.forEach(row => {
-    const timezoneCell = row.querySelector('td:nth-child(3)');
+  staffRows.forEach((row) => {
+    const timezoneCell = row.querySelector("td:nth-child(4)"); // 4th column is timezone
     if (!timezoneCell) return;
 
-    const timezoneText = timezoneCell.textContent.trim().split(' ')[0]; // Get just the timezone part
-    if (!timezoneText || timezoneText === '-') return;
+    const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
+    if (!timezoneText || timezoneText === "-") return;
 
     // Get current time for this timezone
     try {
@@ -17,22 +17,22 @@ function updateTimezones() {
       let offset = 0;
 
       // Handle different timezone formats
-      if (timezoneText === 'GMT') {
+      if (timezoneText === "GMT") {
         offset = 4;
-      } else if (timezoneText === 'EST') {
+      } else if (timezoneText === "EST") {
         offset = 0; // Fixed to Eastern Standard Time
-      } else if (timezoneText === 'CST') {
+      } else if (timezoneText === "CST") {
         offset = -1; // Fixed to Central Standard Time
-      } else if (timezoneText === 'IST') {
+      } else if (timezoneText === "IST") {
         offset = 5.5;
-      } else if (timezoneText === 'AEDT') {
+      } else if (timezoneText === "AEDT") {
         offset = 11;
-      } else if (timezoneText.startsWith('GMT+')) {
+      } else if (timezoneText.startsWith("GMT+")) {
         offset = parseFloat(timezoneText.substring(4));
-      } else if (timezoneText.startsWith('GMT-')) {
+      } else if (timezoneText.startsWith("GMT-")) {
         offset = -parseFloat(timezoneText.substring(4));
-      } else if (timezoneText.includes('+')) {
-        offset = parseFloat(timezoneText.split('+')[1]);
+      } else if (timezoneText.includes("+")) {
+        offset = parseFloat(timezoneText.split("+")[1]);
       }
 
       // Use direct UTC methods for more reliable timezone calculation
@@ -42,20 +42,29 @@ function updateTimezones() {
       const utcHours = now.getUTCHours();
       const utcMinutes = now.getUTCMinutes();
       const utcSeconds = now.getUTCSeconds();
-      
+
       // Create a new date using UTC time + the timezone offset
-      time = new Date(Date.UTC(utcYear, utcMonth, utcDate, utcHours + offset, utcMinutes, utcSeconds));
+      time = new Date(
+        Date.UTC(
+          utcYear,
+          utcMonth,
+          utcDate,
+          utcHours + offset,
+          utcMinutes,
+          utcSeconds,
+        ),
+      );
 
       // Format the time in 12-hour format with AM/PM
       let hours = time.getHours();
-      const minutes = time.getMinutes().toString().padStart(2, '0');
-      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const minutes = time.getMinutes().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
       const formattedTime = `${hours}:${minutes} ${ampm}`;
 
       // Determine time of day indicator
-      let timeOfDay = '';
+      let timeOfDay = "";
       const hour24 = time.getHours();
       if (hour24 >= 5 && hour24 < 12) {
         timeOfDay = '<span class="time-day">🌅 Day</span>';
@@ -66,20 +75,22 @@ function updateTimezones() {
       }
 
       // Update cell content with timezone, current time, and day/night indicator
-      if (!timezoneCell.innerHTML.includes('(')) {
+      if (!timezoneCell.innerHTML.includes("(")) {
         timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
       } else {
         // Update just the time part and day/night indicator
-        const timeSpan = timezoneCell.querySelector('.current-time');
+        const timeSpan = timezoneCell.querySelector(".current-time");
         if (timeSpan) {
           // Find and remove existing time of day indicator if present
-          const existingTimeOfDay = timezoneCell.querySelector('.time-day, .time-midday, .time-night');
+          const existingTimeOfDay = timezoneCell.querySelector(
+            ".time-day, .time-midday, .time-night",
+          );
           if (existingTimeOfDay) {
             existingTimeOfDay.remove();
           }
           timeSpan.textContent = `(${formattedTime})`;
           // Append the time of day indicator after the time span
-          timeSpan.insertAdjacentHTML('afterend', ` ${timeOfDay}`);
+          timeSpan.insertAdjacentHTML("afterend", ` ${timeOfDay}`);
         } else {
           timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
         }
@@ -95,38 +106,41 @@ function updateTimezones() {
 
 // Function to update the last refreshed time indicator
 function updateLastRefreshedTime() {
-  const lastRefreshedElement = document.getElementById('last-refreshed-time');
+  const lastRefreshedElement = document.getElementById("last-refreshed-time");
   if (lastRefreshedElement) {
     const now = new Date();
     let hours = now.getHours();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const ampm = hours >= 12 ? "PM" : "AM";
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const seconds = now.getSeconds().toString().padStart(2, "0");
     lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
 
     // Add a visual indicator that the refresh occurred
-    lastRefreshedElement.style.color = '#ED1F27';
-    lastRefreshedElement.style.fontWeight = 'bold';
+    lastRefreshedElement.style.color = "#ED1F27";
+    lastRefreshedElement.style.fontWeight = "bold";
 
     setTimeout(() => {
-      lastRefreshedElement.style.color = '';
-      lastRefreshedElement.style.fontWeight = '';
+      lastRefreshedElement.style.color = "";
+      lastRefreshedElement.style.fontWeight = "";
     }, 2000);
 
-    console.log("Last refreshed time updated to:", `${hours}:${minutes}:${seconds} ${ampm}`);
+    console.log(
+      "Last refreshed time updated to:",
+      `${hours}:${minutes}:${seconds} ${ampm}`,
+    );
   }
 }
 
 // Function to add refresh controls to the staff list section
 function addRefreshControls() {
-  const staffSection = document.getElementById('staff-list');
+  const staffSection = document.getElementById("staff-list");
   if (!staffSection) return;
 
   // Create refresh controls container
-  const refreshControls = document.createElement('div');
-  refreshControls.className = 'refresh-controls';
+  const refreshControls = document.createElement("div");
+  refreshControls.className = "refresh-controls";
   refreshControls.innerHTML = `
     <div class="refresh-info">
       <span>Last refreshed at: <span id="last-refreshed-time">--:--:--</span></span>
@@ -141,14 +155,14 @@ function addRefreshControls() {
   `;
 
   // Create a proper container for the refresh controls
-  const refreshContainer = document.createElement('div');
-  refreshContainer.style.width = '100%';
-  refreshContainer.style.display = 'flex';
-  refreshContainer.style.justifyContent = 'center';
+  const refreshContainer = document.createElement("div");
+  refreshContainer.style.width = "100%";
+  refreshContainer.style.display = "flex";
+  refreshContainer.style.justifyContent = "center";
   refreshContainer.appendChild(refreshControls);
 
   // Insert at the top of the staff list section
-  const staffTitle = staffSection.querySelector('h2');
+  const staffTitle = staffSection.querySelector("h2");
   if (staffTitle && staffTitle.nextSibling) {
     staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
   } else {
@@ -156,15 +170,15 @@ function addRefreshControls() {
   }
 
   // Add event listener for manual refresh with enhanced animation
-  const refreshBtn = document.getElementById('refresh-times-btn');
+  const refreshBtn = document.getElementById("refresh-times-btn");
   if (refreshBtn) {
-    refreshBtn.addEventListener('click', function() {
+    refreshBtn.addEventListener("click", function () {
       // Visual feedback before starting the refresh
-      this.classList.add('refreshing');
-      const icon = this.querySelector('i');
+      this.classList.add("refreshing");
+      const icon = this.querySelector("i");
       if (icon) {
         // Show loading indicator
-        icon.className = 'fas fa-circle-notch fa-spin';
+        icon.className = "fas fa-circle-notch fa-spin";
       }
       this.disabled = true;
 
@@ -174,17 +188,17 @@ function addRefreshControls() {
       // Add smooth transition back
       setTimeout(() => {
         if (icon) {
-          icon.className = 'fas fa-check';
+          icon.className = "fas fa-check";
         }
-        this.style.backgroundColor = '#4CAF50';
+        this.style.backgroundColor = "#4CAF50";
 
         setTimeout(() => {
           if (icon) {
-            icon.className = 'fas fa-sync-alt';
+            icon.className = "fas fa-sync-alt";
           }
-          this.classList.remove('refreshing');
+          this.classList.remove("refreshing");
           this.disabled = false;
-          this.style.backgroundColor = '';
+          this.style.backgroundColor = "";
 
           // Show notification
           showNotification("Timezone times refreshed successfully!", "success");
@@ -206,7 +220,7 @@ function addRefreshControls() {
 // Function to initialize auto-refresh functionality
 function initAutoRefresh() {
   let refreshInterval;
-  const autoRefreshCheckbox = document.getElementById('auto-refresh-checkbox');
+  const autoRefreshCheckbox = document.getElementById("auto-refresh-checkbox");
   if (!autoRefreshCheckbox) return;
 
   // Function to start or stop the interval
@@ -221,20 +235,23 @@ function initAutoRefresh() {
       // Set to refresh every minute (60000 ms)
       refreshInterval = setInterval(() => {
         updateTimezones();
-        console.log("Auto refresh executed at:", new Date().toLocaleTimeString());
+        console.log(
+          "Auto refresh executed at:",
+          new Date().toLocaleTimeString(),
+        );
       }, 60000);
-      localStorage.setItem('autoRefreshEnabled', 'true');
+      localStorage.setItem("autoRefreshEnabled", "true");
     } else {
-      localStorage.setItem('autoRefreshEnabled', 'false');
+      localStorage.setItem("autoRefreshEnabled", "false");
     }
   }
 
   // Add event listener for checkbox
-  autoRefreshCheckbox.addEventListener('change', toggleAutoRefresh);
+  autoRefreshCheckbox.addEventListener("change", toggleAutoRefresh);
 
   // Initialize based on saved preference or default to enabled
-  const savedPreference = localStorage.getItem('autoRefreshEnabled');
-  if (savedPreference === 'false') {
+  const savedPreference = localStorage.getItem("autoRefreshEnabled");
+  if (savedPreference === "false") {
     autoRefreshCheckbox.checked = false;
   } else {
     autoRefreshCheckbox.checked = true;
@@ -271,7 +288,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initialize timezone display with priority
   console.log("Checking for staff table");
-  if (document.querySelector('.staff-table')) {
+  if (document.querySelector(".staff-table")) {
     console.log("Staff table found - initializing timezone display");
 
     // Delay slightly to ensure DOM is fully processed
@@ -335,7 +352,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Add a direct refresh button click if it exists
-  const refreshButton = document.getElementById('refresh-times-btn');
+  const refreshButton = document.getElementById("refresh-times-btn");
   if (refreshButton) {
     console.log("Found refresh button - triggering initial click");
     // Force a click after everything is loaded
@@ -713,67 +730,72 @@ navLinks.forEach((link) => {
 
 // Add scroll animations to elements
 function initScrollAnimations() {
-  const animatedElements = document.querySelectorAll('.section-card, .guide-card, .info-box, h2, h3');
+  const animatedElements = document.querySelectorAll(
+    ".section-card, .guide-card, .info-box, h2, h3",
+  );
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in');
-        observer.unobserve(entry.target);
-      }
-    });
-  }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -100px 0px'
-  });
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("animate-in");
+          observer.unobserve(entry.target);
+        }
+      });
+    },
+    {
+      threshold: 0.1,
+      rootMargin: "0px 0px -100px 0px",
+    },
+  );
 
-  animatedElements.forEach(element => {
-    element.classList.add('animate-ready');
+  animatedElements.forEach((element) => {
+    element.classList.add("animate-ready");
     observer.observe(element);
   });
 }
 
 // Initialize scroll animations
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   initScrollAnimations();
 
   // Add dark mode toggle
-  const darkModeToggle = document.createElement('button');
-  darkModeToggle.className = 'dark-mode-toggle';
+  const darkModeToggle = document.createElement("button");
+  darkModeToggle.className = "dark-mode-toggle";
   darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-  darkModeToggle.title = 'Toggle Dark Mode';
+  darkModeToggle.title = "Toggle Dark Mode";
   document.body.appendChild(darkModeToggle);
 
-  darkModeToggle.addEventListener('click', function() {
-    document.body.classList.toggle('dark-mode');
-    if (document.body.classList.contains('dark-mode')) {
+  darkModeToggle.addEventListener("click", function () {
+    document.body.classList.toggle("dark-mode");
+    if (document.body.classList.contains("dark-mode")) {
       darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-      darkModeToggle.title = 'Toggle Light Mode';
-      localStorage.setItem('darkMode', 'enabled');
+      darkModeToggle.title = "Toggle Light Mode";
+      localStorage.setItem("darkMode", "enabled");
     } else {
       darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-      darkModeToggle.title = 'Toggle Dark Mode';
-      localStorage.setItem('darkMode', 'disabled');
+      darkModeToggle.title = "Toggle Dark Mode";
+      localStorage.setItem("darkMode", "disabled");
     }
   });
 
   // Check for saved dark mode preference
-  if (localStorage.getItem('darkMode') === 'enabled') {
-    document.body.classList.add('dark-mode');
+  if (localStorage.getItem("darkMode") === "enabled") {
+    document.body.classList.add("dark-mode");
     darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    darkModeToggle.title = 'Toggle Light Mode';
+    darkModeToggle.title = "Toggle Light Mode";
   }
 });
 
 // Add typing animation to headers
 function initTypingEffect() {
-  const headers = document.querySelectorAll('h1, h2');
+  const headers = document.querySelectorAll("h1, h2");
 
   headers.forEach((header, index) => {
     const text = header.textContent;
 
-    header.innerHTML = '';
-    header.style.visibility = 'visible';
+    header.innerHTML = "";
+    header.style.visibility = "visible";
 
     setTimeout(() => {
       let i = 0;
@@ -866,77 +888,86 @@ function showNotification(message, type = "info") {
 }
 
 // Add scroll progress bar
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   // Create progress bar
-  const progressBar = document.createElement('div');
-  progressBar.className = 'scroll-progress';
+  const progressBar = document.createElement("div");
+  progressBar.className = "scroll-progress";
   document.body.appendChild(progressBar);
 
   // Update progress bar width on scroll
-  window.addEventListener('scroll', () => {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  window.addEventListener("scroll", () => {
+    const scrollTop =
+      document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollHeight =
+      document.documentElement.scrollHeight -
+      document.documentElement.clientHeight;
     const scrollProgress = (scrollTop / scrollHeight) * 100;
-    progressBar.style.width = scrollProgress + '%';
+    progressBar.style.width = scrollProgress + "%";
 
     // Show back to top button when scrolled down
-    const backToTopBtn = document.querySelector('.back-to-top');
+    const backToTopBtn = document.querySelector(".back-to-top");
     if (scrollTop > 300) {
-      backToTopBtn.classList.add('visible');
+      backToTopBtn.classList.add("visible");
     } else {
-      backToTopBtn.classList.remove('visible');
+      backToTopBtn.classList.remove("visible");
     }
   });
 
   // Add back to top button
-  const backToTopBtn = document.createElement('button');
-  backToTopBtn.className = 'back-to-top';
+  const backToTopBtn = document.createElement("button");
+  backToTopBtn.className = "back-to-top";
   backToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
-  backToTopBtn.title = 'Back to top';
+  backToTopBtn.title = "Back to top";
   document.body.appendChild(backToTopBtn);
 
   // Scroll to top when button is clicked
-  backToTopBtn.addEventListener('click', function() {
+  backToTopBtn.addEventListener("click", function () {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: "smooth",
     });
   });
 });
 
 // Add interactive checklists for guide pages
-document.addEventListener('DOMContentLoaded', function() {
-  const guidePage = document.querySelector('.guide-content.active');
+document.addEventListener("DOMContentLoaded", function () {
+  const guidePage = document.querySelector(".guide-content.active");
 
   if (guidePage) {
-    const checklistItems = guidePage.querySelectorAll('.checklist-item input[type="checkbox"]');
+    const checklistItems = guidePage.querySelectorAll(
+      '.checklist-item input[type="checkbox"]',
+    );
 
-    checklistItems.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        const parentItem = this.closest('.checklist-item');
+    checklistItems.forEach((checkbox) => {
+      checkbox.addEventListener("change", function () {
+        const parentItem = this.closest(".checklist-item");
 
         if (this.checked) {
-          parentItem.style.textDecoration = 'line-through';
-          parentItem.style.opacity = '0.7';
+          parentItem.style.textDecoration = "line-through";
+          parentItem.style.opacity = "0.7";
         } else {
-          parentItem.style.textDecoration = 'none';
-          parentItem.style.opacity = '1';
+          parentItem.style.textDecoration = "none";
+          parentItem.style.opacity = "1";
         }
 
         // Count checked items
-        const guide = this.closest('.guide-content');
-        const totalItems = guide.querySelectorAll('.checklist-item').length;
-        const checkedItems = guide.querySelectorAll('.checklist-item input[type="checkbox"]:checked').length;
+        const guide = this.closest(".guide-content");
+        const totalItems = guide.querySelectorAll(".checklist-item").length;
+        const checkedItems = guide.querySelectorAll(
+          '.checklist-item input[type="checkbox"]:checked',
+        ).length;
 
         // If all items are checked, show success notification
         if (checkedItems === totalItems) {
-          showNotification('All items checked! Issue should be resolved.', 'success');
+          showNotification(
+            "All items checked! Issue should be resolved.",
+            "success",
+          );
         }
       });
     });
   }
 });
-
 
 // Initialize tooltips
 function initializeTooltips() {
@@ -947,7 +978,7 @@ function initializeTooltips() {
 }
 
 // Suggestion system
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded",function () {
   const submitBtn = document.getElementById("submit-suggestion");
   if (submitBtn) {
     submitBtn.addEventListener("click", submitSuggestion);
@@ -969,7 +1000,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let templateText = "";
       paragraphs.forEach((p) => {
         // Remove quotes from the text
-        let cleanText = p.textContent.replace(/["']/g, '');
+        let cleanText = p.textContent.replace(/["']/g, "");
         templateText += cleanText + "\n\n";
       });
 
@@ -991,7 +1022,7 @@ function submitSuggestion() {
   const suggestionText = suggestionTextarea.value.trim();
   const statusDiv = document.getElementById("suggestion-status");
 
-  if (suggestionText === '') {
+  if (suggestionText === "") {
     statusDiv.className = "error";
     statusDiv.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
     statusDiv.style.display = "block";
@@ -1000,30 +1031,30 @@ function submitSuggestion() {
   }
 
   // Get current user or use default
-  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
 
   // Format the suggestion with date, time and user
   const now = new Date();
   const formattedDate = now.toLocaleString();
 
   // Get existing suggestions or create new array
-  let suggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  let suggestions = JSON.parse(localStorage.getItem("staffSuggestions")) || [];
 
   // Create new suggestion object
   const newSuggestion = {
     text: suggestionText,
     author: currentUser,
     date: now.toISOString(),
-    status: 'pending',
+    status: "pending",
     votes: 0,
-    votedUsers: []
+    votedUsers: [],
   };
 
   // Add to suggestions array
   suggestions.push(newSuggestion);
 
   // Save to localStorage
-  localStorage.setItem('staffSuggestions', JSON.stringify(suggestions));
+  localStorage.setItem("staffSuggestions", JSON.stringify(suggestions));
 
   // Show success message
   statusDiv.className = "success";
@@ -1057,10 +1088,12 @@ function displaySuggestions() {
   if (!suggestionStatus) return;
 
   //// Get suggestions from local storage
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  const staffSuggestions =
+    JSON.parse(localStorage.getItem("staffSuggestions")) || [];
 
   if (staffSuggestions.length === 0) {
-    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
+    suggestionStatus.innerHTML =
+      '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
     return;
   }
 
@@ -1068,31 +1101,31 @@ function displaySuggestions() {
   staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Build HTML for suggestions list
-  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
-  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  let suggestionsHTML = "<h4>Staff Suggestions Board</h4>";
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? "s" : ""} submitted</p>`;
   suggestionsHTML += '<ul class="suggestions-list">';
 
   staffSuggestions.forEach((suggestion, index) => {
     // Format date for better readability
     const date = new Date(suggestion.date);
-    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+    const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 
     // Create status badge
-    let statusClass = '';
-    let statusText = '';
+    let statusClass = "";
+    let statusText = "";
 
-    switch(suggestion.status) {
-      case 'approved':
-        statusClass = 'approved';
-        statusText = 'Approved';
+    switch (suggestion.status) {
+      case "approved":
+        statusClass = "approved";
+        statusText = "Approved";
         break;
-      case 'rejected':
-        statusClass = 'rejected';
-        statusText = 'Rejected';
+      case "rejected":
+        statusClass = "rejected";
+        statusText = "Rejected";
         break;
       default:
-        statusClass = 'pending';
-        statusText = 'Under Review';
+        statusClass = "pending";
+        statusText = "Under Review";
     }
 
     suggestionsHTML += `
@@ -1114,15 +1147,15 @@ function displaySuggestions() {
     `;
   });
 
-  suggestionsHTML += '</ul>';
+  suggestionsHTML += "</ul>";
 
   // Update the DOM
   suggestionStatus.innerHTML = suggestionsHTML;
 
   // Add event listeners for voting
-  document.querySelectorAll('.btn-vote').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
+  document.querySelectorAll(".btn-vote").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const index = parseInt(this.getAttribute("data-index"));
       handleVote(index, this);
     });
   });
@@ -1131,11 +1164,12 @@ function displaySuggestions() {
 // Handle voting on suggestions
 function handleVote(index, buttonElement) {
   // Get suggestions from local storage
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  const staffSuggestions =
+    JSON.parse(localStorage.getItem("staffSuggestions")) || [];
   if (!staffSuggestions[index]) return;
 
   // Get the current user
-  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
 
   // Initialize votedUsers array if it doesn't exist
   if (!staffSuggestions[index].votedUsers) {
@@ -1144,7 +1178,7 @@ function handleVote(index, buttonElement) {
 
   // Check if user already voted
   if (staffSuggestions[index].votedUsers.includes(currentUser)) {
-    showNotification('You have already voted on this suggestion.', 'info');
+    showNotification("You have already voted on this suggestion.", "info");
     return;
   }
 
@@ -1153,12 +1187,13 @@ function handleVote(index, buttonElement) {
   staffSuggestions[index].votedUsers.push(currentUser);
 
   // Save updated suggestions
-  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+  localStorage.setItem("staffSuggestions", JSON.stringify(staffSuggestions));
 
   // Update the display
-  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
+  buttonElement.querySelector(".vote-count").textContent =
+    staffSuggestions[index].votes;
 
-  showNotification('Your vote has been counted!', 'success');
+  showNotification("Your vote has been counted!", "success");
 }
 
 // Add guide content toggle with smooth animation
@@ -1244,82 +1279,89 @@ document.addEventListener("click", function (e) {
   }
 });
 
-
 /**
  * Suggestion System for Psycho Hatcher Staff Portal
  * Handles submission, display, and management of staff suggestions
  */
 
 // Admin accounts with enhanced permissions
-const ADMIN_ACCOUNTS = ['Santa', 'Dr. Mo Psycho', 'WaterMelone', 'Waktool'];
+const ADMIN_ACCOUNTS = ["Santa", "Dr. Mo Psycho", "WaterMelone", "Waktool"];
 // Admin permission levels (higher = more access)
 const ADMIN_PERMISSIONS = {
-  'Santa': 3, // Super admin - all permissions
-  'Dr. Mo Psycho': 2, // Senior admin
-  'WaterMelone': 2, // Senior admin
-  'Waktool': 1 // Standard admin
+  Santa: 3, // Super admin - all permissions
+  "Dr. Mo Psycho": 2, // Senior admin
+  WaterMelone: 2, // Senior admin
+  Waktool: 1, // Standard admin
 };
 
 // Suppress error messages from images
-window.addEventListener('error', function(e) {
-  // Check if the error is related to image loading or decoding
-  if (e.message && (
-      e.message.includes('decode file') || 
-      e.message.includes('Unable to decode') || 
-      e.message.includes('NON-UTF8'))) {
-    // Prevent the error from showing in console
-    e.preventDefault();
-    e.stopPropagation();
-    return true;
-  }
-}, true);
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize suggestion system if on the correct page
-    initializeSuggestionSystem();
-
-    // Display existing suggestions
-    if (document.getElementById('suggestion-status')) {
-        displaySuggestions();
+window.addEventListener(
+  "error",
+  function (e) {
+    // Check if the error is related to image loading or decoding
+    if (
+      e.message &&
+      (e.message.includes("decode file") ||
+        e.message.includes("Unable to decode") ||
+        e.message.includes("NON-UTF8"))
+    ) {
+      // Prevent the error from showing in console
+      e.preventDefault();
+      e.stopPropagation();
+      return true;
     }
+  },
+  true,
+);
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Initialize suggestion system if on the correct page
+  initializeSuggestionSystem();
+
+  // Display existing suggestions
+  if (document.getElementById("suggestion-status")) {
+    displaySuggestions();
+  }
 });
 
 /**
  * Initialize the suggestion submission system
  */
 function initializeSuggestionSystem() {
-    const submitSuggestionBtn = document.getElementById('submit-suggestion');
-    if (!submitSuggestionBtn) return;
+  const submitSuggestionBtn = document.getElementById("submit-suggestion");
+  if (!submitSuggestionBtn) return;
 
-    submitSuggestionBtn.addEventListener('click', function() {
-        const suggestionTextarea = document.getElementById('suggestion-text');
-        const suggestionText = suggestionTextarea.value.trim();
-        const suggestionStatus = document.getElementById('suggestion-status');
+  submitSuggestionBtn.addEventListener("click", function () {
+    const suggestionTextarea = document.getElementById("suggestion-text");
+    const suggestionText = suggestionTextarea.value.trim();
+    const suggestionStatus = document.getElementById("suggestion-status");
 
-        if (suggestionText === '') {
-            // Show error message in the status div
-            if (suggestionStatus) {
-                suggestionStatus.className = "error";
-                suggestionStatus.innerHTML = "<p>Please enter a suggestion before submitting.</p>";
-                suggestionStatus.style.display = "block";
-            }
+    if (suggestionText === "") {
+      // Show error message in the status div
+      if (suggestionStatus) {
+        suggestionStatus.className = "error";
+        suggestionStatus.innerHTML =
+          "<p>Please enter a suggestion before submitting.</p>";
+        suggestionStatus.style.display = "block";
+      }
 
-            showNotification('Please enter a suggestion before submitting.', 'error');
-            return;
-        }
+      showNotification("Please enter a suggestion before submitting.", "error");
+      return;
+    }
 
-        if (submitNewSuggestion(suggestionText)) {
-            // Clear the input only on success
-            suggestionTextarea.value = '';
+    if (submitNewSuggestion(suggestionText)) {
+      // Clear the input only on success
+      suggestionTextarea.value = "";
 
-            // Show success in the status div
-            if (suggestionStatus) {
-                suggestionStatus.className = "success";
-                suggestionStatus.innerHTML = "<p>Your suggestion has been submitted successfully!</p>";
-                suggestionStatus.style.display = "block";
-            }
-        }
-    });
+      // Show success in the status div
+      if (suggestionStatus) {
+        suggestionStatus.className = "success";
+        suggestionStatus.innerHTML =
+          "<p>Your suggestion has been submitted successfully!</p>";
+        suggestionStatus.style.display = "block";
+      }
+    }
+  });
 }
 
 /**
@@ -1327,40 +1369,44 @@ function initializeSuggestionSystem() {
  * @param {string} suggestionText - The text of the suggestion
  */
 function submitNewSuggestion(suggestionText) {
-    if (suggestionText.trim() === '') {
-        showNotification('Please enter a suggestion before submitting.', 'error');
-        return false;
-    }
+  if (suggestionText.trim() === "") {
+    showNotification("Please enter a suggestion before submitting.", "error");
+    return false;
+  }
 
-    // Get current user
-    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  // Get current user
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
 
-    // Create suggestion object with metadata
-    const newSuggestion = {
-        text: suggestionText,
-        author: currentUser,
-        date: new Date().toISOString(),
-        status: 'pending', // pending, approved, rejected
-        votes: 0,
-        votedUsers: []
-    };
+  // Create suggestion object with metadata
+  const newSuggestion = {
+    text: suggestionText,
+    author: currentUser,
+    date: new Date().toISOString(),
+    status: "pending", // pending, approved, rejected
+    votes: 0,
+    votedUsers: [],
+  };
 
-    // Get existing suggestions or initialize empty array
-    let staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  // Get existing suggestions or initialize empty array
+  let staffSuggestions =
+    JSON.parse(localStorage.getItem("staffSuggestions")) || [];
 
-    // Add new suggestion to array
-    staffSuggestions.push(newSuggestion);
+  // Add new suggestion to array
+  staffSuggestions.push(newSuggestion);
 
-    // Save back to local storage
-    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+  // Save back to local storage
+  localStorage.setItem("staffSuggestions", JSON.stringify(staffSuggestions));
 
-    // Show success message
-    showNotification('Your suggestion has been submitted successfully!', 'success');
+  // Show success message
+  showNotification(
+    "Your suggestion has been submitted successfully!",
+    "success",
+  );
 
-    // Update the suggestions list
-    displaySuggestions();
+  // Update the suggestions list
+  displaySuggestions();
 
-    return true;
+  return true;
 }
 
 /**
@@ -1368,58 +1414,64 @@ function submitNewSuggestion(suggestionText) {
  * @returns {boolean} True if current user is an admin
  */
 function isAdmin() {
-    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
-    return ADMIN_ACCOUNTS.includes(currentUser);
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
+  return ADMIN_ACCOUNTS.includes(currentUser);
 }
 
 function getAdminLevel() {
-    const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
-    return ADMIN_PERMISSIONS[currentUser] || 0;
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
+  return ADMIN_PERMISSIONS[currentUser] || 0;
 }
 
 function hasAdminPermission(requiredLevel) {
-    const userLevel = getAdminLevel();
-    return userLevel >= requiredLevel;
+  const userLevel = getAdminLevel();
+  return userLevel >= requiredLevel;
 }
 
 // Function to hide all admin-related content from non-admin users
 function hideAdminContentFromNonAdmins() {
-    // Return early if user is an admin
-    if (isAdmin()) {
-        console.log("Admin user detected, showing admin content");
-        return;
-    }
+  // Return early if user is an admin
+  if (isAdmin()) {
+    console.log("Admin user detected, showing admin content");
+    return;
+  }
 
-    console.log("Non-admin user detected, hiding admin content");
+  console.log("Non-admin user detected, hiding admin content");
 
-    // Hide admin panels in account settings
-    const adminPanels = document.querySelectorAll('.admin-panel, #admin');
-    adminPanels.forEach(panel => {
-        if (panel) panel.style.display = 'none';
-    });
+  // Hide admin panels in account settings
+  const adminPanels = document.querySelectorAll(".admin-panel, #admin");
+  adminPanels.forEach((panel) => {
+    if (panel) panel.style.display = "none";
+  });
 
-    // Hide admin tabs in navigation
-    const adminTabs = document.querySelectorAll('a[href*="admin"], a[href*="password-requests"]');
-    adminTabs.forEach(tab => {
-        if (tab) tab.style.display = 'none';
-    });
+  // Hide admin tabs in navigation
+  const adminTabs = document.querySelectorAll(
+    'a[href*="admin"], a[href*="password-requests"]',
+  );
+  adminTabs.forEach((tab) => {
+    if (tab) tab.style.display = "none";
+  });
 
-    // Hide admin tools and actions
-    const adminTools = document.querySelectorAll('.admin-tools, .admin-actions, .admin-section');
-    adminTools.forEach(tool => {
-        if (tool) tool.style.display = 'none';
-    });
+  // Hide admin tools and actions
+  const adminTools = document.querySelectorAll(
+    ".admin-tools, .admin-actions, .admin-section",
+  );
+  adminTools.forEach((tool) => {
+    if (tool) tool.style.display = "none";
+  });
 
-    // Hide admin buttons in knowledge base contributions
-    const adminButtons = document.querySelectorAll('.approve-contribution, .reject-contribution');
-    adminButtons.forEach(button => {
-        if (button) button.style.display = 'none';
-    });
+  // Hide admin buttons in knowledge base contributions
+  const adminButtons = document.querySelectorAll(
+    ".approve-contribution, .reject-contribution",
+  );
+  adminButtons.forEach((button) => {
+    if (button) button.style.display = "none";
+  });
 
-    // Remove admin-only class elements
-    document.querySelectorAll('.admin-only, .santa-only').forEach(element => {
-        if (element) element.style.display = 'none';
-    });
+  // Remove admin-only class elements
+  document.querySelectorAll(".admin-only, .santa-only").forEach((element) => {
+    if (element) element.style.display = "none";
+  });
 }
 
 /**
@@ -1427,40 +1479,43 @@ function hideAdminContentFromNonAdmins() {
  * @param {number} index - The index of the suggestion to delete
  */
 function deleteSuggestion(index) {
-    // Verify admin status
-    if (!isAdmin()) {
-        showNotification('Only administrators can delete suggestions.', 'error');
-        return;
-    }
+  // Verify admin status
+  if (!isAdmin()) {
+    showNotification("Only administrators can delete suggestions.", "error");
+    return;
+  }
 
-    // Get suggestions
-    let staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  // Get suggestions
+  let staffSuggestions =
+    JSON.parse(localStorage.getItem("staffSuggestions")) || [];
 
-    // Remove the suggestion
-    staffSuggestions.splice(index, 1);
+  // Remove the suggestion
+  staffSuggestions.splice(index, 1);
 
-    // Save back to localStorage
-    localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+  // Save back to localStorage
+  localStorage.setItem("staffSuggestions", JSON.stringify(staffSuggestions));
 
-    // Show success message
-    showNotification('Suggestion deleted successfully.', 'success');
+  // Show success message
+  showNotification("Suggestion deleted successfully.", "success");
 
-    // Update the display
-    displaySuggestions();
+  // Update the display
+  displaySuggestions();
 }
 
 /**
  * Display all suggestions in the suggestion status area
  */
 function displaySuggestions() {
-  const suggestionStatus = document.getElementById('suggestion-status');
+  const suggestionStatus = document.getElementById("suggestion-status");
   if (!suggestionStatus) return;
 
   // Get suggestions from local storage
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions')) || [];
+  const staffSuggestions =
+    JSON.parse(localStorage.getItem("staffSuggestions")) || [];
 
   if (staffSuggestions.length === 0) {
-    suggestionStatus.innerHTML = '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
+    suggestionStatus.innerHTML =
+      '<p class="no-suggestions">No suggestions have been submitted yet. Be the first to suggest an improvement!</p>';
     return;
   }
 
@@ -1468,8 +1523,8 @@ function displaySuggestions() {
   staffSuggestions.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   // Build HTML for suggestions list
-  let suggestionsHTML = '<h4>Staff Suggestions Board</h4>';
-  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? 's' : ''} submitted</p>`;
+  let suggestionsHTML = "<h4>Staff Suggestions Board</h4>";
+  suggestionsHTML += `<p class="suggestions-count">${staffSuggestions.length} suggestion${staffSuggestions.length !== 1 ? "s" : ""} submitted</p>`;
   suggestionsHTML += '<ul class="suggestions-list">';
 
   // Check if current user is admin
@@ -1481,28 +1536,29 @@ function displaySuggestions() {
     const formattedDate = `${date.toLocaleDateString()} at ${date.toLocaleTimeString()}`;
 
     // Create status badge
-    let statusClass = '';
-    let statusText = '';
+    let statusClass = "";
+    let statusText = "";
 
-    switch(suggestion.status) {
-      case 'approved':
-        statusClass = 'approved';
-        statusText = 'Approved';
+    switch (suggestion.status) {
+      case "approved":
+        statusClass = "approved";
+        statusText = "Approved";
         break;
-      case 'rejected':
-        statusClass = 'rejected';
-        statusText = 'Rejected';
+      case "rejected":
+        statusClass = "rejected";
+        statusText = "Rejected";
         break;
       default:
-        statusClass = 'pending';
-        statusText = 'Under Review';
+        statusClass = "pending";
+        statusText = "Under Review";
     }
 
     // Add delete button for admins
-    const adminControls = userIsAdmin ? 
-      `<button class="btn-delete" data-index="${index}">
+    const adminControls = userIsAdmin
+      ? `<button class="btn-delete" data-index="${index}">
         <i class="fas fa-trash"></i> Delete
-      </button>` : '';
+      </button>`
+      : "";
 
     suggestionsHTML += `
       <li>
@@ -1524,7 +1580,7 @@ function displaySuggestions() {
     `;
   });
 
-  suggestionsHTML += '</ul>';
+  suggestionsHTML += "</ul>";
 
   // Update the DOM
   suggestionStatus.innerHTML = suggestionsHTML;
@@ -1540,9 +1596,9 @@ function displaySuggestions() {
  * Attach admin event listeners (delete buttons)
  */
 function attachAdminEventListeners() {
-  document.querySelectorAll('.btn-delete').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
+  document.querySelectorAll(".btn-delete").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const index = parseInt(this.getAttribute("data-index"));
       deleteSuggestion(index);
     });
   });
@@ -1552,9 +1608,9 @@ function attachAdminEventListeners() {
  * Attach vote event listeners to suggestion vote buttons
  */
 function attachVoteEventListeners() {
-  document.querySelectorAll('.btn-vote').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
+  document.querySelectorAll(".btn-vote").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const index = parseInt(this.getAttribute("data-index"));
       handleVote(index, this);
     });
   });
@@ -1566,14 +1622,17 @@ function attachVoteEventListeners() {
  * @param {HTMLElement} buttonElement - The vote button element
  */
 function handleVote(index, buttonElement) {
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions'));
+  const staffSuggestions = JSON.parse(localStorage.getItem("staffSuggestions"));
 
   // Get the current user
-  const currentUser = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  const currentUser = sessionStorage.getItem("loggedInUser") || "Anonymous";
 
   // Check if user already voted
-  if (staffSuggestions[index].votedUsers && staffSuggestions[index].votedUsers.includes(currentUser)) {
-    showNotification('You have already voted on this suggestion.', 'error');
+  if (
+    staffSuggestions[index].votedUsers &&
+    staffSuggestions[index].votedUsers.includes(currentUser)
+  ) {
+    showNotification("You have already voted on this suggestion.", "error");
     return;
   }
 
@@ -1588,100 +1647,102 @@ function handleVote(index, buttonElement) {
   staffSuggestions[index].votedUsers.push(currentUser);
 
   // Save updated suggestions
-  localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+  localStorage.setItem("staffSuggestions", JSON.stringify(staffSuggestions));
 
   // Update the display
-  buttonElement.querySelector('.vote-count').textContent = staffSuggestions[index].votes;
+  buttonElement.querySelector(".vote-count").textContent =
+    staffSuggestions[index].votes;
 
-  showNotification('Your vote has been counted!', 'success');
+  showNotification("Your vote has been counted!", "success");
 }
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
   // FAQ Items Toggle
-  const faqQuestions = document.querySelectorAll('.faq-question');
+  const faqQuestions = document.querySelectorAll(".faq-question");
 
-  faqQuestions.forEach(question => {
-    question.addEventListener('click', function() {
+  faqQuestions.forEach((question) => {
+    question.addEventListener("click", function () {
       const answer = this.nextElementSibling;
 
       // Toggle active class on question
-      this.classList.toggle('active');
+      this.classList.toggle("active");
 
       // Toggle active class on answer
-      answer.classList.toggle('active');
+      answer.classList.toggle("active");
 
       // Change icon
-      const icon = this.querySelector('i');
+      const icon = this.querySelector("i");
       if (icon) {
-        if (this.classList.contains('active')) {
-          icon.classList.remove('fa-caret-right');
-          icon.classList.add('fa-caret-down');
+        if (this.classList.contains("active")) {
+          icon.classList.remove("fa-caret-right");
+          icon.classList.add("fa-caret-down");
         } else {
-          icon.classList.remove('fa-caret-down');
-          icon.classList.add('fa-caret-right');
+          icon.classList.remove("fa-caret-down");
+          icon.classList.add("fa-caret-right");
         }
       }
     });
   });
 
   // Guide Headers Toggle
-  const guideHeaders = document.querySelectorAll('.guide-header');
+  const guideHeaders = document.querySelectorAll(".guide-header");
 
-  guideHeaders.forEach(header => {
-    header.addEventListener('click', function() {
+  guideHeaders.forEach((header) => {
+    header.addEventListener("click", function () {
       // Toggle active class on header
-      this.classList.toggle('active');
+      this.classList.toggle("active");
 
       // Get guide ID and toggle content
-      const guideId = this.getAttribute('data-guide');
-      const content = document.getElementById(guideId + '-content');
+      const guideId = this.getAttribute("data-guide");
+      const content = document.getElementById(guideId + "-content");
 
       if (content) {
-        content.classList.toggle('active');
+        content.classList.toggle("active");
       }
     });
   });
 
   // Toggle guide content display
-  const guideCards = document.querySelectorAll('.guide-card');
+  const guideCards = document.querySelectorAll(".guide-card");
 
-  guideCards.forEach(card => {
-    card.addEventListener('click', function(e) {
+  guideCards.forEach((card) => {
+    card.addEventListener("click", function (e) {
       // Only toggle if the click is on the card but not on a button
-      if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
-        const content = this.querySelector('.guide-content');
+      if (e.target.tagName !== "BUTTON" && !e.target.closest("button")) {
+        const content = this.querySelector(".guide-content");
         if (content) {
-          content.classList.toggle('active');
+          content.classList.toggle("active");
         }
       }
     });
   });
 
   // Copy template buttons
-  const copyButtons = document.querySelectorAll('.copy-template');
+  const copyButtons = document.querySelectorAll(".copy-template");
 
-  copyButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
+  copyButtons.forEach((button) => {
+    button.addEventListener("click", function (e) {
       e.stopPropagation(); // Prevent triggering parent click events
 
-      const template = this.getAttribute('data-template');
+      const template = this.getAttribute("data-template");
       let textToCopy;
 
       // Get all paragraphs from the template content
-      const paragraphs = this.parentElement.querySelectorAll('p, li, ul, ol');
+      const paragraphs = this.parentElement.querySelectorAll("p, li, ul, ol");
 
       if (paragraphs.length > 0) {
         // Join all paragraphs with line breaks
         textToCopy = Array.from(paragraphs)
-          .map(p => p.textContent)
-          .join('\n\n');
+          .map((p) => p.textContent)
+          .join("\n\n");
       } else {
         // Fallback to getting just the immediate text
         textToCopy = this.parentElement.textContent;
       }
 
       // Copy to clipboard
-      navigator.clipboard.writeText(textToCopy)
+      navigator.clipboard
+        .writeText(textToCopy)
         .then(() => {
           // Change button text temporarily
           const originalText = this.innerHTML;
@@ -1691,32 +1752,34 @@ document.addEventListener('DOMContentLoaded', function() {
             this.innerHTML = originalText;
           }, 2000);
         })
-        .catch(err => {
-          console.error('Failed to copy: ', err);
+        .catch((err) => {
+          console.error("Failed to copy: ", err);
         });
     });
   });
 
   // Suggestion form handling
-  const suggestionForm = document.getElementById('submit-suggestion');
-  const suggestionText = document.getElementById('suggestion-text');
-  const suggestionStatus = document.getElementById('suggestion-status');
+  const suggestionForm = document.getElementById("submit-suggestion");
+  const suggestionText = document.getElementById("suggestion-text");
+  const suggestionStatus = document.getElementById("suggestion-status");
 
   if (suggestionForm && suggestionText && suggestionStatus) {
-    suggestionForm.addEventListener('click', function() {
+    suggestionForm.addEventListener("click", function () {
       const suggestion = suggestionText.value.trim();
 
-      if (suggestion === '') {
-        suggestionStatus.innerHTML = '<p class="error-message">Please enter a suggestion before submitting.</p>';
-        suggestionStatus.className = 'error';
+      if (suggestion === "") {
+        suggestionStatus.innerHTML =
+          '<p class="error-message">Please enter a suggestion before submitting.</p>';
+        suggestionStatus.className = "error";
         return;
       }
 
       // In a real application, you would send this to a server
       // For this demo, we'll just show a success message
-      suggestionStatus.innerHTML = '<p class="success-message">Thank you for your suggestion! It has been submitted for review.</p>';
-      suggestionStatus.className = 'success';
-      suggestionText.value = '';
+      suggestionStatus.innerHTML =
+        '<p class="success-message">Thank you for your suggestion! It has been submitted for review.</p>';
+      suggestionStatus.className = "success";
+      suggestionText.value = "";
 
       // Display the suggestion in the list (demo purposes)
       const now = new Date();
@@ -1737,17 +1800,17 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Logo upload handling
-  const logoUpload = document.getElementById('logo-upload');
-  const logoPreview = document.getElementById('logo-preview');
-  const footerLogo = document.getElementById('footer-logo');
+  const logoUpload = document.getElementById("logo-upload");
+  const logoPreview = document.getElementById("logo-preview");
+  const footerLogo = document.getElementById("footer-logo");
 
   if (logoUpload && logoPreview) {
-    logoUpload.addEventListener('change', function(event) {
+    logoUpload.addEventListener("change", function (event) {
       const file = event.target.files[0];
-      if (file && file.type.match('image.*')) {
+      if (file && file.type.match("image.*")) {
         const reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = function (e) {
           logoPreview.src = e.target.result;
           if (footerLogo) {
             footerLogo.src = e.target.result;
@@ -1783,20 +1846,20 @@ function initializeAccountCustomization() {
 
 // Add account settings button to header
 function addAccountButton() {
-  const headerActions = document.querySelector('.header-actions');
+  const headerActions = document.querySelector(".header-actions");
   if (headerActions) {
     // Create account button before logout button
-    const accountBtn = document.createElement('a');
-    accountBtn.id = 'account-btn';
-    accountBtn.className = 'btn btn-outline';
+    const accountBtn = document.createElement("a");
+    accountBtn.id = "account-btn";
+    accountBtn.className = "btn btn-outline";
     accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
-    accountBtn.style.cursor = 'pointer';
-    accountBtn.style.pointerEvents = 'all';
-    accountBtn.style.zIndex = '100';
-    accountBtn.href = 'account-settings.html'; // Direct link to account settings page
+    accountBtn.style.cursor = "pointer";
+    accountBtn.style.pointerEvents = "all";
+    accountBtn.style.zIndex = "100";
+    accountBtn.href = "account-settings.html"; // Direct link to account settings page
 
     // Insert before logout button
-    const logoutBtn = document.getElementById('logout-btn');
+    const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
       headerActions.insertBefore(accountBtn, logoutBtn);
     } else {
@@ -1804,20 +1867,20 @@ function addAccountButton() {
     }
 
     // Add user welcome with avatar
-    const username = sessionStorage.getItem('loggedInUser') || 'Staff';
+    const username = sessionStorage.getItem("loggedInUser") || "Staff";
     const userPrefs = getUserPreferences();
 
-    const userWelcome = document.createElement('div');
-    userWelcome.className = 'user-welcome';
+    const userWelcome = document.createElement("div");
+    userWelcome.className = "user-welcome";
 
-    const userAvatar = document.createElement('div');
-    userAvatar.className = 'user-avatar';
-    userAvatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
-    userAvatar.style.borderRadius = '50%';
-    userAvatar.style.width = '35px';
-    userAvatar.style.height = '35px';
-    userAvatar.style.aspectRatio = '1/1';
-    userAvatar.textContent = userPrefs.avatarEmoji || '👤';
+    const userAvatar = document.createElement("div");
+    userAvatar.className = "user-avatar";
+    userAvatar.style.backgroundColor = userPrefs.avatarColor || "#ED1F27";
+    userAvatar.style.borderRadius = "50%";
+    userAvatar.style.width = "35px";
+    userAvatar.style.height = "35px";
+    userAvatar.style.aspectRatio = "1/1";
+    userAvatar.textContent = userPrefs.avatarEmoji || "👤";
 
     userWelcome.appendChild(userAvatar);
     userWelcome.appendChild(document.createTextNode(`Welcome, ${username}!`));
@@ -1828,29 +1891,29 @@ function addAccountButton() {
 
 // Get user preferences from localStorage
 function getUserPreferences() {
-  const username = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  const username = sessionStorage.getItem("loggedInUser") || "Anonymous";
   const defaultPrefs = {
     displayName: username,
-    avatarEmoji: '👤',
-    avatarColor: '#ED1F27',
-    theme: 'red',
+    avatarEmoji: "👤",
+    avatarColor: "#ED1F27",
+    theme: "red",
     darkMode: false,
     notificationsEnabled: true,
-    joinDate: new Date().toISOString()
+    joinDate: new Date().toISOString(),
   };
 
   try {
     const savedPrefs = localStorage.getItem(`userPrefs_${username}`);
     return savedPrefs ? JSON.parse(savedPrefs) : defaultPrefs;
   } catch (e) {
-    console.error('Error loading user preferences:', e);
+    console.error("Error loading user preferences:", e);
     return defaultPrefs;
   }
 }
 
 // Save user preferences to localStorage
 function saveUserPreferences(prefs) {
-  const username = sessionStorage.getItem('loggedInUser') || 'Anonymous';
+  const username = sessionStorage.getItem("loggedInUser") || "Anonymous";
   localStorage.setItem(`userPrefs_${username}`, JSON.stringify(prefs));
 }
 
@@ -1865,11 +1928,11 @@ function loadUserProfileData() {
 
   // Apply dark mode if enabled
   if (userPrefs.darkMode) {
-    document.body.classList.add('dark-mode');
-    const darkModeToggle = document.querySelector('.dark-mode-toggle');
+    document.body.classList.add("dark-mode");
+    const darkModeToggle = document.querySelector(".dark-mode-toggle");
     if (darkModeToggle) {
       darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-      darkModeToggle.title = 'Toggle Light Mode';
+      darkModeToggle.title = "Toggle Light Mode";
     }
   }
 }
@@ -1879,24 +1942,25 @@ function loadUserProfileData() {
 // Function to handle password change request review for Santa
 function initializePasswordReviewPanel() {
   // Only show for Santa's account
-  const currentUser = sessionStorage.getItem('loggedInUser');
-  if (currentUser !== 'Santa') return;
+  const currentUser = sessionStorage.getItem("loggedInUser");
+  if (currentUser !== "Santa") return;
 
   // Add a dedicated button to header for Santa to access password requests
-  const headerActions = document.querySelector('.header-actions');
+  const headerActions = document.querySelector(".header-actions");
   if (headerActions) {
-    const passwordRequestsBtn = document.createElement('a');
-    passwordRequestsBtn.id = 'password-requests-btn';
-    passwordRequestsBtn.className = 'btn btn-outline';
-    passwordRequestsBtn.innerHTML = '<i class="fas fa-key"></i> Password Requests';
-    passwordRequestsBtn.style.cursor = 'pointer';
-    passwordRequestsBtn.href = 'password-requests.html'; // Direct link to password requests page
+    const passwordRequestsBtn = document.createElement("a");
+    passwordRequestsBtn.id = "password-requests-btn";
+    passwordRequestsBtn.className = "btn btn-outline";
+    passwordRequestsBtn.innerHTML =
+      '<i class="fas fa-key"></i> Password Requests';
+    passwordRequestsBtn.style.cursor = "pointer";
+    passwordRequestsBtn.href = "password-requests.html"; // Direct link to password requests page
 
     // Add santa-only class for styling
-    passwordRequestsBtn.classList.add('santa-only');
+    passwordRequestsBtn.classList.add("santa-only");
 
     // Insert before logout button
-    const logoutBtn = document.getElementById('logout-btn');
+    const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {
       headerActions.insertBefore(passwordRequestsBtn, logoutBtn);
     } else {
@@ -1904,18 +1968,22 @@ function initializePasswordReviewPanel() {
     }
 
     // Add notification badge if there are pending requests
-    const pendingRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]')
-      .filter(req => req.status === 'pending').length;
+    const pendingRequests = JSON.parse(
+      localStorage.getItem("passwordChangeRequests") || "[]",
+    ).filter((req) => req.status === "pending").length;
 
     if (pendingRequests > 0) {
-      const badge = document.createElement('span');
-      badge.className = 'notification-badge';
+      const badge = document.createElement("span");
+      badge.className = "notification-badge";
       badge.textContent = pendingRequests;
       passwordRequestsBtn.appendChild(badge);
 
       // Add a notification
       setTimeout(() => {
-        showNotification(`You have ${pendingRequests} pending password change request${pendingRequests > 1 ? 's' : ''}`, 'info');
+        showNotification(
+          `You have ${pendingRequests} pending password change request${pendingRequests > 1 ? "s" : ""}`,
+          "info",
+        );
       }, 1000);
     }
   }
@@ -1923,40 +1991,44 @@ function initializePasswordReviewPanel() {
 
 // Populate password change requests list
 function populatePasswordRequests() {
-  const requestsList = document.getElementById('password-requests-list');
+  const requestsList = document.getElementById("password-requests-list");
   if (!requestsList) return;
 
   // Get password requests
-  const passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
+  const passwordRequests = JSON.parse(
+    localStorage.getItem("passwordChangeRequests") || "[]",
+  );
 
   if (passwordRequests.length === 0) {
-    requestsList.innerHTML = '<p class="no-requests">No password change requests pending.</p>';
+    requestsList.innerHTML =
+      '<p class="no-requests">No password change requests pending.</p>';
     return;
   }
 
   // Build requests HTML
-  let requestsHTML = '';
+  let requestsHTML = "";
 
   passwordRequests.forEach((request, index) => {
     // Format date for display
     const requestDate = new Date(request.requestDate);
-    const formattedDate = requestDate.toLocaleDateString() + ' ' + requestDate.toLocaleTimeString();
+    const formattedDate =
+      requestDate.toLocaleDateString() + " " + requestDate.toLocaleTimeString();
 
-    let statusClass = '';
-    let statusText = '';
+    let statusClass = "";
+    let statusText = "";
 
-    switch(request.status) {
-      case 'approved':
-        statusClass = 'approved';
-        statusText = 'Approved';
+    switch (request.status) {
+      case "approved":
+        statusClass = "approved";
+        statusText = "Approved";
         break;
-      case 'rejected':
-        statusClass = 'rejected';
-        statusText = 'Rejected';
+      case "rejected":
+        statusClass = "rejected";
+        statusText = "Rejected";
         break;
       default:
-        statusClass = 'pending';
-        statusText = 'Pending Review';
+        statusClass = "pending";
+        statusText = "Pending Review";
     }
 
     // Build request card
@@ -1970,7 +2042,9 @@ function populatePasswordRequests() {
           <strong>Reason:</strong> ${request.reason}
         </div>
         <div class="request-status ${statusClass}">${statusText}</div>
-        ${request.status === 'pending' ? `
+        ${
+          request.status === "pending"
+            ? `
         <div class="request-actions">
           <button class="btn btn-sm btn-approve" data-index="${index}">
             <i class="fas fa-check"></i> Approve
@@ -1979,12 +2053,18 @@ function populatePasswordRequests() {
             <i class="fas fa-times"></i> Reject
           </button>
         </div>
-        ` : ''}
-        ${request.reviewedBy ? `
+        `
+            : ""
+        }
+        ${
+          request.reviewedBy
+            ? `
         <div class="request-review-info">
           Reviewed by ${request.reviewedBy} on ${new Date(request.reviewDate).toLocaleDateString()}
         </div>
-        ` : ''}
+        `
+            : ""
+        }
       </div>
     `;
   });
@@ -1993,13 +2073,20 @@ function populatePasswordRequests() {
   requestsList.innerHTML = requestsHTML;
 
   // Add event listeners for approve/reject buttons
-  document.querySelectorAll('.btn-approve').forEach(btn => {
-    btn.addEventListener('click', function() {
-      handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'approved');
+  document.querySelectorAll(".btn-approve").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      handlePasswordRequestAction(
+        parseInt(this.getAttribute("data-index")),
+        "approved",
+      );
     });
-  });  document.querySelectorAll('.btn-reject').forEach(btn => {
-    btn.addEventListener('click', function() {
-      handlePasswordRequestAction(parseInt(this.getAttribute('data-index')), 'rejected');
+  });
+  document.querySelectorAll(".btn-reject").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      handlePasswordRequestAction(
+        parseInt(this.getAttribute("data-index")),
+        "rejected",
+      );
     });
   });
 }
@@ -2007,24 +2094,32 @@ function populatePasswordRequests() {
 // Handle password request approval/rejection
 function handlePasswordRequestAction(index, action) {
   // Get requests
-  let passwordRequests = JSON.parse(localStorage.getItem('passwordChangeRequests') || '[]');
+  let passwordRequests = JSON.parse(
+    localStorage.getItem("passwordChangeRequests") || "[]",
+  );
 
   if (!passwordRequests[index]) return;
 
   // Update request status
   passwordRequests[index].status = action;
-  passwordRequests[index].reviewedBy = sessionStorage.getItem('loggedInUser');
+  passwordRequests[index].reviewedBy = sessionStorage.getItem("loggedInUser");
   passwordRequests[index].reviewDate = new Date().toISOString();
 
   // Save updated requests
-  localStorage.setItem('passwordChangeRequests', JSON.stringify(passwordRequests));
+  localStorage.setItem(
+    "passwordChangeRequests",
+    JSON.stringify(passwordRequests),
+  );
 
   // Update the display
   populatePasswordRequests();
 
   // Show notification
-  const actionText = action === 'approved' ? 'approved' : 'rejected';
-  showNotification(`Password change request ${actionText} successfully`, 'success');
+  const actionText = action === "approved" ? "approved" : "rejected";
+  showNotification(
+    `Password change request ${actionText} successfully`,
+    "success",
+  );
 }
 
 // Admin functions for enhanced permissions
@@ -2040,19 +2135,19 @@ function showAllUsersPanel() {
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     // Check if it's a user preferences key
-    if (key && key.startsWith('userPrefs_')) {
-      const username = key.replace('userPrefs_', '');
+    if (key && key.startsWith("userPrefs_")) {
+      const username = key.replace("userPrefs_", "");
       try {
         const userPrefs = JSON.parse(localStorage.getItem(key));
         users.push({
           username: username,
           displayName: userPrefs.displayName || username,
-          joinDate: userPrefs.joinDate || 'Unknown',
-          lastLogin: userPrefs.lastLogin || 'Never',
-          isAdmin: ADMIN_ACCOUNTS.includes(username)
+          joinDate: userPrefs.joinDate || "Unknown",
+          lastLogin: userPrefs.lastLogin || "Never",
+          isAdmin: ADMIN_ACCOUNTS.includes(username),
         });
       } catch (e) {
-        console.error('Error parsing user data:', e);
+        console.error("Error parsing user data:", e);
       }
     }
   }
@@ -2065,33 +2160,33 @@ function showAllUsersPanel() {
   });
 
   // Create users panel modal
-  const overlay = document.createElement('div');
-  overlay.className = 'admin-panel-overlay';
+  const overlay = document.createElement("div");
+  overlay.className = "admin-panel-overlay";
 
-  const panel = document.createElement('div');
-  panel.className = 'admin-panel-container';
+  const panel = document.createElement("div");
+  panel.className = "admin-panel-container";
 
   // Create header
-  const header = document.createElement('div');
-  header.className = 'admin-panel-header';
+  const header = document.createElement("div");
+  header.className = "admin-panel-header";
   header.innerHTML = `
     <h2><i class="fas fa-users"></i> User Management</h2>
     <span>${users.length} users registered</span>
   `;
 
   // Create user list
-  const userList = document.createElement('div');
-  userList.className = 'admin-user-list';
+  const userList = document.createElement("div");
+  userList.className = "admin-user-list";
 
   if (users.length === 0) {
     userList.innerHTML = '<p class="no-data">No users found</p>';
   } else {
     // Create table for users
-    const table = document.createElement('table');
-    table.className = 'admin-users-table';
+    const table = document.createElement("table");
+    table.className = "admin-users-table";
 
     // Table header
-    const thead = document.createElement('thead');
+    const thead = document.createElement("thead");
     thead.innerHTML = `
       <tr>
         <th>Username</th>
@@ -2103,28 +2198,34 @@ function showAllUsersPanel() {
     `;
 
     // Table body
-    const tbody = document.createElement('tbody');
+    const tbody = document.createElement("tbody");
 
-    users.forEach(user => {
-      const tr = document.createElement('tr');
+    users.forEach((user) => {
+      const tr = document.createElement("tr");
 
       // Format join date
-      const joinDate = user.joinDate !== 'Unknown' ? 
-        new Date(user.joinDate).toLocaleDateString() : 'Unknown';
+      const joinDate =
+        user.joinDate !== "Unknown"
+          ? new Date(user.joinDate).toLocaleDateString()
+          : "Unknown";
 
       tr.innerHTML = `
         <td>${user.username}</td>
         <td>${user.displayName}</td>
         <td>${joinDate}</td>
-        <td>${user.isAdmin ? '<span class="admin-badge">Yes</span>' : 'No'}</td>
+        <td>${user.isAdmin ? '<span class="admin-badge">Yes</span>' : "No"}</td>
         <td class="actions">
           <button class="btn-sm view-user" data-username="${user.username}">
             <i class="fas fa-eye"></i>
           </button>
-          ${getAdminLevel() >= 3 ? `
+          ${
+            getAdminLevel() >= 3
+              ? `
           <button class="btn-sm remove-user" data-username="${user.username}">
             <i class="fas fa-trash"></i>
-          </button>` : ''}
+          </button>`
+              : ""
+          }
         </td>
       `;
 
@@ -2137,9 +2238,9 @@ function showAllUsersPanel() {
   }
 
   // Add close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn";
+  closeBtn.textContent = "Close";
 
   // Add all elements to the panel
   panel.appendChild(header);
@@ -2151,29 +2252,33 @@ function showAllUsersPanel() {
   document.body.appendChild(overlay);
 
   // Add event listeners
-  closeBtn.addEventListener('click', () => {
+  closeBtn.addEventListener("click", () => {
     document.body.removeChild(overlay);
   });
 
   // View user buttons
-  document.querySelectorAll('.view-user').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const username = this.getAttribute('data-username');
+  document.querySelectorAll(".view-user").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const username = this.getAttribute("data-username");
       viewUserDetails(username);
     });
   });
 
   // Remove user buttons (for super admins only)
   if (getAdminLevel() >= 3) {
-    document.querySelectorAll('.remove-user').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const username = this.getAttribute('data-username');
-        if (username === sessionStorage.getItem('loggedInUser')) {
+    document.querySelectorAll(".remove-user").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const username = this.getAttribute("data-username");
+        if (username === sessionStorage.getItem("loggedInUser")) {
           showNotification("You cannot remove your own account!", "error");
           return;
         }
 
-        if (confirm(`Are you sure you want to remove user "${username}"? This action cannot be undone.`)) {
+        if (
+          confirm(
+            `Are you sure you want to remove user "${username}"? This action cannot be undone.`,
+          )
+        ) {
           // Remove user preferences
           localStorage.removeItem(`userPrefs_${username}`);
           showNotification(`User "${username}" has been removed.`, "success");
@@ -2193,7 +2298,7 @@ function showAllUsersPanel() {
  */
 function viewUserDetails(username) {
   const userPrefsKey = `userPrefs_${username}`;
-  const userPrefs = JSON.parse(localStorage.getItem(userPrefsKey) || '{}');
+  const userPrefs = JSON.parse(localStorage.getItem(userPrefsKey) || "{}");
 
   if (!userPrefs) {
     showNotification("User preferences not found", "error");
@@ -2201,25 +2306,26 @@ function viewUserDetails(username) {
   }
 
   // Create user details modal
-  const overlay = document.createElement('div');
-  overlay.className = 'user-details-overlay';
+  const overlay = document.createElement("div");
+  overlay.className = "user-details-overlay";
 
-  const panel = document.createElement('div');
-  panel.className = 'user-details-container';
+  const panel = document.createElement("div");
+  panel.className = "user-details-container";
 
   // Add user avatar
-  const avatar = document.createElement('div');
-  avatar.className = 'user-avatar large';
-  avatar.style.backgroundColor = userPrefs.avatarColor || '#ED1F27';
-  avatar.textContent = userPrefs.avatarEmoji || '👤';
+  const avatar = document.createElement("div");
+  avatar.className = "user-avatar large";
+  avatar.style.backgroundColor = userPrefs.avatarColor || "#ED1F27";
+  avatar.textContent = userPrefs.avatarEmoji || "👤";
 
   // Format dates
-  const joinDate = userPrefs.joinDate ? 
-    new Date(userPrefs.joinDate).toLocaleString() : 'Unknown';
+  const joinDate = userPrefs.joinDate
+    ? new Date(userPrefs.joinDate).toLocaleString()
+    : "Unknown";
 
   // Build details content
-  const details = document.createElement('div');
-  details.className = 'user-details-content';
+  const details = document.createElement("div");
+  details.className = "user-details-content";
   details.innerHTML = `
     <h2>${username}</h2>
     <div class="user-info-grid">
@@ -2233,24 +2339,27 @@ function viewUserDetails(username) {
       </div>
       <div class="info-row">
         <span class="info-label">Admin Status:</span>
-        <span class="info-value">${ADMIN_ACCOUNTS.includes(username) ? 
-          `Admin Level ${ADMIN_PERMISSIONS[username] || 1}` : 'Regular User'}</span>
+        <span class="info-value">${
+          ADMIN_ACCOUNTS.includes(username)
+            ? `Admin Level ${ADMIN_PERMISSIONS[username] || 1}`
+            : "Regular User"
+        }</span>
       </div>
       <div class="info-row">
         <span class="info-label">Theme:</span>
-        <span class="info-value">${userPrefs.theme || 'Default'}</span>
+        <span class="info-value">${userPrefs.theme || "Default"}</span>
       </div>
       <div class="info-row">
         <span class="info-label">Dark Mode:</span>
-        <span class="info-value">${userPrefs.darkMode ? 'Enabled' : 'Disabled'}</span>
+        <span class="info-value">${userPrefs.darkMode ? "Enabled" : "Disabled"}</span>
       </div>
     </div>
   `;
 
   // Close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn";
+  closeBtn.textContent = "Close";
 
   // Assemble the panel
   panel.appendChild(avatar);
@@ -2262,7 +2371,7 @@ function viewUserDetails(username) {
   document.body.appendChild(overlay);
 
   // Add event listener to close
-  closeBtn.addEventListener('click', () => {
+  closeBtn.addEventListener("click", () => {
     document.body.removeChild(overlay);
   });
 }
@@ -2272,26 +2381,28 @@ function viewUserDetails(username) {
  */
 function showSuggestionsManagementPanel() {
   // Get suggestions
-  const staffSuggestions = JSON.parse(localStorage.getItem('staffSuggestions') || '[]');
+  const staffSuggestions = JSON.parse(
+    localStorage.getItem("staffSuggestions") || "[]",
+  );
 
   // Create panel
-  const overlay = document.createElement('div');
-  overlay.className = 'admin-panel-overlay';
+  const overlay = document.createElement("div");
+  overlay.className = "admin-panel-overlay";
 
-  const panel = document.createElement('div');
-  panel.className = 'admin-panel-container wider';
+  const panel = document.createElement("div");
+  panel.className = "admin-panel-container wider";
 
   // Create header
-  const header = document.createElement('div');
-  header.className = 'admin-panel-header';
+  const header = document.createElement("div");
+  header.className = "admin-panel-header";
   header.innerHTML = `
     <h2><i class="fas fa-tasks"></i> Suggestions Management</h2>
     <span>${staffSuggestions.length} suggestions in system</span>
   `;
 
   // Create suggestions list
-  const suggestionsList = document.createElement('div');
-  suggestionsList.className = 'admin-suggestions-list';
+  const suggestionsList = document.createElement("div");
+  suggestionsList.className = "admin-suggestions-list";
 
   if (staffSuggestions.length === 0) {
     suggestionsList.innerHTML = '<p class="no-data">No suggestions found</p>';
@@ -2300,11 +2411,11 @@ function showSuggestionsManagementPanel() {
     staffSuggestions.sort((a, b) => b.votes - a.votes);
 
     // Create table
-    const table = document.createElement('table');
-    table.className = 'admin-suggestions-table';
+    const table = document.createElement("table");
+    table.className = "admin-suggestions-table";
 
     // Table header
-    const thead = document.createElement('thead');
+    const thead = document.createElement("thead");
     thead.innerHTML = `
       <tr>
         <th>Author</th>
@@ -2317,10 +2428,10 @@ function showSuggestionsManagementPanel() {
     `;
 
     // Table body
-    const tbody = document.createElement('tbody');
+    const tbody = document.createElement("tbody");
 
     staffSuggestions.forEach((suggestion, index) => {
-      const tr = document.createElement('tr');
+      const tr = document.createElement("tr");
 
       // Format date
       const date = new Date(suggestion.date);
@@ -2330,11 +2441,14 @@ function showSuggestionsManagementPanel() {
       tr.className = suggestion.status;
 
       // Create status dropdown options
-      const statusOptions = ['pending', 'approved', 'rejected']
-        .map(status => `<option value="${status}" ${suggestion.status === status ? 'selected' : ''}>${
-          status.charAt(0).toUpperCase() + status.slice(1)
-        }</option>`)
-        .join('');
+      const statusOptions = ["pending", "approved", "rejected"]
+        .map(
+          (status) =>
+            `<option value="${status}" ${suggestion.status === status ? "selected" : ""}>${
+              status.charAt(0).toUpperCase() + status.slice(1)
+            }</option>`,
+        )
+        .join("");
 
       tr.innerHTML = `
         <td>${suggestion.author}</td>
@@ -2362,9 +2476,9 @@ function showSuggestionsManagementPanel() {
   }
 
   // Close button
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'btn';
-  closeBtn.textContent = 'Close';
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "btn";
+  closeBtn.textContent = "Close";
 
   // Build panel
   panel.appendChild(header);
@@ -2376,48 +2490,58 @@ function showSuggestionsManagementPanel() {
   document.body.appendChild(overlay);
 
   // Add event listeners
-  closeBtn.addEventListener('click', () => {
+  closeBtn.addEventListener("click", () => {
     document.body.removeChild(overlay);
   });
 
   // Status select change events
-  document.querySelectorAll('.status-select').forEach(select => {
-    select.addEventListener('change', function() {
-      const index = parseInt(this.getAttribute('data-index'));
+  document.querySelectorAll(".status-select").forEach((select) => {
+    select.addEventListener("change", function () {
+      const index = parseInt(this.getAttribute("data-index"));
       const newStatus = this.value;
 
       // Update status
       staffSuggestions[index].status = newStatus;
-      staffSuggestions[index].reviewedBy = sessionStorage.getItem('loggedInUser');
+      staffSuggestions[index].reviewedBy =
+        sessionStorage.getItem("loggedInUser");
       staffSuggestions[index].reviewDate = new Date().toISOString();
 
       // Save changes
-      localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+      localStorage.setItem(
+        "staffSuggestions",
+        JSON.stringify(staffSuggestions),
+      );
 
       // Update row class
-      this.closest('tr').className = newStatus;
+      this.closest("tr").className = newStatus;
 
-      showNotification(`Suggestion status updated to "${newStatus}"`, "success");
+      showNotification(
+        `Suggestion status updated to "${newStatus}"`,
+        "success",
+      );
     });
   });
 
   // Delete suggestion buttons
-  document.querySelectorAll('.delete-suggestion').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const index = parseInt(this.getAttribute('data-index'));
+  document.querySelectorAll(".delete-suggestion").forEach((btn) => {
+    btn.addEventListener("click", function () {
+      const index = parseInt(this.getAttribute("data-index"));
 
-      if (confirm('Are you sure you want to delete this suggestion?')) {
+      if (confirm("Are you sure you want to delete this suggestion?")) {
         // Remove the suggestion
         staffSuggestions.splice(index, 1);
 
         // Save changes
-        localStorage.setItem('staffSuggestions', JSON.stringify(staffSuggestions));
+        localStorage.setItem(
+          "staffSuggestions",
+          JSON.stringify(staffSuggestions),
+        );
 
         // Refresh panel
         document.body.removeChild(overlay);
         showSuggestionsManagementPanel();
 
-        showNotification('Suggestion deleted successfully', 'success');
+        showNotification("Suggestion deleted successfully", "success");
       }
     });
   });
@@ -2427,52 +2551,56 @@ function showSuggestionsManagementPanel() {
  * Initialize enhanced mobile menu for better navigation
  */
 function initializeMobileMenu() {
-  const nav = document.querySelector('nav');
+  const nav = document.querySelector("nav");
   if (!nav) return;
 
   // Add mobile class for styling
   if (window.innerWidth <= 768) {
-    nav.classList.add('mobile-nav');
+    nav.classList.add("mobile-nav");
 
     // Create dropdown categorization for mobile
-    const navItems = nav.querySelectorAll('li a');
+    const navItems = nav.querySelectorAll("li a");
     let categories = {
-      'Main': [],
-      'Guides': [],
-      'Support': [],
-      'Admin': []
+      Main: [],
+      Guides: [],
+      Support: [],
+      Admin: [],
     };
 
     // Categorize nav items
-    navItems.forEach(item => {
-      const href = item.getAttribute('href');
+    navItems.forEach((item) => {
+      const href = item.getAttribute("href");
       const text = item.textContent;
 
-      if (href.includes('guide-')) {
-        categories['Guides'].push(item.parentElement);
-      } else if (href.includes('#script') || href.includes('#bug') || href.includes('#template')) {
-        categories['Support'].push(item.parentElement);
-      } else if (href.includes('account') || href.includes('password')) {
-        categories['Admin'].push(item.parentElement);
+      if (href.includes("guide-")) {
+        categories["Guides"].push(item.parentElement);
+      } else if (
+        href.includes("#script") ||
+        href.includes("#bug") ||
+        href.includes("#template")
+      ) {
+        categories["Support"].push(item.parentElement);
+      } else if (href.includes("account") || href.includes("password")) {
+        categories["Admin"].push(item.parentElement);
       } else {
-        categories['Main'].push(item.parentElement);
+        categories["Main"].push(item.parentElement);
       }
     });
 
     // Clear existing nav
-    nav.querySelector('ul').innerHTML = '';
+    nav.querySelector("ul").innerHTML = "";
 
     // Rebuild nav with categories for mobile
     Object.entries(categories).forEach(([category, items]) => {
       if (items.length === 0) return;
 
-      const categoryHeader = document.createElement('li');
-      categoryHeader.className = 'nav-category';
+      const categoryHeader = document.createElement("li");
+      categoryHeader.className = "nav-category";
       categoryHeader.innerHTML = `<span>${category}</span>`;
-      nav.querySelector('ul').appendChild(categoryHeader);
+      nav.querySelector("ul").appendChild(categoryHeader);
 
-      items.forEach(item => {
-        nav.querySelector('ul').appendChild(item.cloneNode(true));
+      items.forEach((item) => {
+        nav.querySelector("ul").appendChild(item.cloneNode(true));
       });
     });
 
@@ -2480,20 +2608,28 @@ function initializeMobileMenu() {
     let touchStartX = 0;
     let touchEndX = 0;
 
-    document.addEventListener('touchstart', e => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, false);
+    document.addEventListener(
+      "touchstart",
+      (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      },
+      false,
+    );
 
-    document.addEventListener('touchend', e => {
-      touchEndX = e.changedTouches[0].screenX;
-      handleSwipe();
-    }, false);
+    document.addEventListener(
+      "touchend",
+      (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      },
+      false,
+    );
 
     const handleSwipe = () => {
       if (touchEndX < touchStartX && touchStartX - touchEndX > 100) {
         // Swipe left - close menu
-        nav.style.display = 'none';
-        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
+        nav.style.display = "none";
+        const mobileMenuBtn = document.querySelector(".mobile-menu-toggle");
         if (mobileMenuBtn) {
           mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
         }
@@ -2501,8 +2637,8 @@ function initializeMobileMenu() {
 
       if (touchEndX > touchStartX && touchEndX - touchStartX > 100) {
         // Swipe right - open menu
-        nav.style.display = 'block';
-        const mobileMenuBtn = document.querySelector('.mobile-menu-toggle');
+        nav.style.display = "block";
+        const mobileMenuBtn = document.querySelector(".mobile-menu-toggle");
         if (mobileMenuBtn) {
           mobileMenuBtn.innerHTML = '<i class="fas fa-times"></i> Close';
         }
@@ -2517,7 +2653,10 @@ function initializeMobileMenu() {
 function resetAllSiteData() {
   // This is a dangerous action! Only allow for level 3 admins
   if (getAdminLevel() < 3) {
-    showNotification('You do not have permission to perform this action', 'error');
+    showNotification(
+      "You do not have permission to perform this action",
+      "error",
+    );
     return;
   }
 
@@ -2525,38 +2664,46 @@ function resetAllSiteData() {
   const backup = {
     timestamp: new Date().toISOString(),
     userData: {},
-    suggestions: JSON.parse(localStorage.getItem('staffSuggestions') || '[]'),
-    backupCreator: sessionStorage.getItem('loggedInUser')
+    suggestions: JSON.parse(localStorage.getItem("staffSuggestions") || "[]"),
+    backupCreator: sessionStorage.getItem("loggedInUser"),
   };
 
   // Backup all user preferences
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (key && key.startsWith('userPrefs_')) {
-      backup.userData[key] = JSON.parse(localStorage.getItem(key) || '{}');
+    if (key && key.startsWith("userPrefs_")) {
+      backup.userData[key] = JSON.parse(localStorage.getItem(key) || "{}");
     }
   }
 
   // Store backup in localStorage
-  localStorage.setItem('siteBackup_' + new Date().getTime(), JSON.stringify(backup));
+  localStorage.setItem(
+    "siteBackup_" + new Date().getTime(),
+    JSON.stringify(backup),
+  );
 
   // Clear all localStorage except the backup
-  const backupKeys = Object.keys(localStorage).filter(key => key.startsWith('siteBackup_'));
+  const backupKeys = Object.keys(localStorage).filter((key) =>
+    key.startsWith("siteBackup_"),
+  );
   localStorage.clear();
 
   // Restore backups
-  backupKeys.forEach(key => {
+  backupKeys.forEach((key) => {
     localStorage.setItem(key, backup);
   });
 
   // Keep current user logged in
-  const currentUser = sessionStorage.getItem('loggedInUser');
-  sessionStorage.setItem('staffLoggedIn', 'true');
-  localStorage.setItem('staffLoggedIn', 'true');
-  sessionStorage.setItem('loggedInUser', currentUser);
-  localStorage.setItem('loggedInUser', currentUser);
+  const currentUser = sessionStorage.getItem("loggedInUser");
+  sessionStorage.setItem("staffLoggedIn", "true");
+  localStorage.setItem("staffLoggedIn", "true");
+  sessionStorage.setItem("loggedInUser", currentUser);
+  localStorage.setItem("loggedInUser", currentUser);
 
-  showNotification('All site data has been reset. Reloading page...', 'success');
+  showNotification(
+    "All site data has been reset. Reloading page...",
+    "success",
+  );
 
   // Reload page after delay
   setTimeout(() => {
@@ -2564,13 +2711,13 @@ function resetAllSiteData() {
   }, 2000);
 }
 // Copy template to clipboard
-    document.querySelectorAll('.copy-template').forEach(button => {
-        button.addEventListener('click', function() {
-            const templateId = this.getAttribute('data-template');
-            let textToCopy = '';
+document.querySelectorAll(".copy-template").forEach((button) => {
+  button.addEventListener("click", function () {
+    const templateId = this.getAttribute("data-template");
+    let textToCopy = "";
 
-            if (templateId === 'clan-requirements') {
-                textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
+    if (templateId === "clan-requirements") {
+      textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
 
 ✅ Clan Requirements:
 🌟 Your server must have 1,000+ members
@@ -2592,6 +2739,6 @@ You can still get featured with a paid promo:
 ### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
 
 Let me know if you're interested or have any questions! 😎`;
-            }
-        });
-    });
+    }
+  });
+});
