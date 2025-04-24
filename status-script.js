@@ -942,7 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusBadge.innerHTML = `<i class="fas fa-${iconName}"></i> ${statusLabel}`;
 
         // Update the modesStatus array
-        const modeIndex = modesStatus.findIndex(mode => mode.name === modeName);
+        const modeIndex = modesStatus.findIndex(mode => mode.name ===modeName);
         if (modeIndex !== -1) {
             modesStatus[modeIndex].status = statusValue;
         }
