@@ -651,33 +651,39 @@ function showLogoSwitcher() {
 
 // Notification System
 function showNotification(message, type = "info") {
-  // Create notification element if it doesn't exist
-  let notification = document.querySelector(".notification");
-
-  if (notification) {
-    // If a notification is already visible, remove it first
-    if (notification.classList.contains("notification-show")) {
-      notification.classList.add("notification-closing");
+  // If a notification is already visible, remove it first
+  const existingNotification = document.querySelector(".notification");
+  if (existingNotification) {
+    if (existingNotification.classList.contains("notification-show")) {
+      existingNotification.classList.add("notification-closing");
       setTimeout(() => {
-        notification.remove();
-        showNotification(message, type);
+        if (document.body.contains(existingNotification)) {
+          existingNotification.remove();
+        }
+        // Create and show new notification after removing the old one
+        createAndShowNotification(message, type);
       }, 300);
       return;
+    } else {
+      existingNotification.remove();
     }
-    notification.remove();
   }
 
-  // Create new notification
-  notification = document.createElement("div");
-  notification.className = `notification ${type}`;
+  // Create and show notification
+  createAndShowNotification(message, type);
+}
 
+// Helper function to create and show a notification
+function createAndShowNotification(message, type) {
   // Set icon based on type
   let icon = "info-circle";
   if (type === "success") icon = "check-circle";
   if (type === "error") icon = "exclamation-circle";
 
-  // Create notification content
-  notification.innerHTML = `
+  // Create notification element
+  const notificationElement = document.createElement("div");
+  notificationElement.className = `notification ${type}`;
+  notificationElement.innerHTML = `
     <div class="notification-content">
       <i class="fas fa-${icon}"></i>
       <p>${message}</p>
@@ -685,35 +691,37 @@ function showNotification(message, type = "info") {
     <button class="notification-close"><i class="fas fa-times"></i></button>
   `;
 
-  // Add to DOM
-  document.body.appendChild(notification);
+  // Add to document
+  document.body.appendChild(notificationElement);
 
-  // Show notification
-  setTimeout(() => {
-    notification.classList.add("notification-show");
-  }, 10);
-
-  // Add close functionality
-  notification
+  // Add event listener to close button
+  notificationElement
     .querySelector(".notification-close")
     .addEventListener("click", () => {
-      notification.classList.add("notification-closing");
+      notificationElement.classList.add("notification-closing");
       setTimeout(() => {
-        notification.remove();
+        if (document.body.contains(notificationElement)) {
+          notificationElement.remove();
+        }
       }, 300);
     });
 
   // Auto hide after 5 seconds
   setTimeout(() => {
-    if (notification && document.body.contains(notification)) {
-      notification.classList.add("notification-closing");
+    if (document.body.contains(notificationElement)) {
+      notificationElement.classList.add("notification-closing");
       setTimeout(() => {
-        if (notification && document.body.contains(notification)) {
-          notification.remove();
+        if (document.body.contains(notificationElement)) {
+          notificationElement.remove();
         }
       }, 300);
     }
   }, 5000);
+
+  // Animate in (delayed slightly to ensure DOM update)
+  setTimeout(() => {
+    notificationElement.classList.add("notification-show");
+  }, 10);
 }
 
 // Navigation
@@ -783,7 +791,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const isDarkMode = !document.body.classList.contains("dark-mode");
     updateDarkModeUI(isDarkMode);
     localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
-    
+
     // Also update user preferences if logged in
     const currentUser = sessionStorage.getItem("loggedInUser");
     if (currentUser) {
@@ -795,13 +803,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("Error updating user preferences:", e);
       }
     }
-    
+
     showNotification(isDarkMode ? "Dark mode enabled" : "Light mode enabled", "success");
   });
 
   // Check for saved dark mode preference
   const savedDarkMode = localStorage.getItem("darkMode") === "enabled";
-  
+
   // If user is logged in, prioritize their preferences
   const currentUser = sessionStorage.getItem("loggedInUser");
   if (currentUser) {
@@ -816,7 +824,7 @@ document.addEventListener("DOMContentLoaded", function () {
       console.error("Error loading user preferences:", e);
     }
   }
-  
+
   // Fall back to general preference
   updateDarkModeUI(savedDarkMode);
 });
@@ -872,7 +880,7 @@ function setActiveNavLink() {
 
 window.addEventListener("scroll", setActiveNavLink);
 
-// Unified Notification System
+// Unified Notification System - Also used by status-script.js
 function showNotification(message, type = "info") {
   // Create notification element if it doesn't exist
   let notification = document.querySelector(".notification");
@@ -882,7 +890,7 @@ function showNotification(message, type = "info") {
     if (notification.classList.contains("notification-show")) {
       notification.classList.remove("notification-show");
       notification.classList.add("notification-closing");
-      
+
       setTimeout(() => {
         if (notification && document.body.contains(notification)) {
           notification.remove();
@@ -892,7 +900,7 @@ function showNotification(message, type = "info") {
       }, 300);
       return;
     }
-    
+
     // Remove any existing notification that's not visible
     notification.remove();
   }
@@ -964,7 +972,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const scrollTop =
       document.documentElement.scrollTop || document.body.scrollTop;
     const scrollHeight =
-      document.documentElement.scrollHeight -
+      documentdocumentElement.scrollHeight -
       document.documentElement.clientHeight;
     const scrollProgress = (scrollTop / scrollHeight) * 100;
     progressBar.style.width = scrollProgress + "%";
