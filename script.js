@@ -766,25 +766,59 @@ document.addEventListener("DOMContentLoaded", function () {
   darkModeToggle.title = "Toggle Dark Mode";
   document.body.appendChild(darkModeToggle);
 
-  darkModeToggle.addEventListener("click", function () {
-    document.body.classList.toggle("dark-mode");
-    if (document.body.classList.contains("dark-mode")) {
+  // Function to update dark mode UI
+  function updateDarkModeUI(isDarkMode) {
+    if (isDarkMode) {
+      document.body.classList.add("dark-mode");
       darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
       darkModeToggle.title = "Toggle Light Mode";
-      localStorage.setItem("darkMode", "enabled");
     } else {
+      document.body.classList.remove("dark-mode");
       darkModeToggle.innerHTML = '<i class="fas fa-moon"></i>';
       darkModeToggle.title = "Toggle Dark Mode";
-      localStorage.setItem("darkMode", "disabled");
     }
+  }
+
+  darkModeToggle.addEventListener("click", function () {
+    const isDarkMode = !document.body.classList.contains("dark-mode");
+    updateDarkModeUI(isDarkMode);
+    localStorage.setItem("darkMode", isDarkMode ? "enabled" : "disabled");
+    
+    // Also update user preferences if logged in
+    const currentUser = sessionStorage.getItem("loggedInUser");
+    if (currentUser) {
+      try {
+        const userPrefs = JSON.parse(localStorage.getItem(`userPrefs_${currentUser}`) || "{}");
+        userPrefs.darkMode = isDarkMode;
+        localStorage.setItem(`userPrefs_${currentUser}`, JSON.stringify(userPrefs));
+      } catch (e) {
+        console.error("Error updating user preferences:", e);
+      }
+    }
+    
+    showNotification(isDarkMode ? "Dark mode enabled" : "Light mode enabled", "success");
   });
 
   // Check for saved dark mode preference
-  if (localStorage.getItem("darkMode") === "enabled") {
-    document.body.classList.add("dark-mode");
-    darkModeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-    darkModeToggle.title = "Toggle Light Mode";
+  const savedDarkMode = localStorage.getItem("darkMode") === "enabled";
+  
+  // If user is logged in, prioritize their preferences
+  const currentUser = sessionStorage.getItem("loggedInUser");
+  if (currentUser) {
+    try {
+      const userPrefs = JSON.parse(localStorage.getItem(`userPrefs_${currentUser}`) || "{}");
+      // If user has a dark mode preference, use that instead
+      if (userPrefs.darkMode !== undefined) {
+        updateDarkModeUI(userPrefs.darkMode);
+        return;
+      }
+    } catch (e) {
+      console.error("Error loading user preferences:", e);
+    }
   }
+  
+  // Fall back to general preference
+  updateDarkModeUI(savedDarkMode);
 });
 
 // Add typing animation to headers
@@ -838,53 +872,84 @@ function setActiveNavLink() {
 
 window.addEventListener("scroll", setActiveNavLink);
 
-// Notification System
+// Unified Notification System
 function showNotification(message, type = "info") {
-  // Remove existing notifications
-  const existingNotification = document.querySelector(".notification");
-  if (existingNotification) {
-    existingNotification.remove();
+  // Create notification element if it doesn't exist
+  let notification = document.querySelector(".notification");
+
+  if (notification) {
+    // If a notification is already visible, remove it first
+    if (notification.classList.contains("notification-show")) {
+      notification.classList.remove("notification-show");
+      notification.classList.add("notification-closing");
+      
+      setTimeout(() => {
+        if (notification && document.body.contains(notification)) {
+          notification.remove();
+        }
+        // Show the new notification after removing the existing one
+        showNotification(message, type);
+      }, 300);
+      return;
+    }
+    
+    // Remove any existing notification that's not visible
+    notification.remove();
   }
 
-  // Create notification element
-  const notificationElement = document.createElement("div");
-  notificationElement.className = `notification ${type}`;
-  notificationElement.innerHTML = `
+  // Create new notification
+  notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+
+  // Set icon based on type
+  let icon = "info-circle";
+  if (type === "success") icon = "check-circle";
+  if (type === "error") icon = "exclamation-circle";
+  if (type === "warning") icon = "exclamation-triangle";
+
+  // Create notification content
+  notification.innerHTML = `
     <div class="notification-content">
-      <i class="fas ${type === "success" ? "fa-check-circle" : type === "error" ? "fa-exclamation-circle" : "fa-info-circle"}"></i>
-      <span>${message}</span>
+      <i class="fas fa-${icon}"></i>
+      <div class="notification-message">${message}</div>
     </div>
     <button class="notification-close"><i class="fas fa-times"></i></button>
   `;
 
-  // Add to document
-  document.body.appendChild(notificationElement);
+  // Add to DOM
+  document.body.appendChild(notification);
 
-  // Add event listener to close button
+  // Show notification with slight delay to ensure proper animation
+  setTimeout(() => {
+    notification.classList.add("notification-show");
+  }, 10);
 
-  notificationElement
-    .querySelector(".notification-close")
-    .addEventListener("click", () => {
-      notificationElement.classList.add("notification-closing");
+  // Add close functionality
+  const closeButton = notification.querySelector(".notification-close");
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      notification.classList.remove("notification-show");
+      notification.classList.add("notification-closing");
       setTimeout(() => {
-        notificationElement.remove();
+        if (notification && document.body.contains(notification)) {
+          notification.remove();
+        }
       }, 300);
     });
+  }
 
   // Auto hide after 5 seconds
   setTimeout(() => {
-    if (document.body.contains(notificationElement)) {
-      notificationElement.classList.add("notification-closing");
+    if (notification && document.body.contains(notification)) {
+      notification.classList.remove("notification-show");
+      notification.classList.add("notification-closing");
       setTimeout(() => {
-        notificationElement.remove();
+        if (notification && document.body.contains(notification)) {
+          notification.remove();
+        }
       }, 300);
     }
   }, 5000);
-
-  // Animate in
-  setTimeout(() => {
-    notificationElement.classList.add("notification-show");
-  }, 10);
 }
 
 // Add scroll progress bar
