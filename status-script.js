@@ -53,8 +53,13 @@ function initializeStatusData() {
     return macroStatus;
 }
 
-// Load status data
+// Initialize status data immediately
 let macroStatus = initializeStatusData();
+
+// Force update of the status display on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updatePublicStatusDisplay();
+});
 
 // Function to update the status tables and displays
 function updateStatusDisplay() {
@@ -172,7 +177,15 @@ function updateAllMacroStatus(newStatus) {
 // Function to update the public-facing status display
 function updatePublicStatusDisplay() {
     const statusDisplay = document.getElementById('macro-status-display');
-    if (!statusDisplay) return;
+    if (!statusDisplay) {
+        console.error('Status display element not found');
+        return;
+    }
+
+    // Force initialize status data if not done already
+    if (!macroStatus || Object.keys(macroStatus).length === 0) {
+        macroStatus = initializeStatusData();
+    }
 
     // Calculate overall system status
     let overallStatus = calculateOverallStatus();
@@ -192,7 +205,7 @@ function updatePublicStatusDisplay() {
 
     // Get non-operational macros to highlight
     const highPriorityIssues = MACRO_LIST.filter(macro =>
-        macroStatus[macro.id].status !== 'operational' && macro.priority === 'high'
+        macroStatus[macro.id] && macroStatus[macro.id].status !== 'operational' && macro.priority === 'high'
     );
 
     // Add high priority issues if any
@@ -229,6 +242,14 @@ function updatePublicStatusDisplay() {
 
     // Add all macros to the expanded view
     MACRO_LIST.forEach(macro => {
+        if (!macroStatus[macro.id]) {
+            macroStatus[macro.id] = {
+                status: "operational",
+                lastUpdated: new Date().toISOString(),
+                note: "",
+                updatedBy: "System"
+            };
+        }
         const status = macroStatus[macro.id];
         statusHTML += `
             <tr class="${status.status}">
