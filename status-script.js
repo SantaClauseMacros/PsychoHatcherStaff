@@ -802,10 +802,10 @@ function addStatusStyles() {
     document.head.appendChild(styleElement);
 }
 
-// Empty notification function to prevent notifications
+// Empty notification function to completely disable notifications
 function showNotification(message, type = "info") {
-  // Notification functionality disabled
-  console.log(`Notification (${type}): ${message}`);
+  // All notifications completely disabled - not even logging to console
+  // This ensures no notifications appear anywhere on the page
 }
 
 // Initialize everything when DOM is ready
