@@ -717,6 +717,66 @@
                     rgba(255, 255, 255, 0.3),
                     transparent
                 );
+
+<script>
+// Dark mode toggle function for account settings page
+function toggleDarkMode(enabled) {
+    if (enabled) {
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("darkMode", "enabled");
+    } else {
+        document.body.classList.remove("dark-mode");
+        localStorage.setItem("darkMode", "disabled");
+    }
+    
+    // Update user preferences
+    const currentUser = sessionStorage.getItem("loggedInUser");
+    if (currentUser) {
+        try {
+            const userPrefs = JSON.parse(localStorage.getItem(`userPrefs_${currentUser}`) || "{}");
+            userPrefs.darkMode = enabled;
+            localStorage.setItem(`userPrefs_${currentUser}`, JSON.stringify(userPrefs));
+        } catch (e) {
+            console.error("Error updating user preferences:", e);
+        }
+    }
+    
+    // Show notification
+    showNotification(enabled ? "success" : "info", "Theme Updated", 
+                    enabled ? "Dark mode enabled" : "Light mode disabled");
+}
+
+// Initialize dark mode toggle on page load
+document.addEventListener("DOMContentLoaded", function() {
+    const darkModeToggle = document.getElementById("dark-mode-toggle");
+    if (darkModeToggle) {
+        // Check user preferences first
+        const currentUser = sessionStorage.getItem("loggedInUser");
+        if (currentUser) {
+            try {
+                const userPrefs = JSON.parse(localStorage.getItem(`userPrefs_${currentUser}`) || "{}");
+                if (userPrefs.darkMode !== undefined) {
+                    darkModeToggle.checked = userPrefs.darkMode;
+                    if (userPrefs.darkMode) {
+                        document.body.classList.add("dark-mode");
+                    }
+                    return;
+                }
+            } catch (e) {
+                console.error("Error loading user preferences:", e);
+            }
+        }
+        
+        // Fall back to general preference
+        const isDarkMode = localStorage.getItem("darkMode") === "enabled";
+        darkModeToggle.checked = isDarkMode;
+        if (isDarkMode) {
+            document.body.classList.add("dark-mode");
+        }
+    }
+});
+</script>
+
                 transform: rotate(45deg);
                 z-index: 1;
                 transition: all 0.8s ease;
@@ -1473,6 +1533,7 @@
                                                     type="checkbox"
                                                     id="dark-mode-toggle"
                                                     data-setting="darkMode"
+                                                    onchange="toggleDarkMode(this.checked)"
                                                 />
                                                 <span class="ui-slider"></span>
                                             </label>
@@ -2400,6 +2461,18 @@
                         selectedTheme,
                     );
                     // Store theme preference
+                    
+                    // Sync with user preferences
+                    const currentUser = sessionStorage.getItem("loggedInUser");
+                    if (currentUser) {
+                        try {
+                            const userPrefs = JSON.parse(localStorage.getItem(`userPrefs_${currentUser}`) || "{}");
+                            userPrefs.theme = selectedTheme;
+                            localStorage.setItem(`userPrefs_${currentUser}`, JSON.stringify(userPrefs));
+                        } catch (e) {
+                            console.error("Error updating user preferences:", e);
+                        }
+                    }
                     localStorage.setItem("selected_theme", selectedTheme);
                 });
         </script>
