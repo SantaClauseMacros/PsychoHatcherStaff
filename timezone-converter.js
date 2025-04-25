@@ -9,7 +9,7 @@ const TIMEZONE_OFFSETS = {
   'EST': 0,      // Eastern Standard Time (baseline)
   'CST': -1,     // Central Standard Time
   'GMT': 4,      // Greenwich Mean Time
-  'IST': 9.5,    // Indian Standard Time
+  'IST': 10.5,    // Indian Standard Time
   'AEDT': 11,    // Australian Eastern Daylight Time
   'GMT+1': 5,    // GMT+1
   'GMT+2': 6,    // GMT+2
