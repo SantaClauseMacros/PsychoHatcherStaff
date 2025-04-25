@@ -14,25 +14,31 @@ function updateTimezones() {
       // Get current UTC time
       const now = new Date();
       let time;
+      
+      // Use the centralized timezone offset system
       let offset = 0;
-
-      // Handle different timezone formats
-      if (timezoneText === "GMT") {
-        offset = 4;
-      } else if (timezoneText === "EST") {
-        offset = 0; // Fixed to Eastern Standard Time
-      } else if (timezoneText === "CST") {
-        offset = -1; // Fixed to Central Standard Time
-      } else if (timezoneText === "IST") {
-        offset = 20.5;
-      } else if (timezoneText === "AEDT") {
-        offset = 1;
-      } else if (timezoneText.startsWith("GMT+")) {
-        offset = parseFloat(timezoneText.substring(4));
-      } else if (timezoneText.startsWith("GMT-")) {
-        offset = -parseFloat(timezoneText.substring(4));
-      } else if (timezoneText.includes("+")) {
-        offset = parseFloat(timezoneText.split("+")[1]);
+      if (typeof window.getTimezoneOffset === 'function') {
+        offset = window.getTimezoneOffset(timezoneText);
+      } else {
+        // Fallback if the function isn't available yet
+        console.warn("Timezone offset function not available, using fallback");
+        if (timezoneText === "GMT") {
+          offset = 4;
+        } else if (timezoneText === "EST") {
+          offset = 0; // Eastern Standard Time baseline
+        } else if (timezoneText === "CST") {
+          offset = -1; // Central Standard Time
+        } else if (timezoneText === "IST") {
+          offset = 9.5;
+        } else if (timezoneText === "AEDT") {
+          offset = 11;
+        } else if (timezoneText.startsWith("GMT+")) {
+          offset = 4 + parseFloat(timezoneText.substring(4)); // GMT+X is 4+X from EST
+        } else if (timezoneText.startsWith("GMT-")) {
+          offset = 4 - parseFloat(timezoneText.substring(4)); // GMT-X is 4-X from EST
+        } else if (timezoneText.includes("+")) {
+          offset = 4 + parseFloat(timezoneText.split("+")[1]); // Same as GMT+X
+        }
       }
 
       // Use direct UTC methods for more reliable timezone calculation

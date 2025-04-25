@@ -4,6 +4,62 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeTimezoneConverter();
 });
 
+// Centralized timezone offset definitions (all offsets relative to EST)
+const TIMEZONE_OFFSETS = {
+  'EST': 0,      // Eastern Standard Time (baseline)
+  'CST': -1,     // Central Standard Time
+  'GMT': 4,      // Greenwich Mean Time
+  'IST': 9.5,    // Indian Standard Time
+  'AEDT': 11,    // Australian Eastern Daylight Time
+  'GMT+1': 5,    // GMT+1
+  'GMT+2': 6,    // GMT+2
+  'GMT+3': 7,    // GMT+3
+  'GMT+4': 8,    // GMT+4
+  'GMT+5': 9,    // GMT+5
+  'GMT+6': 10,   // GMT+6
+  'GMT+7': 11,   // GMT+7
+  'GMT+8': 12,   // GMT+8
+  'GMT+9': 13,   // GMT+9
+  'GMT+9.5': 13.5, // GMT+9.5
+  'GMT+10': 14,  // GMT+10
+  'GMT+11': 15,  // GMT+11
+  'GMT+12': 16,  // GMT+12
+  'GMT-1': 3,    // GMT-1
+  'GMT-2': 2,    // GMT-2
+  'GMT-3': 1,    // GMT-3
+  'GMT-4': 0,    // GMT-4 (same as EST)
+  'GMT-5': -1,   // GMT-5 (same as CST)
+  'GMT-6': -2,   // GMT-6
+  'GMT-7': -3,   // GMT-7
+  'GMT-8': -4,   // GMT-8
+  'GMT-9': -5,   // GMT-9
+  'GMT-10': -6,  // GMT-10
+  'GMT-11': -7,  // GMT-11
+  'GMT-12': -8   // GMT-12
+};
+
+// Function to get timezone offset relative to EST
+function getTimezoneOffset(timezone) {
+  // Check if the timezone is directly in our mapping
+  if (TIMEZONE_OFFSETS.hasOwnProperty(timezone)) {
+    return TIMEZONE_OFFSETS[timezone];
+  }
+  
+  // For custom GMT+X or GMT-X formats not in our mapping
+  if (timezone.startsWith('GMT+')) {
+    const offset = parseFloat(timezone.substring(4));
+    return 4 + offset; // GMT is +4 from EST, so GMT+X is 4+X from EST
+  }
+  if (timezone.startsWith('GMT-')) {
+    const offset = parseFloat(timezone.substring(4));
+    return 4 - offset; // GMT is +4 from EST, so GMT-X is 4-X from EST
+  }
+  
+  // Default to EST if unknown
+  console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
+  return 0;
+}
+
 function initializeTimezoneConverter() {
   // Create and add converter to the DOM
   const converterHTML = `
@@ -13,14 +69,36 @@ function initializeTimezoneConverter() {
         <div class="time-input-group">
           <input type="datetime-local" id="source-time" class="time-input">
           <select id="source-timezone" class="timezone-select">
-            <option value="GMT">GMT (Greenwich Mean Time)</option>
             <option value="EST">EST (Eastern Standard Time)</option>
             <option value="CST">CST (Central Standard Time)</option>
+            <option value="GMT">GMT (Greenwich Mean Time)</option>
             <option value="IST">IST (Indian Standard Time)</option>
             <option value="AEDT">AEDT (Australian Eastern Daylight Time)</option>
             <option value="GMT+1">GMT+1</option>
             <option value="GMT+2">GMT+2</option>
+            <option value="GMT+3">GMT+3</option>
+            <option value="GMT+4">GMT+4</option>
+            <option value="GMT+5">GMT+5</option>
+            <option value="GMT+6">GMT+6</option>
+            <option value="GMT+7">GMT+7</option>
+            <option value="GMT+8">GMT+8</option>
+            <option value="GMT+9">GMT+9</option>
             <option value="GMT+9.5">GMT+9.5</option>
+            <option value="GMT+10">GMT+10</option>
+            <option value="GMT+11">GMT+11</option>
+            <option value="GMT+12">GMT+12</option>
+            <option value="GMT-1">GMT-1</option>
+            <option value="GMT-2">GMT-2</option>
+            <option value="GMT-3">GMT-3</option>
+            <option value="GMT-4">GMT-4</option>
+            <option value="GMT-5">GMT-5</option>
+            <option value="GMT-6">GMT-6</option>
+            <option value="GMT-7">GMT-7</option>
+            <option value="GMT-8">GMT-8</option>
+            <option value="GMT-9">GMT-9</option>
+            <option value="GMT-10">GMT-10</option>
+            <option value="GMT-11">GMT-11</option>
+            <option value="GMT-12">GMT-12</option>
           </select>
         </div>
         
@@ -85,7 +163,7 @@ function setupTimezoneConverter() {
     const inputTime = new Date(sourceTime.value);
     const inputTimezone = sourceTimezone.value;
     
-    // Get all available timezones from staff list
+    // Get all available timezones from staff list and our predefined list
     const timezones = getStaffTimezones();
     
     // Calculate offset for source timezone
@@ -96,7 +174,9 @@ function setupTimezoneConverter() {
     
     timezones.forEach(tz => {
       const targetOffset = getTimezoneOffset(tz);
-      const adjustedTime = new Date(inputTime.getTime() + (targetOffset - sourceOffset) * 3600000);
+      // Calculate time difference between source and target timezone
+      const timeDifference = (targetOffset - sourceOffset) * 3600000; // convert hours to milliseconds
+      const adjustedTime = new Date(inputTime.getTime() + timeDifference);
       
       // Format the time
       const formattedTime = formatTime(adjustedTime);
@@ -104,7 +184,7 @@ function setupTimezoneConverter() {
       
       resultsHTML += `
         <div class="timezone-result-item">
-          <div class="timezone-name">${tz}</div>
+          <div class="timezone-name">${tz} (${targetOffset >= 0 ? '+' : ''}${targetOffset} from EST)</div>
           <div class="converted-time">${formattedTime} ${timeOfDay}</div>
         </div>
       `;
@@ -116,12 +196,13 @@ function setupTimezoneConverter() {
   }
   
   function getStaffTimezones() {
-    // Extract unique timezones from staff table
-    const staffTable = document.querySelector('.staff-table');
-    const timezones = new Set(['GMT', 'EST', 'CST', 'IST', 'AEDT', 'GMT+1', 'GMT+2', 'GMT+9.5']);
+    // Start with our predefined timezones
+    const timezones = new Set(Object.keys(TIMEZONE_OFFSETS));
     
+    // Add timezones from staff table
+    const staffTable = document.querySelector('.staff-table');
     if (staffTable) {
-      const timezoneElements = staffTable.querySelectorAll('tbody tr td:nth-child(3)');
+      const timezoneElements = staffTable.querySelectorAll('tbody tr td:nth-child(4)'); // 4th column is timezone
       timezoneElements.forEach(el => {
         const timezone = el.textContent.trim().split(' ')[0];
         if (timezone && timezone !== '-') {
@@ -131,41 +212,6 @@ function setupTimezoneConverter() {
     }
     
     return Array.from(timezones);
-  }
-  
-  function getTimezoneOffset(timezone) {
-    // Return offset in hours
-    if (timezone === 'GMT') return 4;
-    if (timezone === 'EST') return 0; // Eastern Standard Time
-    if (timezone === 'CST') return -1; // Central Standard Time
-    if (timezone === 'IST') return 9.5;
-    if (timezone === 'AEDT') return 11;
-    
-    // Handle GMT+X format
-    if (timezone.startsWith('GMT+')) {
-      return parseFloat(timezone.substring(4));
-    }
-    if (timezone.startsWith('GMT-')) {
-      return -parseFloat(timezone.substring(4));
-    }
-    
-    return 0; // Default to GMT
-  }
-  
-  // Helper function to convert between timezones more accurately
-  function convertBetweenTimezones(date, fromOffset, toOffset) {
-    const utcDate = new Date(date);
-    
-    // Create a new date using direct UTC methods
-    const utcYear = utcDate.getUTCFullYear();
-    const utcMonth = utcDate.getUTCMonth();
-    const utcDay = utcDate.getUTCDate();
-    const utcHours = utcDate.getUTCHours();
-    const utcMinutes = utcDate.getUTCMinutes();
-    const utcSeconds = utcDate.getUTCSeconds();
-    
-    // Apply the target timezone offset
-    return new Date(Date.UTC(utcYear, utcMonth, utcDay, utcHours + (toOffset - fromOffset), utcMinutes, utcSeconds));
   }
   
   function formatTime(date) {
@@ -189,3 +235,7 @@ function setupTimezoneConverter() {
     }
   }
 }
+
+// Make timezone offsets and functions available globally
+window.TIMEZONE_OFFSETS = TIMEZONE_OFFSETS;
+window.getTimezoneOffset = getTimezoneOffset;
