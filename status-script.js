@@ -173,7 +173,11 @@ function formatDate(date) {
 
 // Update the status of a specific macro
 function updateMacroStatus(macroId, newStatus, note = null) {
-    if (!macroStatus[macroId]) return;
+    console.log(`Updating status for ${macroId} to ${newStatus}`);
+    if (!macroStatus[macroId]) {
+        console.error(`Macro ${macroId} not found in macroStatus`);
+        return;
+    }
 
     macroStatus[macroId].status = newStatus;
     macroStatus[macroId].lastUpdated = new Date().toISOString();
@@ -185,10 +189,13 @@ function updateMacroStatus(macroId, newStatus, note = null) {
 
     // Save the updated status
     localStorage.setItem('macroStatus', JSON.stringify(macroStatus));
+    console.log(`Status updated and saved to localStorage for ${macroId}`);
 
     // Show notification of change
     if (typeof showNotification === 'function') {
         showNotification(`${getMacroName(macroId)} status updated to ${STATUS_TYPES[newStatus].label}`, 'success');
+    } else {
+        console.log(`${getMacroName(macroId)} status updated to ${STATUS_TYPES[newStatus].label}`);
     }
 }
 
@@ -896,15 +903,130 @@ function addStatusStyles() {
         .code-block{
             margin-top: 20px;
         }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 350px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .notification.notification-show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .notification.info {
+            border-left: 4px solid #2196F3;
+        }
+        
+        .notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #F44336;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #FF9800;
+        }
+        
+        .notification-content {
+            display: flex;
+            padding: 15px;
+        }
+        
+        .notification-content i {
+            margin-right: 10px;
+            font-size: 20px;
+        }
+        
+        .notification.info i {
+            color: #2196F3;
+        }
+        
+        .notification.success i {
+            color: #4CAF50;
+        }
+        
+        .notification.error i {
+            color: #F44336;
+        }
+        
+        .notification.warning i {
+            color: #FF9800;
+        }
+        
+        .notification-content p {
+            margin: 0;
+        }
+        
+        .notification-close {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #999;
+        }
     `;
 
     document.head.appendChild(styleElement);
 }
 
-// Empty notification function to completely disable notifications
+// Notification function to display messages
 function showNotification(message, type = "info") {
-  // All notifications completely disabled - not even logging to console
-  // This ensures no notifications appear anywhere on the page
+  console.log(`NOTIFICATION (${type}): ${message}`);
+  
+  // Create a notification element
+  const notificationEl = document.createElement('div');
+  notificationEl.className = `notification ${type} notification-show`;
+  notificationEl.innerHTML = `
+    <div class="notification-content">
+      <i class="fas fa-info-circle"></i>
+      <p>${message}</p>
+    </div>
+    <button class="notification-close"><i class="fas fa-times"></i></button>
+  `;
+  
+  // Add to document
+  document.body.appendChild(notificationEl);
+  
+  // Add close functionality
+  const closeBtn = notificationEl.querySelector('.notification-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      notificationEl.classList.remove('notification-show');
+      setTimeout(() => {
+        if (document.body.contains(notificationEl)) {
+          document.body.removeChild(notificationEl);
+        }
+      }, 300);
+    });
+  }
+  
+  // Auto hide after 5 seconds
+  setTimeout(() => {
+    if (document.body.contains(notificationEl)) {
+      notificationEl.classList.remove('notification-show');
+      setTimeout(() => {
+        if (document.body.contains(notificationEl)) {
+          document.body.removeChild(notificationEl);
+        }
+      }, 300);
+    }
+  }, 5000);
 }
 
 // Initialize everything when DOM is ready
