@@ -1,4 +1,3 @@
-
 // Timezone Conversion Tool for Staff Portal
 document.addEventListener('DOMContentLoaded', function() {
   initializeTimezoneConverter();
@@ -9,7 +8,7 @@ const TIMEZONE_OFFSETS = {
   'EST': 0,      // Eastern Standard Time (baseline)
   'CST': -1,     // Central Standard Time
   'GMT': 4,      // Greenwich Mean Time
-  'IST': 10.5,    // Indian Standard Time
+  'IST': 9.5,    // Indian Standard Time
   'AEDT': 11,    // Australian Eastern Daylight Time
   'GMT+1': 5,    // GMT+1
   'GMT+2': 6,    // GMT+2
@@ -44,7 +43,7 @@ function getTimezoneOffset(timezone) {
   if (TIMEZONE_OFFSETS.hasOwnProperty(timezone)) {
     return TIMEZONE_OFFSETS[timezone];
   }
-  
+
   // For custom GMT+X or GMT-X formats not in our mapping
   if (timezone.startsWith('GMT+')) {
     const offset = parseFloat(timezone.substring(4));
@@ -54,7 +53,7 @@ function getTimezoneOffset(timezone) {
     const offset = parseFloat(timezone.substring(4));
     return 4 - offset; // GMT is +4 from EST, so GMT-X is 4-X from EST
   }
-  
+
   // Default to EST if unknown
   console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
   return 0;
@@ -101,18 +100,18 @@ function initializeTimezoneConverter() {
             <option value="GMT-12">GMT-12</option>
           </select>
         </div>
-        
+
         <button id="convert-time-btn" class="btn">
           <i class="fas fa-exchange-alt"></i> Convert
         </button>
-        
+
         <div class="results-container" id="conversion-results">
           <!-- Results will be populated here -->
         </div>
       </div>
     </div>
   `;
-  
+
   // Find the staff list section and add the converter after it
   const staffSection = document.getElementById('staff-list');
   if (staffSection) {
@@ -120,10 +119,10 @@ function initializeTimezoneConverter() {
     converterElement.className = 'section-card';
     converterElement.id = 'timezone-converter';
     converterElement.innerHTML = `<h2><i class="fas fa-clock"></i> Timezone Converter</h2>${converterHTML}`;
-    
+
     // Insert after staff list section
     staffSection.parentNode.insertBefore(converterElement, staffSection.nextSibling);
-    
+
     // Add event listeners
     setTimeout(() => {
       setupTimezoneConverter();
@@ -136,7 +135,7 @@ function setupTimezoneConverter() {
   const sourceTime = document.getElementById('source-time');
   const sourceTimezone = document.getElementById('source-timezone');
   const resultsContainer = document.getElementById('conversion-results');
-  
+
   // Set default time to now
   const now = new Date();
   const year = now.getFullYear();
@@ -144,44 +143,44 @@ function setupTimezoneConverter() {
   const day = String(now.getDate()).padStart(2, '0');
   const hours = String(now.getHours()).padStart(2, '0');
   const minutes = String(now.getMinutes()).padStart(2, '0');
-  
+
   sourceTime.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-  
+
   // Add converter function
   if (convertBtn) {
     convertBtn.addEventListener('click', function() {
       convertTimeBetweenTimezones();
     });
   }
-  
+
   function convertTimeBetweenTimezones() {
     if (!sourceTime.value) {
       showNotification('Please select a time to convert', 'error');
       return;
     }
-    
+
     const inputTime = new Date(sourceTime.value);
     const inputTimezone = sourceTimezone.value;
-    
+
     // Get all available timezones from staff list and our predefined list
     const timezones = getStaffTimezones();
-    
+
     // Calculate offset for source timezone
     const sourceOffset = getTimezoneOffset(inputTimezone);
-    
+
     // Convert to all staff timezones
     let resultsHTML = `<h4>Time in all staff timezones:</h4><div class="timezone-results">`;
-    
+
     timezones.forEach(tz => {
       const targetOffset = getTimezoneOffset(tz);
       // Calculate time difference between source and target timezone
       const timeDifference = (targetOffset - sourceOffset) * 3600000; // convert hours to milliseconds
       const adjustedTime = new Date(inputTime.getTime() + timeDifference);
-      
+
       // Format the time
       const formattedTime = formatTime(adjustedTime);
       const timeOfDay = getTimeOfDay(adjustedTime.getHours());
-      
+
       resultsHTML += `
         <div class="timezone-result-item">
           <div class="timezone-name">${tz} (${targetOffset >= 0 ? '+' : ''}${targetOffset} from EST)</div>
@@ -189,16 +188,16 @@ function setupTimezoneConverter() {
         </div>
       `;
     });
-    
+
     resultsHTML += `</div>`;
     resultsContainer.innerHTML = resultsHTML;
     resultsContainer.style.display = 'block';
   }
-  
+
   function getStaffTimezones() {
     // Start with our predefined timezones
     const timezones = new Set(Object.keys(TIMEZONE_OFFSETS));
-    
+
     // Add timezones from staff table
     const staffTable = document.querySelector('.staff-table');
     if (staffTable) {
@@ -210,21 +209,21 @@ function setupTimezoneConverter() {
         }
       });
     }
-    
+
     return Array.from(timezones);
   }
-  
+
   function formatTime(date) {
     let hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    
+
     hours = hours % 12;
     hours = hours ? hours : 12; // Convert 0 to 12
-    
+
     return `${hours}:${minutes} ${ampm}`;
   }
-  
+
   function getTimeOfDay(hour) {
     if (hour >= 5 && hour < 12) {
       return '<span class="time-day">🌅 Day</span>';

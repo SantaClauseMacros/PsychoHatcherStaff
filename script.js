@@ -48,6 +48,10 @@ function updateTimezones() {
       const utcHours = now.getUTCHours();
       const utcMinutes = now.getUTCMinutes();
       const utcSeconds = now.getUTCSeconds();
+      
+      // Handle half-hour offsets correctly
+      const offsetHours = Math.floor(offset);
+      const offsetMinutes = (offset % 1) * 60; // Convert decimal part to minutes
 
       // Create a new date using UTC time + the timezone offset
       time = new Date(
@@ -55,8 +59,8 @@ function updateTimezones() {
           utcYear,
           utcMonth,
           utcDate,
-          utcHours + offset,
-          utcMinutes,
+          utcHours + offsetHours,
+          utcMinutes + offsetMinutes,
           utcSeconds,
         ),
       );
