@@ -683,6 +683,31 @@ function showNotification(message, type = "info") {
   createAndShowNotification(message, type);
 }
 
+// Make sure status display updates on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize status display if the element exists
+  const statusDisplay = document.getElementById('macro-status-display');
+  if (statusDisplay) {
+    console.log("Status display element found - initializing");
+    // Ensure the status-script.js functions are available
+    if (typeof updatePublicStatusDisplay === 'function') {
+      updatePublicStatusDisplay();
+    } else {
+      // Load status-script.js if not already loaded
+      const script = document.createElement('script');
+      script.src = 'status-script.js';
+      script.onload = function() {
+        if (typeof updatePublicStatusDisplay === 'function') {
+          updatePublicStatusDisplay();
+        } else {
+          console.error("Status display function not found after loading script");
+        }
+      };
+      document.head.appendChild(script);
+    }
+  }
+});
+
 // Helper function to create and show a notification
 function createAndShowNotification(message, type) {
   // Set icon based on type
