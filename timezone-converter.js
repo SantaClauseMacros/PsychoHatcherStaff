@@ -138,7 +138,7 @@ function setupTimezoneConverter() {
     if (timezone === 'GMT') return 4;
     if (timezone === 'EST') return 0; // Eastern Standard Time
     if (timezone === 'CST') return -1; // Central Standard Time
-    if (timezone === 'IST') return 20.5;
+    if (timezone === 'IST') return 9.5;
     if (timezone === 'AEDT') return 11;
     
     // Handle GMT+X format
