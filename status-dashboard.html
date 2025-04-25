@@ -50,6 +50,40 @@
         if (statusDisplay) {
             statusDisplay.innerHTML = '<div class="loading">Loading status data...</div>';
         }
+        
+        // Immediately check the status table
+        const statusTable = document.getElementById('status-table-body');
+        if (statusTable) {
+            console.log("Status table body found, checking content");
+            if (statusTable.children.length === 0) {
+                console.log("Status table is empty, forcing update");
+                if (typeof updateStatusDisplay === 'function') {
+                    updateStatusDisplay();
+                }
+                if (typeof initializeStatusDashboard === 'function') {
+                    initializeStatusDashboard();
+                }
+            } else {
+                console.log(`Status table already has ${statusTable.children.length} rows`);
+            }
+        } else {
+            console.error("Status table body not found on page load");
+        }
+        
+        // Force initialization of dashboard after a delay
+        setTimeout(function() {
+            console.log("Delayed initialization check");
+            const statusTable = document.getElementById('status-table-body');
+            if (statusTable && statusTable.children.length === 0) {
+                console.log("Status table still empty after delay, forcing update");
+                if (typeof updateStatusDisplay === 'function') {
+                    updateStatusDisplay();
+                }
+                if (typeof initializeStatusDashboard === 'function') {
+                    initializeStatusDashboard();
+                }
+            }
+        }, 1000);
     });
     </script>
 </head>

@@ -95,14 +95,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to update the status tables and displays
 function updateStatusDisplay() {
+    console.log("Updating status display");
+    
+    // Make sure we have macroStatus data
+    if (!macroStatus || Object.keys(macroStatus).length === 0) {
+        console.log("No macroStatus data found, initializing");
+        macroStatus = initializeStatusData();
+    }
+    
     // Update dashboard table if it exists
     const statusTableBody = document.getElementById('status-table-body');
     if (statusTableBody) {
+        console.log("Status table body found, updating rows");
         statusTableBody.innerHTML = ''; // Clear existing rows
 
         MACRO_LIST.forEach(macro => {
+            // Ensure this macro exists in the status data
+            if (!macroStatus[macro.id]) {
+                console.log(`Creating default status for ${macro.id}`);
+                macroStatus[macro.id] = {
+                    status: "operational",
+                    lastUpdated: new Date().toISOString(),
+                    note: "",
+                    updatedBy: "System"
+                };
+            }
+            
             const status = macroStatus[macro.id];
-            const statusType = STATUS_TYPES[status.status];
+            const statusType = STATUS_TYPES[status.status] || STATUS_TYPES.operational;
 
             const row = document.createElement('tr');
             row.dataset.macroId = macro.id;
@@ -136,17 +156,33 @@ function updateStatusDisplay() {
             statusTableBody.appendChild(row);
         });
 
+        console.log("Adding event listeners to status buttons");
         // Add event listeners for status buttons
         document.querySelectorAll('.set-status').forEach(button => {
             button.addEventListener('click', function() {
                 const row = this.closest('tr');
                 const macroId = row.dataset.macroId;
                 const newStatus = this.dataset.status;
-
+                
+                console.log(`Button clicked: changing ${macroId} status to ${newStatus}`);
                 updateMacroStatus(macroId, newStatus);
                 updateStatusDisplay();
             });
         });
+        
+        // Make rows selectable for bulk actions
+        console.log("Making rows selectable");
+        document.querySelectorAll('#status-table-body tr').forEach(row => {
+            row.addEventListener('click', function(e) {
+                // Don't select if clicking an action button
+                if (e.target.closest('.action-cell')) return;
+                
+                console.log(`Row clicked: ${this.dataset.macroId}`);
+                this.classList.toggle('selected');
+            });
+        });
+    } else {
+        console.error("Status table body element not found!");
     }
 
     // Update the public-facing status display
@@ -404,6 +440,18 @@ function calculateOverallStatus() {
 
 // Initialize dashboard controls
 function initializeStatusDashboard() {
+    console.log("Initializing status dashboard controls");
+    
+    // Ensure we have status data
+    if (!macroStatus || Object.keys(macroStatus).length === 0) {
+        console.log("No status data found, reinitializing");
+        macroStatus = initializeStatusData();
+    }
+    
+    // Force update of status display immediately
+    updateStatusDisplay();
+    updatePublicStatusDisplay();
+    
     // Set global status buttons
     const allOperationalBtn = document.getElementById('all-operational');
     const allIssuesBtn = document.getElementById('all-issues');
@@ -411,22 +459,34 @@ function initializeStatusDashboard() {
     const saveStatusBtn = document.getElementById('save-status');
 
     if (allOperationalBtn) {
+        console.log("Adding event listener to allOperationalBtn");
         allOperationalBtn.addEventListener('click', () => updateAllMacroStatus('operational'));
+    } else {
+        console.error("allOperationalBtn not found");
     }
 
     if (allIssuesBtn) {
+        console.log("Adding event listener to allIssuesBtn");
         allIssuesBtn.addEventListener('click', () => updateAllMacroStatus('issues'));
+    } else {
+        console.error("allIssuesBtn not found");
     }
 
     if (allDownBtn) {
+        console.log("Adding event listener to allDownBtn");
         allDownBtn.addEventListener('click', () => updateAllMacroStatus('down'));
+    } else {
+        console.error("allDownBtn not found");
     }
 
     if (saveStatusBtn) {
+        console.log("Adding event listener to saveStatusBtn");
         saveStatusBtn.addEventListener('click', function() {
-            // Save is automatic, but we'll show a confirmation
-            showNotification('Status changes saved successfully', 'success');
+            // Save is automatic, but we'll log a confirmation
+            console.log('Status changes saved successfully');
         });
+    } else {
+        console.error("saveStatusBtn not found");
     }
 
     // Add note button
@@ -985,48 +1045,11 @@ function addStatusStyles() {
     document.head.appendChild(styleElement);
 }
 
-// Notification function to display messages
+// Completely disabled notification function
 function showNotification(message, type = "info") {
-  console.log(`NOTIFICATION (${type}): ${message}`);
-  
-  // Create a notification element
-  const notificationEl = document.createElement('div');
-  notificationEl.className = `notification ${type} notification-show`;
-  notificationEl.innerHTML = `
-    <div class="notification-content">
-      <i class="fas fa-info-circle"></i>
-      <p>${message}</p>
-    </div>
-    <button class="notification-close"><i class="fas fa-times"></i></button>
-  `;
-  
-  // Add to document
-  document.body.appendChild(notificationEl);
-  
-  // Add close functionality
-  const closeBtn = notificationEl.querySelector('.notification-close');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      notificationEl.classList.remove('notification-show');
-      setTimeout(() => {
-        if (document.body.contains(notificationEl)) {
-          document.body.removeChild(notificationEl);
-        }
-      }, 300);
-    });
-  }
-  
-  // Auto hide after 5 seconds
-  setTimeout(() => {
-    if (document.body.contains(notificationEl)) {
-      notificationEl.classList.remove('notification-show');
-      setTimeout(() => {
-        if (document.body.contains(notificationEl)) {
-          document.body.removeChild(notificationEl);
-        }
-      }, 300);
-    }
-  }, 5000);
+  // Only log to console, no visible notifications
+  console.log(`SILENT NOTIFICATION (${type}): ${message}`);
+  // No visible notifications will be shown
 }
 
 // Initialize everything when DOM is ready
