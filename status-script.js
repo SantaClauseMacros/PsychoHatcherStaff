@@ -33,6 +33,7 @@ const STATUS_TYPES = {
 
 // Initialize status data or load from localStorage
 function initializeStatusData() {
+    console.log("Initializing status data");
     // Check if we have stored status data
     let macroStatus = JSON.parse(localStorage.getItem('macroStatus')) || {};
 
@@ -56,8 +57,39 @@ function initializeStatusData() {
 // Initialize status data immediately
 let macroStatus = initializeStatusData();
 
+// Make sure the status display updates when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded in status-script.js - forcing status display update");
+    updatePublicStatusDisplay();
+    updateStatusDisplay();
+});
+
+// Also run when window loads (backup)
+window.addEventListener('load', function() {
+    console.log("Window loaded in status-script.js - forcing status display update");
+    updatePublicStatusDisplay();
+    updateStatusDisplay();
+});
+
 // Force update of the status display on page load
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("DOM loaded - initializing status display");
+    // Initialize macroStatus data if needed
+    if (!macroStatus || Object.keys(macroStatus).length === 0) {
+        console.log("Initializing status data");
+        macroStatus = initializeStatusData();
+    }
+    
+    // Force update of the dashboard display
+    updateStatusDisplay();
+    
+    // Directly call dashboard initialization if on dashboard page
+    if (document.querySelector('.status-board')) {
+        console.log("Initializing status dashboard");
+        initializeStatusDashboard();
+    }
+    
+    // Also update the public display
     updatePublicStatusDisplay();
 });
 
@@ -286,6 +318,52 @@ function updatePublicStatusDisplay() {
                 : 'See All Macro Statuses';
         });
     }
+}
+
+// Function to populate demo data for testing the status display
+function populateDemoStatusData() {
+    console.log("Populating demo status data for testing");
+    
+    // Set some macros to different statuses for demonstration
+    const demoStatuses = {
+        "rankup": "operational",
+        "dig": "issues",
+        "clan": "down",
+        "treehouse": "maintenance",
+        "fishing": "operational",
+        "garden": "issues",
+        "fusepets": "operational",
+        "levelup": "operational",
+        "market": "down",
+        "fisch": "operational",
+        "anime": "operational",
+        "openstuff": "operational",
+        "bubblegum": "issues"
+    };
+    
+    // Update macroStatus with demo data
+    Object.keys(demoStatuses).forEach(macroId => {
+        if (macroStatus[macroId]) {
+            macroStatus[macroId].status = demoStatuses[macroId];
+            macroStatus[macroId].lastUpdated = new Date().toISOString();
+            if (demoStatuses[macroId] !== "operational") {
+                macroStatus[macroId].note = `Demo note for ${macroId} in ${demoStatuses[macroId]} status`;
+            }
+        }
+    });
+    
+    // Save to localStorage
+    localStorage.setItem('macroStatus', JSON.stringify(macroStatus));
+    
+    return macroStatus;
+}
+
+// Determine whether to use demo data
+const isFirstLoad = !localStorage.getItem('statusDashboardInitialized');
+if (isFirstLoad) {
+    // First time load - populate with demo data
+    macroStatus = populateDemoStatusData();
+    localStorage.setItem('statusDashboardInitialized', 'true');
 }
 
 // Calculate overall system status based on high priority macros

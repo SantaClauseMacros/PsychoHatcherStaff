@@ -7,7 +7,51 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="icons.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="status-script.js" defer></script>
+    <script src="status-script.js"></script>
+    <script>
+    // Ensure status display is initialized when the page loads
+    window.addEventListener('load', function() {
+        console.log("Window loaded - triggering status display update");
+        // Force initialization of macroStatus data
+        if (typeof initializeStatusData === 'function') {
+            window.macroStatus = initializeStatusData();
+            console.log("Initialized macroStatus data:", window.macroStatus);
+        }
+        
+        // Update displays with a slight delay to ensure DOM is ready
+        setTimeout(function() {
+            if (typeof updatePublicStatusDisplay === 'function') {
+                console.log("Calling updatePublicStatusDisplay");
+                updatePublicStatusDisplay();
+            } else {
+                console.error("updatePublicStatusDisplay function not found");
+            }
+            
+            if (typeof updateStatusDisplay === 'function') {
+                console.log("Calling updateStatusDisplay");
+                updateStatusDisplay();
+            } else {
+                console.error("updateStatusDisplay function not found");
+            }
+            
+            if (typeof initializeStatusDashboard === 'function') {
+                console.log("Calling initializeStatusDashboard");
+                initializeStatusDashboard();
+            } else {
+                console.error("initializeStatusDashboard function not found");
+            }
+        }, 100);
+    });
+    
+    // Fallback initialization after everything is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("DOM loaded in status-dashboard.html");
+        const statusDisplay = document.getElementById('macro-status-display');
+        if (statusDisplay) {
+            statusDisplay.innerHTML = '<div class="loading">Loading status data...</div>';
+        }
+    });
+    </script>
 </head>
 <body>
     <header>
