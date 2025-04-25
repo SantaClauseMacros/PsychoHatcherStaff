@@ -24,7 +24,7 @@ function updateTimezones() {
       } else if (timezoneText === "CST") {
         offset = -1; // Fixed to Central Standard Time
       } else if (timezoneText === "IST") {
-        offset = 15.5;
+        offset = 20.5;
       } else if (timezoneText === "AEDT") {
         offset = 11;
       } else if (timezoneText.startsWith("GMT+")) {
