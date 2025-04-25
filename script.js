@@ -26,7 +26,7 @@ function updateTimezones() {
       } else if (timezoneText === "IST") {
         offset = 20.5;
       } else if (timezoneText === "AEDT") {
-        offset = 11;
+        offset = 1;
       } else if (timezoneText.startsWith("GMT+")) {
         offset = parseFloat(timezoneText.substring(4));
       } else if (timezoneText.startsWith("GMT-")) {
