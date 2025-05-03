@@ -14,7 +14,7 @@ function updateTimezones() {
       // Get current UTC time
       const now = new Date();
       let time;
-      
+
       // Use the centralized timezone offset system
       let offset = 0;
       if (typeof window.getTimezoneOffset === 'function') {
@@ -48,7 +48,7 @@ function updateTimezones() {
       const utcHours = now.getUTCHours();
       const utcMinutes = now.getUTCMinutes();
       const utcSeconds = now.getUTCSeconds();
-      
+
       // Handle half-hour offsets correctly
       const offsetHours = Math.floor(offset);
       const offsetMinutes = (offset % 1) * 60; // Convert decimal part to minutes
@@ -954,7 +954,7 @@ function showNotification(message, type = "info") {
   notification.innerHTML = `
     <div class="notification-content">
       <i class="fas fa-${icon}"></i>
-      <div class="notification-message">${message}</div>
+      <div<div class="notification-message">${message}</div>
     </div>
     <button class="notification-close"><i class="fas fa-times"></i></button>
   `;
@@ -1991,7 +1991,7 @@ function addAccountButton() {
     accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
     accountBtn.style.cursor = "pointer";
     accountBtn.style.pointerEvents = "all";
-    accountBtn.style.zIndex = "100";
+    accountBtn.style.z-index = "100";
     accountBtn.href = "account-settings.html"; // Direct link to account settings page
 
     // Insert before logout button
@@ -2875,6 +2875,17 @@ You can still get featured with a paid promo:
 ### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
 
 Let me know if you're interested or have any questions! 😎`;
+    } else if (templateId === "escalation") {
+      textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
+(Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
     }
+
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showNotification("Template copied to clipboard!", "success");
+      this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => {
+        this.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
+      }, 2000);
+    });
   });
 });
