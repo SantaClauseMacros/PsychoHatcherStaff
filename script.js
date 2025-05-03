@@ -954,7 +954,7 @@ function showNotification(message, type = "info") {
   notification.innerHTML = `
     <div class="notification-content">
       <i class="fas fa-${icon}"></i>
-      <div<div class="notification-message">${message}</div>
+      <div class="notification-message">${message}</div>
     </div>
     <button class="notification-close"><i class="fas fa-times"></i></button>
   `;
@@ -1991,7 +1991,7 @@ function addAccountButton() {
     accountBtn.innerHTML = '<i class="fas fa-user-cog"></i> My Account';
     accountBtn.style.cursor = "pointer";
     accountBtn.style.pointerEvents = "all";
-    accountBtn.style.z-index = "100";
+    accountBtn.style.zIndex = "100";
     accountBtn.href = "account-settings.html"; // Direct link to account settings page
 
     // Insert before logout button
@@ -2878,6 +2878,10 @@ Let me know if you're interested or have any questions! 😎`;
     } else if (templateId === "escalation") {
       textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
 (Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
+    } else {
+      // For other templates, get the text directly from the data-template attribute
+      // This removes any indentation from the original HTML
+      textToCopy = this.getAttribute("data-template") || "";
     }
 
     navigator.clipboard.writeText(textToCopy).then(() => {
