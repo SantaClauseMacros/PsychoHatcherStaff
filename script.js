@@ -1078,6 +1078,34 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Initialize tooltips
+function copyVIPTemplate() {
+    const template = `Hello <@userid>   Thank you so much for your support. Your \`30-day VIP trial\` starts now and expires on <t:1748825936:F>, which is <t:1748825936:R>. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.
+
+
+\`\`\`
+User ID: user@vip.psychohatcher
+Password: Pass
+\`\`\`
+
+## Things you need to know
+
+<#1283170782662627408> - keep up to date with the latest VIP news.
+<#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.
+<#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.
+<#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.
+https://psychohatcher.com/vip/ - additional information about VIP.
+
+Enjoy your VIP experience! 🌟`;
+
+    navigator.clipboard.writeText(template).then(() => {
+        const button = document.querySelector('.copy-template');
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+            button.innerHTML = '<i class="fas fa-copy"></i> Copy Template';
+        }, 2000);
+    });
+}
+
 function initializeTooltips() {
   // Add hoverable class to existing tooltips
   document.querySelectorAll(".tooltip").forEach((tooltip) => {
@@ -1371,7 +1399,7 @@ document.addEventListener("click", function (e) {
     const button = e.target.closest(".copy-btn");
     const textToCopy = button.getAttribute("data-copy");
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
+    navigator.clipboard.writeText(textToCopy.trim()).then(() => {
       // Change icon temporarily
       const originalIcon = button.innerHTML;
       button.innerHTML = '<i class="fas fa-check"></i>';

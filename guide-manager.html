@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,6 +12,35 @@
 </head>
 
 <body>
+    <div class="vip-welcome-box">
+        <h2><i class="fas fa-crown"></i> VIP Welcome Message</h2>
+        <div class="vip-message-preview">
+            <div class="vip-message-header">
+                <div class="vip-sender-info">
+                    <span class="vip-sender-name">Staff Bot <span class="vip-trial-tag">VIP SUPPORT</span></span>
+                    <span class="vip-timestamp">Template Message</span>
+                </div>
+            </div>
+            <div class="vip-message-body">
+                <p>Hello <@userid></p>
+                <p>Thank you so much for your support. Your `30-day VIP trial` starts now and expires on <t:1748825936:F>, which is <t:1748825936:R>. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.</p>
+                <div class="vip-credentials">
+                    <p>User ID: user@vip.psychohatcher</p>
+                    <p>Password: Pass</p>
+                </div>
+                <p><strong>Things you need to know</strong></p>
+                <p><#1283170782662627408> - keep up to date with the latest VIP news.<br>
+                <#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.<br>
+                <#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.<br>
+                <#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.<br>
+                https://psychohatcher.com/vip/ - additional information about VIP.</p>
+                <p>Enjoy your VIP experience! 🌟</p>
+            </div>
+        </div>
+        <button class="copy-template" onclick="copyVIPTemplate()">
+            <i class="fas fa-copy"></i> Copy Template
+        </button>
+    </div>
     <header>
         <div class="logo-container">
             <img id="logo-preview" src="PsychoHatcher.png" alt="Psycho Hatcher Logo">
@@ -37,22 +65,22 @@
     <main>
         <section class="section-card">
             <h2><i class="fas fa-users-cog"></i> Psycho Manager VIP Mode</h2>
-            
+
             <div class="guide-content active">
                 <div class="guide-content-inner">
                     <h3>About Psycho Manager VIP Mode</h3>
                     <p>The Psycho Manager Mode allows you to manage multiple Roblox accounts efficiently for farming and hatching activities. Follow this guide to set up and use the automation effectively.</p>
                     <hr>
-                    
+
                     <h3>Features</h3>
                     <ul>
                         <li><strong>Manage Up to 20 Roblox Accounts:</strong> The automation can simultaneously operate up to 20 accounts, directing them to farm in the last zone or hatch eggs.</li>
                         <li>Multi-account management tool that enables users to run various modes simultaneously</li>
                         <li>Select favorites and execute them in loops with customizable timing options</li>
                     </ul>
-                    
+
                     <hr>
-                    
+
                     <h3>Setup Requirements</h3>
                     <ul>
                         <li>Display scaling set to 100%</li>
@@ -62,9 +90,9 @@
                         <li>All game zones unlocked</li>
                         <li>PC language set to English (US)</li>
                     </ul>
-                    
+
                     <hr>
-                    
+
                     <h3>Setup Instructions</h3>
                     <ol>
                         <li><strong>Open All Roblox Accounts:</strong> Before running the automation, ensure that every Roblox account you want to use is open and ready.</li>
@@ -73,47 +101,47 @@
                         <li><strong>Keep Cameras Stationary:</strong> Avoid moving the camera on any account to prevent disrupting the automation's functionality.</li>
                         <li><strong>Ensure Smooth Performance:</strong> Make sure Roblox is running smoothly with a frame rate of 50 FPS or higher on all accounts to avoid lag-related issues.</li>
                     </ol>
-                    
+
                     <hr>
-                    
+
                     <h3>Common Issues</h3>
                     <div class="checklist-item"><input type="checkbox"> <strong>Display Scaling</strong><br>
                         Ask: <em>"Is your display scaling set to 100%?"</em><br>
                         Fix: Set scaling to 100% in your PC's Display Settings (Settings > Display > Scale and Layout).
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Roblox Version</strong><br>
                         Ask: <em>"Are you using the web browser version of Roblox?"</em><br>
                         Fix: Switch to the web browser version of Roblox for optimal functionality.
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Display Mode</strong><br>
                         Ask: <em>"Is Roblox in fullscreen mode?"</em><br>
                         Fix: Press Esc and switch to Windowed mode in Roblox settings.
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Camera Movement</strong><br>
                         Ask: <em>"Have you moved the camera after joining?"</em><br>
                         Fix: Avoid moving the camera after joining. If issues occur, rejoin the game.
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Initialization</strong><br>
                         Ask: <em>"Did you press F1 after loading in?"</em><br>
                         Fix: Press F1 immediately after loading into the game to initialize the macro setup.
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Language Settings</strong><br>
                         Ask: <em>"Is your PC language set to English (US)?"</em><br>
                         Fix: Change PC language to English (US) in Time & Language settings.
                     </div>
-                    
+
                     <div class="checklist-item"><input type="checkbox"> <strong>Performance Issues</strong><br>
                         Ask: <em>"Is Roblox running at 50 FPS or higher on all accounts?"</em><br>
                         Fix: Ensure all instances of Roblox are running smoothly. Close unnecessary applications to improve performance.
                     </div>
-                    
+
                     <hr>
-                    
+
                     <h3>Advanced Configuration</h3>
                     <ul>
                         <li>Configure keybindings for specific actions</li>
@@ -122,7 +150,7 @@
                         <li>Configure daycare management options</li>
                         <li>Set farming and hatching parameters</li>
                     </ul>
-                    
+
                     <div class="alert-box info">
                         <h4><i class="fas fa-info-circle"></i> Important Note</h4>
                         <p>For optimal performance:</p>
