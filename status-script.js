@@ -1282,4 +1282,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Refresh status display every minute for real-time updates
-setInterval(updatePublicStatusDisplay, 60000);
+setInterval(updatePublicStatusDisplay, 30000);
