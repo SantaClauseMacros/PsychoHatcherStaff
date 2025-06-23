@@ -1,3 +1,50 @@
+// Centralized timezone offset definitions (consistent with timezone-converter.js)
+const TIMEZONE_OFFSETS_FALLBACK = {
+  'EST': 0,      // Eastern Standard Time (baseline)
+  'CST': -1,     // Central Standard Time
+  'GMT': 4,      // Greenwich Mean Time
+  'IST': 9.5,    // Indian Standard Time
+  'AEDT': 11,    // Australian Eastern Daylight Time
+  'GMT+1': 5,    'GMT+2': 6,    'GMT+3': 7,    'GMT+4': 8,
+  'GMT+5': 9,    'GMT+6': 10,   'GMT+7': 11,   'GMT+8': 12,
+  'GMT+9': 13,   'GMT+9.5': 13.5, 'GMT+10': 14, 'GMT+11': 15, 'GMT+12': 16,
+  'GMT-1': 3,    'GMT-2': 2,    'GMT-3': 1,    'GMT-4': 0,
+  'GMT-5': -1,   'GMT-6': -2,   'GMT-7': -3,   'GMT-8': -4,
+  'GMT-9': -5,   'GMT-10': -6,  'GMT-11': -7,  'GMT-12': -8
+};
+
+// Safe timezone offset getter with fallback
+function getTimezoneOffsetSafe(timezone) {
+  try {
+    // Try to use the centralized function first
+    if (typeof window.getTimezoneOffset === 'function') {
+      return window.getTimezoneOffset(timezone);
+    }
+    
+    // Use fallback mapping
+    if (TIMEZONE_OFFSETS_FALLBACK.hasOwnProperty(timezone)) {
+      return TIMEZONE_OFFSETS_FALLBACK[timezone];
+    }
+
+    // Handle custom GMT formats
+    if (timezone.startsWith('GMT+')) {
+      const offset = parseFloat(timezone.substring(4));
+      return 4 + offset; // GMT is +4 from EST
+    }
+    if (timezone.startsWith('GMT-')) {
+      const offset = parseFloat(timezone.substring(4));
+      return 4 - offset; // GMT is +4 from EST
+    }
+
+    // Default to EST if unknown
+    console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
+    return 0;
+  } catch (error) {
+    console.error(`Error getting timezone offset for ${timezone}:`, error);
+    return 0; // Default to EST on error
+  }
+}
+
 // Function to update timezone times
 function updateTimezones() {
   const staffRows = document.querySelectorAll(".staff-table tbody tr");
@@ -9,65 +56,24 @@ function updateTimezones() {
     const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
     if (!timezoneText || timezoneText === "-") return;
 
-    // Get current time for this timezone
     try {
       // Get current UTC time
       const now = new Date();
-      let time;
+      
+      // Get timezone offset safely
+      const offset = getTimezoneOffsetSafe(timezoneText);
 
-      // Use the centralized timezone offset system
-      let offset = 0;
-      if (typeof window.getTimezoneOffset === 'function') {
-        offset = window.getTimezoneOffset(timezoneText);
-      } else {
-        // Fallback if the function isn't available yet
-        console.warn("Timezone offset function not available, using fallback");
-        if (timezoneText === "GMT") {
-          offset = 4;
-        } else if (timezoneText === "EST") {
-          offset = 0; // Eastern Standard Time baseline
-        } else if (timezoneText === "CST") {
-          offset = -1; // Central Standard Time
-        } else if (timezoneText === "IST") {
-          offset = 9.5;
-        } else if (timezoneText === "AEDT") {
-          offset = 11;
-        } else if (timezoneText.startsWith("GMT+")) {
-          offset = 4 + parseFloat(timezoneText.substring(4)); // GMT+X is 4+X from EST
-        } else if (timezoneText.startsWith("GMT-")) {
-          offset = 4 - parseFloat(timezoneText.substring(4)); // GMT-X is 4-X from EST
-        } else if (timezoneText.includes("+")) {
-          offset = 4 + parseFloat(timezoneText.split("+")[1]); // Same as GMT+X
-        }
-      }
-
-      // Use direct UTC methods for more reliable timezone calculation
-      const utcYear = now.getUTCFullYear();
-      const utcMonth = now.getUTCMonth();
-      const utcDate = now.getUTCDate();
-      const utcHours = now.getUTCHours();
-      const utcMinutes = now.getUTCMinutes();
-      const utcSeconds = now.getUTCSeconds();
-
-      // Handle half-hour offsets correctly
+      // Calculate time with proper offset handling
       const offsetHours = Math.floor(offset);
-      const offsetMinutes = (offset % 1) * 60; // Convert decimal part to minutes
+      const offsetMinutes = Math.round((offset % 1) * 60); // Convert decimal part to minutes
 
-      // Create a new date using UTC time + the timezone offset
-      time = new Date(
-        Date.UTC(
-          utcYear,
-          utcMonth,
-          utcDate,
-          utcHours + offsetHours,
-          utcMinutes + offsetMinutes,
-          utcSeconds,
-        ),
-      );
+      // Create target time by adding offset to current EST time
+      const estNow = new Date();
+      const targetTime = new Date(estNow.getTime() + (offset * 3600000)); // offset in milliseconds
 
       // Format the time in 12-hour format with AM/PM
-      let hours = time.getHours();
-      const minutes = time.getMinutes().toString().padStart(2, "0");
+      let hours = targetTime.getHours();
+      const minutes = targetTime.getMinutes().toString().padStart(2, "0");
       const ampm = hours >= 12 ? "PM" : "AM";
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
@@ -75,7 +81,7 @@ function updateTimezones() {
 
       // Determine time of day indicator
       let timeOfDay = "";
-      const hour24 = time.getHours();
+      const hour24 = targetTime.getHours();
       if (hour24 >= 5 && hour24 < 12) {
         timeOfDay = '<span class="time-day">🌅 Day</span>';
       } else if (hour24 >= 12 && hour24 < 18) {
@@ -107,6 +113,8 @@ function updateTimezones() {
       }
     } catch (error) {
       console.error(`Error calculating time for ${timezoneText}:`, error);
+      // Show error state in cell
+      timezoneCell.innerHTML = `${timezoneText} <span class="current-time error">(Error)</span>`;
     }
   });
 
@@ -296,22 +304,43 @@ document.addEventListener("DOMContentLoaded", function () {
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
 
-  // Initialize timezone display with priority
+  // Initialize timezone display with better timing and error handling
   console.log("Checking for staff table");
   if (document.querySelector(".staff-table")) {
     console.log("Staff table found - initializing timezone display");
 
-    // Delay slightly to ensure DOM is fully processed
-    setTimeout(() => {
-      // Add refresh controls to the staff list section
-      addRefreshControls();
+    // Wait for timezone-converter.js to load and retry if needed
+    let initAttempts = 0;
+    const maxAttempts = 5;
+    
+    function initializeTimezones() {
+      initAttempts++;
+      
+      try {
+        // Add refresh controls to the staff list section
+        addRefreshControls();
 
-      // Force initial update of timezones
-      updateTimezones();
+        // Force initial update of timezones
+        updateTimezones();
 
-      // Show notification of initialization
-      showNotification("Staff timezone display initialized", "info");
-    }, 500);
+        // Show notification of initialization
+        showNotification("Staff timezone display initialized", "info");
+        console.log("Timezone display successfully initialized");
+      } catch (error) {
+        console.error("Error initializing timezone display:", error);
+        
+        if (initAttempts < maxAttempts) {
+          console.log(`Retrying timezone initialization (attempt ${initAttempts + 1}/${maxAttempts})`);
+          setTimeout(initializeTimezones, 1000);
+        } else {
+          console.error("Failed to initialize timezone display after maximum attempts");
+          showNotification("Timezone display initialization failed", "error");
+        }
+      }
+    }
+
+    // Start initialization with a small delay
+    setTimeout(initializeTimezones, 500);
   }
 
   if (window.innerWidth <= 768) {
