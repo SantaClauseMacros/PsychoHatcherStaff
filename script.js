@@ -683,30 +683,7 @@ function showNotification(message, type = "info") {
   createAndShowNotification(message, type);
 }
 
-// Make sure status display updates on page load
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize status display if the element exists
-  const statusDisplay = document.getElementById('macro-status-display');
-  if (statusDisplay) {
-    console.log("Status display element found - initializing");
-    // Ensure the status-script.js functions are available
-    if (typeof updatePublicStatusDisplay === 'function') {
-      updatePublicStatusDisplay();
-    } else {
-      // Load status-script.js if not already loaded
-      const script = document.createElement('script');
-      script.src = 'status-script.js';
-      script.onload = function() {
-        if (typeof updatePublicStatusDisplay === 'function') {
-          updatePublicStatusDisplay();
-        } else {
-          console.error("Status display function not found after loading script");
-        }
-      };
-      document.head.appendChild(script);
-    }
-  }
-});
+
 
 // Helper function to create and show a notification
 function createAndShowNotification(message, type) {
@@ -1128,26 +1105,135 @@ document.addEventListener("DOMContentLoaded",function () {
 
   // Copy template functionality
   document.querySelectorAll(".copy-template").forEach((button) => {
-    button.addEventListener("click", function () {
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
       const templateType = this.getAttribute("data-template");
-      const contentDiv = this.closest(".template-content");
-      const paragraphs = contentDiv.querySelectorAll("p");
+      let textToCopy = "";
 
-      let templateText = "";
-      paragraphs.forEach((p) => {
-        // Remove quotes from the text
-        let cleanText = p.textContent.replace(/["']/g, "");
-        templateText += cleanText + "\n\n";
-      });
+      // Handle specific templates
+      if (templateType === "psycho-promo") {
+        textToCopy = `🚀 Introducing the #1 Automation Tool for Pet Simulator 99 & More!
 
-      navigator.clipboard.writeText(templateText.trim()).then(() => {
+Skip the grind and let Psycho Hatcher App handle everything while you enjoy the rewards.
+
+Top Features:
+🚀 Auto-Rank Up
+🌟 Auto-Farming
+⚔️ Clan Mode – Use to automate the collection of clan points during clan battles. Functionality varies each clan battle.
+💪 Auto-Level Up
+💎 Market Snipe
+🔒 Exclusive Modes – Unlock powerful features found only in our app
+
+Take your gaming to the next level!
+Download Psycho Hatcher now and let us do the work for you! 🤙
+
+https://discord.gg/psychohatcher`;
+      } else if (templateType === "clan-requirements") {
+        textToCopy = `Hey👋! To alliance with our server, you must meet these requirements:
+
+### ✅ Clan Requirements:
+🌟 Your server must have 1,000+ members
+💬 Your community must be actively engaged and friendly
+
+## -------------
+
+### 📣 Promotion & Listing Conditions:
+📢 Our promo post must be placed in a channel accessible to everyone
+🔔 You must ping @ everyone, @ here, or a notification role
+
+## -------------
+
+### 💸 Don't Meet the Requirements? No Problem!
+You can still get featured with a paid promo:
+💵 Just $5 to bypass all requirements
+🖼️ We'll place your clan banner on our most visited pages
+📅 We'll make a post about your clan that stays up for 30 days
+
+### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
+
+Let me know if you're interested or have any questions! 😎`;
+      } else if (templateType === "interview") {
+        textToCopy = `Hi, please answer these questions below so we can get a better understanding of your knowledge!
+
+1. How well do you understand Psycho Hatcher? (How to run it, the different modes, different buttons to click.)
+2. Do you understand some solutions for issues with Psycho Hatcher?
+3. How patient are you /10?
+4. How active are /10?
+5. How professional would you say you are /10?
+6. Scenario: A member is asking how to change their font, how do you approach this situation and what steps would you give to the member to help them revert their font?
+7. If you are unsure on a solution, what would you do?
+8. Anything to add?
+9. What would you say to members if one of the macros is broken and doesn't work?
+10. What would you tell members if Psycho Hatcher is down completely?
+11. How would you fix Multi-Roblox errors?
+12. What would you tell someone asking if they can download Psycho Hatcher on MacBook/Mac?
+13. How would you help someone who doesn't know how to download Psycho Hatcher?
+14. What would you tell someone wanting to donate for VIP who doesn't know the link?
+15. How would you handle someone being rude to you in a ticket or public chat?
+16. What would you say to someone asking if they can pay with huges for VIP?
+17. If someone closed the Psycho Hatcher website and downloaded it without saving the file password, what instructions would you give them?
+18. What are the keybinds for the rankup macro?
+19. How would you fix the Connection Error issue with Psycho Hatcher?
+20. If the leaderboard keeps popping up during macro use, how would you instruct the user to fix it?
+21. If the macro wasn't being enabled from clicking "F1", what troubleshooting steps would you recommend?
+22. What would you tell people to do if the Fisch mode wasn't doing the mini games correctly?
+23. What would you tell people to do if the Fisch mode wasn't detecting water pools correctly?
+24. How do you manage your time between multiple Discord responsibilities?`;
+      } else if (templateType === "vip-welcome") {
+        textToCopy = `# VIP Membership
+
+## Thank you
+
+Hello <@userid>   Thank you so much for your support. Your \`30-day VIP trial\` starts now and expires on 31 May 2025. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.
+
+\`\`\`
+User ID: user@vip.psychohatcher
+Password: Pass
+\`\`\`
+
+## Things you need to know
+
+<#1283170782662627408> - keep up to date with the latest VIP news.
+<#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.
+<#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.
+<#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.
+https://psychohatcher.com/vip/ - additional information about VIP.
+
+Enjoy your VIP experience! 🌟`;
+      } else {
+        // For other templates, get text from the data-template attribute or content
+        const savedTemplate = this.getAttribute("data-template");
+        if (savedTemplate && savedTemplate !== "general" && savedTemplate !== "macro" && savedTemplate !== "vip") {
+          textToCopy = savedTemplate;
+        } else {
+          // Get text from template content
+          const contentDiv = this.closest(".template-content");
+          if (contentDiv) {
+            const paragraphs = contentDiv.querySelectorAll("p, li");
+            paragraphs.forEach((p) => {
+              if (!p.querySelector("button")) { // Skip paragraphs with buttons
+                textToCopy += p.textContent.trim() + "\n\n";
+              }
+            });
+          }
+        }
+      }
+
+      // Copy to clipboard
+      navigator.clipboard.writeText(textToCopy.trim()).then(() => {
         showNotification("Template copied to clipboard!", "success");
-
+        
         // Visual feedback
-        this.textContent = "Copied!";
+        const originalHTML = this.innerHTML;
+        this.innerHTML = '<i class="fas fa-check"></i> Copied!';
         setTimeout(() => {
-          this.textContent = "Copy Template";
+          this.innerHTML = originalHTML;
         }, 2000);
+      }).catch((err) => {
+        console.error("Failed to copy:", err);
+        showNotification("Failed to copy to clipboard", "error");
       });
     });
   });
@@ -2846,50 +2932,124 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
-// Copy template to clipboard
-document.querySelectorAll(".copy-template").forEach((button) => {
-  button.addEventListener("click", function () {
-    const templateId = this.getAttribute("data-template");
-    let textToCopy = "";
+// Enhanced copy template functionality - handles all template types properly
+document.addEventListener("DOMContentLoaded", function() {
+  // Add copy functionality to all copy-template buttons
+  function attachCopyHandlers() {
+    document.querySelectorAll(".copy-template").forEach((button) => {
+      // Remove existing listeners to avoid duplicates
+      button.replaceWith(button.cloneNode(true));
+    });
+    
+    document.querySelectorAll(".copy-template").forEach((button) => {
+      button.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const templateId = this.getAttribute("data-template");
+        let textToCopy = "";
 
-    if (templateId === "clan-requirements") {
-      textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
+        // Handle specific template types
+        switch(templateId) {
+          case "clan-requirements":
+            textToCopy = `Hey👋! To alliance with our server, you must meet these requirements:
 
-✅ Clan Requirements:
+### ✅ Clan Requirements:
 🌟 Your server must have 1,000+ members
 💬 Your community must be actively engaged and friendly
 
-----------
-📣 Promotion & Listing Conditions:
+## -------------
+
+### 📣 Promotion & Listing Conditions:
 📢 Our promo post must be placed in a channel accessible to everyone
-🔔 You must ping @everyone, @here, or a notification role
+🔔 You must ping @ everyone, @ here, or a notification role
 
-----------
-💸 Don't Meet the Requirements? No Problem!
+## -------------
+
+### 💸 Don't Meet the Requirements? No Problem!
 You can still get featured with a paid promo:
-
 💵 Just $5 to bypass all requirements
 🖼️ We'll place your clan banner on our most visited pages
-📣 We'll make a post about your clan that stays up for 30 days
+📅 We'll make a post about your clan that stays up for 30 days
 
 ### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
 
 Let me know if you're interested or have any questions! 😎`;
-    } else if (templateId === "escalation") {
-      textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
-(Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
-    } else {
-      // For other templates, get the text directly from the data-template attribute
-      // This removes any indentation from the original HTML
-      textToCopy = this.getAttribute("data-template") || "";
-    }
+            break;
+            
+          case "psycho-promo":
+            textToCopy = `🚀 Introducing the #1 Automation Tool for Pet Simulator 99 & More!
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      showNotification("Template copied to clipboard!", "success");
-      this.innerHTML = '<i class="fas fa-check"></i> Copied!';
-      setTimeout(() => {
-        this.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
-      }, 2000);
+Skip the grind and let Psycho Hatcher App handle everything while you enjoy the rewards.
+
+Top Features:
+🚀 Auto-Rank Up
+🌟 Auto-Farming
+⚔️ Clan Mode – Use to automate the collection of clan points during clan battles. Functionality varies each clan battle.
+💪 Auto-Level Up
+💎 Market Snipe
+🔒 Exclusive Modes – Unlock powerful features found only in our app
+
+Take your gaming to the next level!
+Download Psycho Hatcher now and let us do the work for you! 🤙
+
+https://discord.gg/psychohatcher`;
+            break;
+            
+          default:
+            // For templates with direct text content
+            const contentDiv = this.closest(".template-content");
+            if (contentDiv) {
+              const textElements = contentDiv.querySelectorAll("p, li");
+              textElements.forEach((element) => {
+                if (!element.querySelector("button") && !element.classList.contains("promo-box")) {
+                  textToCopy += element.textContent.trim() + "\n\n";
+                }
+              });
+            }
+            
+            // If no content found, try data attribute
+            if (!textToCopy && this.hasAttribute("data-template")) {
+              textToCopy = this.getAttribute("data-template");
+            }
+            break;
+        }
+
+        // Copy to clipboard
+        if (textToCopy.trim()) {
+          navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+            showNotification("Template copied to clipboard!", "success");
+            
+            const originalHTML = this.innerHTML;
+            this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            setTimeout(() => {
+              this.innerHTML = originalHTML;
+            }, 2000);
+          }).catch((err) => {
+            console.error("Copy failed:", err);
+            showNotification("Failed to copy to clipboard", "error");
+          });
+        } else {
+          showNotification("No content to copy", "error");
+        }
+      });
     });
+  }
+  
+  // Attach handlers initially
+  attachCopyHandlers();
+  
+  // Re-attach handlers when content changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.addedNodes.length > 0) {
+        attachCopyHandlers();
+      }
+    });
+  });
+  
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
   });
 });
