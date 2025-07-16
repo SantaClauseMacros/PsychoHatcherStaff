@@ -1,50 +1,3 @@
-// Centralized timezone offset definitions (consistent with timezone-converter.js)
-const TIMEZONE_OFFSETS_FALLBACK = {
-  'EST': 0,      // Eastern Standard Time (baseline)
-  'CST': -1,     // Central Standard Time
-  'GMT': 4,      // Greenwich Mean Time
-  'IST': 9.5,    // Indian Standard Time
-  'AEDT': 11,    // Australian Eastern Daylight Time
-  'GMT+1': 5,    'GMT+2': 6,    'GMT+3': 7,    'GMT+4': 8,
-  'GMT+5': 9,    'GMT+6': 10,   'GMT+7': 11,   'GMT+8': 12,
-  'GMT+9': 13,   'GMT+9.5': 13.5, 'GMT+10': 14, 'GMT+11': 15, 'GMT+12': 16,
-  'GMT-1': 3,    'GMT-2': 2,    'GMT-3': 1,    'GMT-4': 0,
-  'GMT-5': -1,   'GMT-6': -2,   'GMT-7': -3,   'GMT-8': -4,
-  'GMT-9': -5,   'GMT-10': -6,  'GMT-11': -7,  'GMT-12': -8
-};
-
-// Safe timezone offset getter with fallback
-function getTimezoneOffsetSafe(timezone) {
-  try {
-    // Try to use the centralized function first
-    if (typeof window.getTimezoneOffset === 'function') {
-      return window.getTimezoneOffset(timezone);
-    }
-    
-    // Use fallback mapping
-    if (TIMEZONE_OFFSETS_FALLBACK.hasOwnProperty(timezone)) {
-      return TIMEZONE_OFFSETS_FALLBACK[timezone];
-    }
-
-    // Handle custom GMT formats
-    if (timezone.startsWith('GMT+')) {
-      const offset = parseFloat(timezone.substring(4));
-      return 4 + offset; // GMT is +4 from EST
-    }
-    if (timezone.startsWith('GMT-')) {
-      const offset = parseFloat(timezone.substring(4));
-      return 4 - offset; // GMT is +4 from EST
-    }
-
-    // Default to EST if unknown
-    console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
-    return 0;
-  } catch (error) {
-    console.error(`Error getting timezone offset for ${timezone}:`, error);
-    return 0; // Default to EST on error
-  }
-}
-
 // Function to update timezone times
 function updateTimezones() {
   const staffRows = document.querySelectorAll(".staff-table tbody tr");
@@ -56,24 +9,65 @@ function updateTimezones() {
     const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
     if (!timezoneText || timezoneText === "-") return;
 
+    // Get current time for this timezone
     try {
       // Get current UTC time
       const now = new Date();
-      
-      // Get timezone offset safely
-      const offset = getTimezoneOffsetSafe(timezoneText);
+      let time;
 
-      // Calculate time with proper offset handling
+      // Use the centralized timezone offset system
+      let offset = 0;
+      if (typeof window.getTimezoneOffset === 'function') {
+        offset = window.getTimezoneOffset(timezoneText);
+      } else {
+        // Fallback if the function isn't available yet
+        console.warn("Timezone offset function not available, using fallback");
+        if (timezoneText === "GMT") {
+          offset = 4;
+        } else if (timezoneText === "EST") {
+          offset = 0; // Eastern Standard Time baseline
+        } else if (timezoneText === "CST") {
+          offset = -1; // Central Standard Time
+        } else if (timezoneText === "IST") {
+          offset = 9.5;
+        } else if (timezoneText === "AEDT") {
+          offset = 11;
+        } else if (timezoneText.startsWith("GMT+")) {
+          offset = 4 + parseFloat(timezoneText.substring(4)); // GMT+X is 4+X from EST
+        } else if (timezoneText.startsWith("GMT-")) {
+          offset = 4 - parseFloat(timezoneText.substring(4)); // GMT-X is 4-X from EST
+        } else if (timezoneText.includes("+")) {
+          offset = 4 + parseFloat(timezoneText.split("+")[1]); // Same as GMT+X
+        }
+      }
+
+      // Use direct UTC methods for more reliable timezone calculation
+      const utcYear = now.getUTCFullYear();
+      const utcMonth = now.getUTCMonth();
+      const utcDate = now.getUTCDate();
+      const utcHours = now.getUTCHours();
+      const utcMinutes = now.getUTCMinutes();
+      const utcSeconds = now.getUTCSeconds();
+
+      // Handle half-hour offsets correctly
       const offsetHours = Math.floor(offset);
-      const offsetMinutes = Math.round((offset % 1) * 60); // Convert decimal part to minutes
+      const offsetMinutes = (offset % 1) * 60; // Convert decimal part to minutes
 
-      // Create target time by adding offset to current EST time
-      const estNow = new Date();
-      const targetTime = new Date(estNow.getTime() + (offset * 3600000)); // offset in milliseconds
+      // Create a new date using UTC time + the timezone offset
+      time = new Date(
+        Date.UTC(
+          utcYear,
+          utcMonth,
+          utcDate,
+          utcHours + offsetHours,
+          utcMinutes + offsetMinutes,
+          utcSeconds,
+        ),
+      );
 
       // Format the time in 12-hour format with AM/PM
-      let hours = targetTime.getHours();
-      const minutes = targetTime.getMinutes().toString().padStart(2, "0");
+      let hours = time.getHours();
+      const minutes = time.getMinutes().toString().padStart(2, "0");
       const ampm = hours >= 12 ? "PM" : "AM";
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
@@ -81,7 +75,7 @@ function updateTimezones() {
 
       // Determine time of day indicator
       let timeOfDay = "";
-      const hour24 = targetTime.getHours();
+      const hour24 = time.getHours();
       if (hour24 >= 5 && hour24 < 12) {
         timeOfDay = '<span class="time-day">🌅 Day</span>';
       } else if (hour24 >= 12 && hour24 < 18) {
@@ -113,8 +107,6 @@ function updateTimezones() {
       }
     } catch (error) {
       console.error(`Error calculating time for ${timezoneText}:`, error);
-      // Show error state in cell
-      timezoneCell.innerHTML = `${timezoneText} <span class="current-time error">(Error)</span>`;
     }
   });
 
@@ -304,43 +296,22 @@ document.addEventListener("DOMContentLoaded", function () {
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
 
-  // Initialize timezone display with better timing and error handling
+  // Initialize timezone display with priority
   console.log("Checking for staff table");
   if (document.querySelector(".staff-table")) {
     console.log("Staff table found - initializing timezone display");
 
-    // Wait for timezone-converter.js to load and retry if needed
-    let initAttempts = 0;
-    const maxAttempts = 5;
-    
-    function initializeTimezones() {
-      initAttempts++;
-      
-      try {
-        // Add refresh controls to the staff list section
-        addRefreshControls();
+    // Delay slightly to ensure DOM is fully processed
+    setTimeout(() => {
+      // Add refresh controls to the staff list section
+      addRefreshControls();
 
-        // Force initial update of timezones
-        updateTimezones();
+      // Force initial update of timezones
+      updateTimezones();
 
-        // Show notification of initialization
-        showNotification("Staff timezone display initialized", "info");
-        console.log("Timezone display successfully initialized");
-      } catch (error) {
-        console.error("Error initializing timezone display:", error);
-        
-        if (initAttempts < maxAttempts) {
-          console.log(`Retrying timezone initialization (attempt ${initAttempts + 1}/${maxAttempts})`);
-          setTimeout(initializeTimezones, 1000);
-        } else {
-          console.error("Failed to initialize timezone display after maximum attempts");
-          showNotification("Timezone display initialization failed", "error");
-        }
-      }
-    }
-
-    // Start initialization with a small delay
-    setTimeout(initializeTimezones, 500);
+      // Show notification of initialization
+      showNotification("Staff timezone display initialized", "info");
+    }, 500);
   }
 
   if (window.innerWidth <= 768) {
@@ -712,7 +683,30 @@ function showNotification(message, type = "info") {
   createAndShowNotification(message, type);
 }
 
-
+// Make sure status display updates on page load
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize status display if the element exists
+  const statusDisplay = document.getElementById('macro-status-display');
+  if (statusDisplay) {
+    console.log("Status display element found - initializing");
+    // Ensure the status-script.js functions are available
+    if (typeof updatePublicStatusDisplay === 'function') {
+      updatePublicStatusDisplay();
+    } else {
+      // Load status-script.js if not already loaded
+      const script = document.createElement('script');
+      script.src = 'status-script.js';
+      script.onload = function() {
+        if (typeof updatePublicStatusDisplay === 'function') {
+          updatePublicStatusDisplay();
+        } else {
+          console.error("Status display function not found after loading script");
+        }
+      };
+      document.head.appendChild(script);
+    }
+  }
+});
 
 // Helper function to create and show a notification
 function createAndShowNotification(message, type) {
@@ -1134,135 +1128,26 @@ document.addEventListener("DOMContentLoaded",function () {
 
   // Copy template functionality
   document.querySelectorAll(".copy-template").forEach((button) => {
-    button.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
+    button.addEventListener("click", function () {
       const templateType = this.getAttribute("data-template");
-      let textToCopy = "";
+      const contentDiv = this.closest(".template-content");
+      const paragraphs = contentDiv.querySelectorAll("p");
 
-      // Handle specific templates
-      if (templateType === "psycho-promo") {
-        textToCopy = `🚀 Introducing the #1 Automation Tool for Pet Simulator 99 & More!
+      let templateText = "";
+      paragraphs.forEach((p) => {
+        // Remove quotes from the text
+        let cleanText = p.textContent.replace(/["']/g, "");
+        templateText += cleanText + "\n\n";
+      });
 
-Skip the grind and let Psycho Hatcher App handle everything while you enjoy the rewards.
-
-Top Features:
-🚀 Auto-Rank Up
-🌟 Auto-Farming
-⚔️ Clan Mode – Use to automate the collection of clan points during clan battles. Functionality varies each clan battle.
-💪 Auto-Level Up
-💎 Market Snipe
-🔒 Exclusive Modes – Unlock powerful features found only in our app
-
-Take your gaming to the next level!
-Download Psycho Hatcher now and let us do the work for you! 🤙
-
-https://discord.gg/psychohatcher`;
-      } else if (templateType === "clan-requirements") {
-        textToCopy = `Hey👋! To alliance with our server, you must meet these requirements:
-
-### ✅ Clan Requirements:
-🌟 Your server must have 1,000+ members
-💬 Your community must be actively engaged and friendly
-
-## -------------
-
-### 📣 Promotion & Listing Conditions:
-📢 Our promo post must be placed in a channel accessible to everyone
-🔔 You must ping @ everyone, @ here, or a notification role
-
-## -------------
-
-### 💸 Don't Meet the Requirements? No Problem!
-You can still get featured with a paid promo:
-💵 Just $5 to bypass all requirements
-🖼️ We'll place your clan banner on our most visited pages
-📅 We'll make a post about your clan that stays up for 30 days
-
-### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
-
-Let me know if you're interested or have any questions! 😎`;
-      } else if (templateType === "interview") {
-        textToCopy = `Hi, please answer these questions below so we can get a better understanding of your knowledge!
-
-1. How well do you understand Psycho Hatcher? (How to run it, the different modes, different buttons to click.)
-2. Do you understand some solutions for issues with Psycho Hatcher?
-3. How patient are you /10?
-4. How active are /10?
-5. How professional would you say you are /10?
-6. Scenario: A member is asking how to change their font, how do you approach this situation and what steps would you give to the member to help them revert their font?
-7. If you are unsure on a solution, what would you do?
-8. Anything to add?
-9. What would you say to members if one of the macros is broken and doesn't work?
-10. What would you tell members if Psycho Hatcher is down completely?
-11. How would you fix Multi-Roblox errors?
-12. What would you tell someone asking if they can download Psycho Hatcher on MacBook/Mac?
-13. How would you help someone who doesn't know how to download Psycho Hatcher?
-14. What would you tell someone wanting to donate for VIP who doesn't know the link?
-15. How would you handle someone being rude to you in a ticket or public chat?
-16. What would you say to someone asking if they can pay with huges for VIP?
-17. If someone closed the Psycho Hatcher website and downloaded it without saving the file password, what instructions would you give them?
-18. What are the keybinds for the rankup macro?
-19. How would you fix the Connection Error issue with Psycho Hatcher?
-20. If the leaderboard keeps popping up during macro use, how would you instruct the user to fix it?
-21. If the macro wasn't being enabled from clicking "F1", what troubleshooting steps would you recommend?
-22. What would you tell people to do if the Fisch mode wasn't doing the mini games correctly?
-23. What would you tell people to do if the Fisch mode wasn't detecting water pools correctly?
-24. How do you manage your time between multiple Discord responsibilities?`;
-      } else if (templateType === "vip-welcome") {
-        textToCopy = `# VIP Membership
-
-## Thank you
-
-Hello <@userid>   Thank you so much for your support. Your \`30-day VIP trial\` starts now and expires on 31 May 2025. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.
-
-\`\`\`
-User ID: user@vip.psychohatcher
-Password: Pass
-\`\`\`
-
-## Things you need to know
-
-<#1283170782662627408> - keep up to date with the latest VIP news.
-<#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.
-<#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.
-<#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.
-https://psychohatcher.com/vip/ - additional information about VIP.
-
-Enjoy your VIP experience! 🌟`;
-      } else {
-        // For other templates, get text from the data-template attribute or content
-        const savedTemplate = this.getAttribute("data-template");
-        if (savedTemplate && savedTemplate !== "general" && savedTemplate !== "macro" && savedTemplate !== "vip") {
-          textToCopy = savedTemplate;
-        } else {
-          // Get text from template content
-          const contentDiv = this.closest(".template-content");
-          if (contentDiv) {
-            const paragraphs = contentDiv.querySelectorAll("p, li");
-            paragraphs.forEach((p) => {
-              if (!p.querySelector("button")) { // Skip paragraphs with buttons
-                textToCopy += p.textContent.trim() + "\n\n";
-              }
-            });
-          }
-        }
-      }
-
-      // Copy to clipboard
-      navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+      navigator.clipboard.writeText(templateText.trim()).then(() => {
         showNotification("Template copied to clipboard!", "success");
-        
+
         // Visual feedback
-        const originalHTML = this.innerHTML;
-        this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        this.textContent = "Copied!";
         setTimeout(() => {
-          this.innerHTML = originalHTML;
+          this.textContent = "Copy Template";
         }, 2000);
-      }).catch((err) => {
-        console.error("Failed to copy:", err);
-        showNotification("Failed to copy to clipboard", "error");
       });
     });
   });
@@ -2961,124 +2846,50 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
-// Enhanced copy template functionality - handles all template types properly
-document.addEventListener("DOMContentLoaded", function() {
-  // Add copy functionality to all copy-template buttons
-  function attachCopyHandlers() {
-    document.querySelectorAll(".copy-template").forEach((button) => {
-      // Remove existing listeners to avoid duplicates
-      button.replaceWith(button.cloneNode(true));
-    });
-    
-    document.querySelectorAll(".copy-template").forEach((button) => {
-      button.addEventListener("click", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        const templateId = this.getAttribute("data-template");
-        let textToCopy = "";
+// Copy template to clipboard
+document.querySelectorAll(".copy-template").forEach((button) => {
+  button.addEventListener("click", function () {
+    const templateId = this.getAttribute("data-template");
+    let textToCopy = "";
 
-        // Handle specific template types
-        switch(templateId) {
-          case "clan-requirements":
-            textToCopy = `Hey👋! To alliance with our server, you must meet these requirements:
+    if (templateId === "clan-requirements") {
+      textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
 
-### ✅ Clan Requirements:
+✅ Clan Requirements:
 🌟 Your server must have 1,000+ members
 💬 Your community must be actively engaged and friendly
 
-## -------------
-
-### 📣 Promotion & Listing Conditions:
+----------
+📣 Promotion & Listing Conditions:
 📢 Our promo post must be placed in a channel accessible to everyone
-🔔 You must ping @ everyone, @ here, or a notification role
+🔔 You must ping @everyone, @here, or a notification role
 
-## -------------
-
-### 💸 Don't Meet the Requirements? No Problem!
+----------
+💸 Don't Meet the Requirements? No Problem!
 You can still get featured with a paid promo:
+
 💵 Just $5 to bypass all requirements
 🖼️ We'll place your clan banner on our most visited pages
-📅 We'll make a post about your clan that stays up for 30 days
+📣 We'll make a post about your clan that stays up for 30 days
 
 ### Donation Link: https://donate.stripe.com/00gcPYdimdq0f1m9AA
 
 Let me know if you're interested or have any questions! 😎`;
-            break;
-            
-          case "psycho-promo":
-            textToCopy = `🚀 Introducing the #1 Automation Tool for Pet Simulator 99 & More!
+    } else if (templateId === "escalation") {
+      textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
+(Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
+    } else {
+      // For other templates, get the text directly from the data-template attribute
+      // This removes any indentation from the original HTML
+      textToCopy = this.getAttribute("data-template") || "";
+    }
 
-Skip the grind and let Psycho Hatcher App handle everything while you enjoy the rewards.
-
-Top Features:
-🚀 Auto-Rank Up
-🌟 Auto-Farming
-⚔️ Clan Mode – Use to automate the collection of clan points during clan battles. Functionality varies each clan battle.
-💪 Auto-Level Up
-💎 Market Snipe
-🔒 Exclusive Modes – Unlock powerful features found only in our app
-
-Take your gaming to the next level!
-Download Psycho Hatcher now and let us do the work for you! 🤙
-
-https://discord.gg/psychohatcher`;
-            break;
-            
-          default:
-            // For templates with direct text content
-            const contentDiv = this.closest(".template-content");
-            if (contentDiv) {
-              const textElements = contentDiv.querySelectorAll("p, li");
-              textElements.forEach((element) => {
-                if (!element.querySelector("button") && !element.classList.contains("promo-box")) {
-                  textToCopy += element.textContent.trim() + "\n\n";
-                }
-              });
-            }
-            
-            // If no content found, try data attribute
-            if (!textToCopy && this.hasAttribute("data-template")) {
-              textToCopy = this.getAttribute("data-template");
-            }
-            break;
-        }
-
-        // Copy to clipboard
-        if (textToCopy.trim()) {
-          navigator.clipboard.writeText(textToCopy.trim()).then(() => {
-            showNotification("Template copied to clipboard!", "success");
-            
-            const originalHTML = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-check"></i> Copied!';
-            setTimeout(() => {
-              this.innerHTML = originalHTML;
-            }, 2000);
-          }).catch((err) => {
-            console.error("Copy failed:", err);
-            showNotification("Failed to copy to clipboard", "error");
-          });
-        } else {
-          showNotification("No content to copy", "error");
-        }
-      });
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      showNotification("Template copied to clipboard!", "success");
+      this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => {
+        this.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
+      }, 2000);
     });
-  }
-  
-  // Attach handlers initially
-  attachCopyHandlers();
-  
-  // Re-attach handlers when content changes
-  const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => {
-      if (mutation.addedNodes.length > 0) {
-        attachCopyHandlers();
-      }
-    });
-  });
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true
   });
 });
