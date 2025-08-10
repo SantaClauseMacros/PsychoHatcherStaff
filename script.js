@@ -9,37 +9,59 @@ function updateTimezones() {
     const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
     if (!timezoneText || timezoneText === "-") return;
 
-    // Get current time for this timezone
     try {
       // Get current UTC time
       const now = new Date();
-      let time;
-
-      // Use the centralized timezone offset system
       let offset = 0;
-      if (typeof window.getTimezoneOffset === 'function') {
+
+      // Use centralized timezone offset system if available
+      if (typeof window.getTimezoneOffset === "function") {
         offset = window.getTimezoneOffset(timezoneText);
       } else {
-        // Fallback if the function isn't available yet
+        // Fallback system — offsets are relative to UTC
         console.warn("Timezone offset function not available, using fallback");
-        if (timezoneText === "GMT") {
-          offset = 4;
+
+        if (timezoneText === "GMT" || timezoneText === "UTC") {
+          offset = 0;
+        } else if (timezoneText === "EET") {
+          // Greece — detects DST automatically
+          const month = now.getUTCMonth(); // 0 = January
+          const isDST = month >= 2 && month <= 9; // Rough DST range (March–October)
+          offset = isDST ? 3 : 2;
         } else if (timezoneText === "EST") {
-          offset = 0; // Eastern Standard Time baseline
+          offset = -5;
         } else if (timezoneText === "CST") {
-          offset = -1; // Central Standard Time
+          offset = -6;
         } else if (timezoneText === "IST") {
-          offset = 9.5;
+          offset = 5.5;
         } else if (timezoneText === "AEDT") {
           offset = 11;
         } else if (timezoneText.startsWith("GMT+")) {
-          offset = 4 + parseFloat(timezoneText.substring(4)); // GMT+X is 4+X from EST
+          offset = parseFloat(timezoneText.substring(4));
         } else if (timezoneText.startsWith("GMT-")) {
-          offset = 4 - parseFloat(timezoneText.substring(4)); // GMT-X is 4-X from EST
-        } else if (timezoneText.includes("+")) {
-          offset = 4 + parseFloat(timezoneText.split("+")[1]); // Same as GMT+X
+          offset = -parseFloat(timezoneText.substring(4));
+        } else if (timezoneText.startsWith("UTC+")) {
+          offset = parseFloat(timezoneText.substring(4));
+        } else if (timezoneText.startsWith("UTC-")) {
+          offset = -parseFloat(timezoneText.substring(4));
         }
       }
+
+      // Calculate local time
+      const utcTime = now.getTime() + now.getTimezoneOffset() * 60000;
+      const localTime = new Date(utcTime + offset * 3600000);
+
+      // Format time for display (HH:MM)
+      const hours = localTime.getHours().toString().padStart(2, "0");
+      const minutes = localTime.getMinutes().toString().padStart(2, "0");
+
+      // Update cell
+      timezoneCell.textContent = `${timezoneText} (${hours}:${minutes})`;
+    } catch (error) {
+      console.error("Error updating timezone:", timezoneText, error);
+    }
+  });
+}
 
       // Use direct UTC methods for more reliable timezone calculation
       const utcYear = now.getUTCFullYear();
