@@ -59,7 +59,7 @@ const TIMEZONE_OFFSETS = {
   'WGT': -3,     // West Greenland Time (UTC-3)
   'AZOT': -1,    // Azores Time (UTC-1)
   'CVT': -1,     // Cape Verde Time (UTC-1)
-  'GREECE': -2,   // Greece Time (UTC+2) - Added for Santa
+  'GREECE': 0,   // Greece Time (UTC+2) - Added for Santa
   'GMT+1': 1,    // GMT+1
   'GMT+2': 2,    // GMT+2
   'GMT+3': 3,    // GMT+3
