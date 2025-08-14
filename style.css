@@ -284,6 +284,30 @@ h3 {
 .role-support { color: #ff6b6b !important; font-weight: 500; }
 .role-trial-support { color: #06ff00 !important; font-weight: 500; }
 
+/* Make slashes in role names black */
+.staff-table td:nth-child(2):has-slash::before {
+  content: '';
+}
+
+.staff-table td:nth-child(2) {
+  position: relative;
+}
+
+/* Target roles with slashes specifically */
+.role-supervisor-associate-developer {
+  background: linear-gradient(to right, #6ebe68 0%, #6ebe68 45%, #000000 47%, #000000 53%, #ad1457 55%, #ad1457 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.role-junior-dev-support {
+  background: linear-gradient(to right, #5500ff 0%, #5500ff 45%, #000000 47%, #000000 53%, #ff6b6b 55%, #ff6b6b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 /* Dark mode role colors adjustments */
 .dark-mode .role-ceo { color: #ff6b6b !important; }
 .dark-mode .role-head-of-developers { color: #ff4444 !important; }
