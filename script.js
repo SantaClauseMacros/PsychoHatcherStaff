@@ -33,7 +33,7 @@ function updateTimezones() {
         } else if (timezoneText === "AEDT") {
           offset = 11; // Australian Eastern Daylight Time UTC+11
         } else if (timezoneText === "GREECE") {
-          offset = -2; // Greece Time UTC+2
+          offset = -2; // Greece Time UTC
         } else if (timezoneText.startsWith("GMT+")) {
           offset = parseFloat(timezoneText.substring(4)); // GMT+X is UTC+X
         } else if (timezoneText.startsWith("GMT-")) {
