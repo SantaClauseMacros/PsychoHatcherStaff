@@ -27,9 +27,29 @@ function applyRoleColors() {
       roleCell.classList.remove(className);
     });
     
-    // Apply the appropriate role class
-    if (roleColorMap[roleText]) {
-      roleCell.classList.add(roleColorMap[roleText]);
+    // Check if role contains a slash and handle specially
+    if (roleText.includes('/')) {
+      // For roles with slashes, we'll use a special approach
+      const parts = roleText.split('/');
+      const mainRole = parts[0].trim();
+      const secondaryRole = parts[1].trim();
+      
+      // Apply compound role class
+      if (roleText === 'supervisor/associate developer') {
+        roleCell.classList.add('role-supervisor-associate-developer');
+      } else if (roleText === 'junior dev/support') {
+        roleCell.classList.add('role-junior-dev-support');
+      } else {
+        // Fallback to first role color if no specific compound class
+        if (roleColorMap[mainRole]) {
+          roleCell.classList.add(roleColorMap[mainRole]);
+        }
+      }
+    } else {
+      // Apply the appropriate role class for single roles
+      if (roleColorMap[roleText]) {
+        roleCell.classList.add(roleColorMap[roleText]);
+      }
     }
   });
 }
@@ -1164,27 +1184,89 @@ document.addEventListener("DOMContentLoaded",function () {
 
   // Copy template functionality
   document.querySelectorAll(".copy-template").forEach((button) => {
-    button.addEventListener("click", function () {
-      const templateType = this.getAttribute("data-template");
-      const contentDiv = this.closest(".template-content");
-      const paragraphs = contentDiv.querySelectorAll("p");
+    button.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Find the template container
+      const templateContainer = this.closest('.template-card') || 
+                              this.closest('.template-content') || 
+                              this.closest('.guide-content') ||
+                              this.closest('.vip-box') ||
+                              this.parentElement;
 
       let templateText = "";
-      paragraphs.forEach((p) => {
-        // Remove quotes from the text
-        let cleanText = p.textContent.replace(/["']/g, "");
-        templateText += cleanText + "\n\n";
-      });
 
-      navigator.clipboard.writeText(templateText.trim()).then(() => {
-        showNotification("Template copied to clipboard!", "success");
+      if (templateContainer) {
+        // Clone the container to avoid modifying the original
+        const clonedContainer = templateContainer.cloneNode(true);
+        
+        // Remove all buttons and interactive elements from the clone
+        const buttonsToRemove = clonedContainer.querySelectorAll('button, .copy-template, .btn');
+        buttonsToRemove.forEach(btn => btn.remove());
+        
+        // Get all paragraph elements and other text content
+        const textElements = clonedContainer.querySelectorAll('p, li, div, span');
+        const seenTexts = new Set(); // To avoid duplicates
+        
+        textElements.forEach((element) => {
+          let text = element.textContent.trim();
+          if (text && !seenTexts.has(text) && text.length > 3) { // Avoid very short/empty texts
+            // Clean up the text
+            text = text.replace(/["']/g, "").replace(/\s+/g, ' ').trim();
+            if (text) {
+              templateText += text + "\n\n";
+              seenTexts.add(text);
+            }
+          }
+        });
 
-        // Visual feedback
-        this.textContent = "Copied!";
-        setTimeout(() => {
-          this.textContent = "Copy Template";
-        }, 2000);
-      });
+        // If no paragraphs found, get all text content
+        if (!templateText.trim()) {
+          templateText = clonedContainer.textContent.replace(/\s+/g, ' ').trim();
+        }
+      }
+
+      // Fallback to button's data attribute or nearby text
+      if (!templateText.trim()) {
+        const dataTemplate = this.getAttribute("data-template");
+        if (dataTemplate) {
+          templateText = dataTemplate;
+        } else {
+          // Last resort: get text from parent elements
+          let parent = this.parentElement;
+          while (parent && !templateText.trim()) {
+            const textContent = parent.textContent;
+            if (textContent && textContent.length > 50) { // Only if substantial content
+              templateText = textContent.replace(this.textContent, '').trim();
+              break;
+            }
+            parent = parent.parentElement;
+          }
+        }
+      }
+
+      // Clean up the final text
+      templateText = templateText.trim().replace(/\n{3,}/g, '\n\n');
+
+      if (templateText) {
+        navigator.clipboard.writeText(templateText).then(() => {
+          showNotification("Template copied to clipboard!", "success");
+
+          // Visual feedback
+          const originalText = this.innerHTML;
+          this.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          
+          setTimeout(() => {
+            this.innerHTML = originalText;
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+          showNotification("Failed to copy template", "error");
+        });
+      } else {
+        showNotification("No template content found to copy!", "error");
+      }
     });
   });
 });
@@ -2915,17 +2997,43 @@ Let me know if you're interested or have any questions! 😎`;
       textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
 (Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
     } else {
-      // For other templates, get the text directly from the data-template attribute
-      // This removes any indentation from the original HTML
-      textToCopy = this.getAttribute("data-template") || "";
+      // For other templates, find the template content container
+      const templateContainer = this.closest('.template-card') || this.closest('.template-content') || this.closest('.guide-content');
+      
+      if (templateContainer) {
+        // Get all text content but exclude the button text
+        const allText = templateContainer.cloneNode(true);
+        // Remove all buttons from the cloned content
+        const buttons = allText.querySelectorAll('button, .copy-template');
+        buttons.forEach(btn => btn.remove());
+        
+        // Get clean text content
+        textToCopy = allText.textContent.trim();
+        
+        // Clean up extra whitespace and newlines
+        textToCopy = textToCopy.replace(/\s+/g, ' ').replace(/\n\s+/g, '\n').trim();
+      } else {
+        // Fallback: try to get from data-template attribute
+        textToCopy = this.getAttribute("data-template") || "";
+      }
+    }
+
+    // Ensure we have something to copy
+    if (!textToCopy) {
+      showNotification("No template content found to copy!", "error");
+      return;
     }
 
     navigator.clipboard.writeText(textToCopy).then(() => {
       showNotification("Template copied to clipboard!", "success");
+      const originalHTML = this.innerHTML;
       this.innerHTML = '<i class="fas fa-check"></i> Copied!';
       setTimeout(() => {
-        this.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
+        this.innerHTML = originalHTML;
       }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy: ', err);
+      showNotification("Failed to copy template", "error");
     });
   });
 });
