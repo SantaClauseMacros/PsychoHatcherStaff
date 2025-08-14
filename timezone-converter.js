@@ -1,6 +1,8 @@
-// Timezone Conversion Tool for Staff Portal
+
+// Timezone Conversion Tool and Management System for Staff Portal
 document.addEventListener('DOMContentLoaded', function() {
   initializeTimezoneConverter();
+  initializeTimezoneManagement();
 });
 
 // Centralized timezone offset definitions (hours from UTC)
@@ -59,7 +61,8 @@ const TIMEZONE_OFFSETS = {
   'WGT': -3,     // West Greenland Time (UTC-3)
   'AZOT': -1,    // Azores Time (UTC-1)
   'CVT': -1,     // Cape Verde Time (UTC-1)
-  'GREECE': 0,   // Greece Time (UTC+2) - Added for Santa
+  'GREECE': 2,   // Greece Time (UTC+2) - Added for Santa
+  'AWST': 8,     // Australian Western Standard Time (UTC+8)
   'GMT+1': 1,    // GMT+1
   'GMT+2': 2,    // GMT+2
   'GMT+3': 3,    // GMT+3
@@ -94,7 +97,7 @@ const TIMEZONE_OFFSETS = {
   'GMT-12': -12  // GMT-12
 };
 
-// Function to get timezone offset relative to EST
+// Function to get timezone offset relative to UTC
 function getTimezoneOffset(timezone) {
   // Check if the timezone is directly in our mapping
   if (TIMEZONE_OFFSETS.hasOwnProperty(timezone)) {
@@ -111,9 +114,269 @@ function getTimezoneOffset(timezone) {
     return -offset; // GMT-X is UTC-X
   }
 
-  // Default to EST if unknown
-  console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
+  // Default to 0 if unknown
+  console.warn(`Unknown timezone: ${timezone}, defaulting to UTC`);
   return 0;
+}
+
+// Function to update timezone times in staff table
+function updateTimezones() {
+  const staffRows = document.querySelectorAll(".staff-table tbody tr");
+
+  staffRows.forEach((row) => {
+    const timezoneCell = row.querySelector("td:nth-child(4)"); // 4th column is timezone
+    if (!timezoneCell) return;
+
+    const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
+    if (!timezoneText || timezoneText === "-") return;
+
+    // Get current time for this timezone
+    try {
+      // Get current UTC time
+      const now = new Date();
+      let time;
+
+      // Use the centralized timezone offset system
+      const offset = getTimezoneOffset(timezoneText);
+
+      // Get current UTC time and apply timezone offset
+      const utcTime = now.getTime();
+      const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
+      
+      // Create timezone-adjusted time
+      time = new Date(utcTime + offsetMilliseconds);
+
+      // Format the time in 12-hour format with AM/PM
+      let hours = time.getHours();
+      const minutes = time.getMinutes().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      const formattedTime = `${hours}:${minutes} ${ampm}`;
+
+      // Determine time of day indicator
+      let timeOfDay = "";
+      const hour24 = time.getHours();
+      if (hour24 >= 5 && hour24 < 12) {
+        timeOfDay = '<span class="time-day">🌅 Day</span>';
+      } else if (hour24 >= 12 && hour24 < 18) {
+        timeOfDay = '<span class="time-midday">☀️ Mid-day</span>';
+      } else {
+        timeOfDay = '<span class="time-night">🌙 Night</span>';
+      }
+
+      // Update cell content with timezone, current time, and day/night indicator
+      if (!timezoneCell.innerHTML.includes("(")) {
+        timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
+      } else {
+        // Update just the time part and day/night indicator
+        const timeSpan = timezoneCell.querySelector(".current-time");
+        if (timeSpan) {
+          // Find and remove existing time of day indicator if present
+          const existingTimeOfDay = timezoneCell.querySelector(
+            ".time-day, .time-midday, .time-night",
+          );
+          if (existingTimeOfDay) {
+            existingTimeOfDay.remove();
+          }
+          timeSpan.textContent = `(${formattedTime})`;
+          // Append the time of day indicator after the time span
+          timeSpan.insertAdjacentHTML("afterend", ` ${timeOfDay}`);
+        } else {
+          timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
+        }
+      }
+    } catch (error) {
+      console.error(`Error calculating time for ${timezoneText}:`, error);
+    }
+  });
+
+  // Update last refreshed indicator
+  updateLastRefreshedTime();
+}
+
+// Function to update the last refreshed time indicator
+function updateLastRefreshedTime() {
+  const lastRefreshedElement = document.getElementById("last-refreshed-time");
+  if (lastRefreshedElement) {
+    const now = new Date();
+    let hours = now.getHours();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutes = now.getMinutes().toString().padStart(2, "0");
+    const seconds = now.getSeconds().toString().padStart(2, "0");
+    lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+
+    // Add a visual indicator that the refresh occurred
+    lastRefreshedElement.style.color = "#ED1F27";
+    lastRefreshedElement.style.fontWeight = "bold";
+
+    setTimeout(() => {
+      lastRefreshedElement.style.color = "";
+      lastRefreshedElement.style.fontWeight = "";
+    }, 2000);
+
+    console.log(
+      "Last refreshed time updated to:",
+      `${hours}:${minutes}:${seconds} ${ampm}`,
+    );
+  }
+}
+
+// Function to add refresh controls to the staff list section
+function addRefreshControls() {
+  const staffSection = document.getElementById("staff-list");
+  if (!staffSection) return;
+
+  // Create refresh controls container
+  const refreshControls = document.createElement("div");
+  refreshControls.className = "refresh-controls";
+  refreshControls.innerHTML = `
+    <div class="refresh-info">
+      <span>Last refreshed at: <span id="last-refreshed-time">--:--:--</span></span>
+      <button id="refresh-times-btn">
+        <i class="fas fa-sync-alt"></i> Refresh Now
+      </button>
+    </div>
+    <div class="auto-refresh-toggle">
+      <label for="auto-refresh-checkbox">Auto-refresh every minute</label>
+      <input type="checkbox" id="auto-refresh-checkbox" checked>
+    </div>
+  `;
+
+  // Create a proper container for the refresh controls
+  const refreshContainer = document.createElement("div");
+  refreshContainer.style.width = "100%";
+  refreshContainer.style.display = "flex";
+  refreshContainer.style.justifyContent = "center";
+  refreshContainer.appendChild(refreshControls);
+
+  // Insert at the top of the staff list section
+  const staffTitle = staffSection.querySelector("h2");
+  if (staffTitle && staffTitle.nextSibling) {
+    staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
+  } else {
+    staffSection.appendChild(refreshContainer);
+  }
+
+  // Add event listener for manual refresh with enhanced animation
+  const refreshBtn = document.getElementById("refresh-times-btn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", function () {
+      // Visual feedback before starting the refresh
+      this.classList.add("refreshing");
+      const icon = this.querySelector("i");
+      if (icon) {
+        // Show loading indicator
+        icon.className = "fas fa-circle-notch fa-spin";
+      }
+      this.disabled = true;
+
+      // Perform the refresh
+      updateTimezones();
+
+      // Add smooth transition back
+      setTimeout(() => {
+        if (icon) {
+          icon.className = "fas fa-check";
+        }
+        this.style.backgroundColor = "#4CAF50";
+
+        setTimeout(() => {
+          if (icon) {
+            icon.className = "fas fa-sync-alt";
+          }
+          this.classList.remove("refreshing");
+          this.disabled = false;
+          this.style.backgroundColor = "";
+
+          // Show notification
+          if (typeof showNotification === 'function') {
+            showNotification("Timezone times refreshed successfully!", "success");
+          }
+        }, 1000);
+      }, 800);
+    });
+  }
+
+  // Initialize auto-refresh functionality
+  initAutoRefresh();
+
+  // Set initial last refreshed time
+  updateLastRefreshedTime();
+
+  // Immediately update timezones on page load
+  updateTimezones();
+}
+
+// Function to initialize auto-refresh functionality
+function initAutoRefresh() {
+  let refreshInterval;
+  const autoRefreshCheckbox = document.getElementById("auto-refresh-checkbox");
+  if (!autoRefreshCheckbox) return;
+
+  // Function to start or stop the interval
+  function toggleAutoRefresh() {
+    // Clear any existing interval first
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
+
+    if (autoRefreshCheckbox.checked) {
+      // Set to refresh every minute (60000 ms)
+      refreshInterval = setInterval(() => {
+        updateTimezones();
+        console.log(
+          "Auto refresh executed at:",
+          new Date().toLocaleTimeString(),
+        );
+      }, 60000);
+      localStorage.setItem("autoRefreshEnabled", "true");
+    } else {
+      localStorage.setItem("autoRefreshEnabled", "false");
+    }
+  }
+
+  // Add event listener for checkbox
+  autoRefreshCheckbox.addEventListener("change", toggleAutoRefresh);
+
+  // Initialize based on saved preference or default to enabled
+  const savedPreference = localStorage.getItem("autoRefreshEnabled");
+  if (savedPreference === "false") {
+    autoRefreshCheckbox.checked = false;
+  } else {
+    autoRefreshCheckbox.checked = true;
+  }
+
+  // Start auto-refresh if enabled
+  toggleAutoRefresh();
+
+  // Force an initial update
+  updateTimezones();
+}
+
+// Initialize timezone management system
+function initializeTimezoneManagement() {
+  // Check for staff table and initialize timezone display
+  if (document.querySelector(".staff-table")) {
+    console.log("Staff table found - initializing timezone display");
+
+    // Delay slightly to ensure DOM is fully processed
+    setTimeout(() => {
+      // Add refresh controls to the staff list section
+      addRefreshControls();
+
+      // Force initial update of timezones
+      updateTimezones();
+
+      // Show notification of initialization if function exists
+      if (typeof showNotification === 'function') {
+        showNotification("Staff timezone display initialized", "info");
+      }
+    }, 500);
+  }
 }
 
 function initializeTimezoneConverter() {
@@ -154,6 +417,7 @@ function initializeTimezoneConverter() {
               <option value="AEDT">AEDT - Australian Eastern Daylight Time (UTC+11)</option>
               <option value="NZST">NZST - New Zealand Standard Time (UTC+12)</option>
               <option value="HST">HST - Hawaii Standard Time (UTC-10)</option>
+              <option value="AWST">AWST - Australian Western Standard Time (UTC+8)</option>
             </optgroup>
             <optgroup label="Americas Timezones">
               <option value="AST">AST - Atlantic Standard Time (UTC-4)</option>
@@ -253,7 +517,9 @@ function setupTimezoneConverter() {
 
   function convertTimeBetweenTimezones() {
     if (!sourceTime.value) {
-      showNotification('Please select a time to convert', 'error');
+      if (typeof showNotification === 'function') {
+        showNotification('Please select a time to convert', 'error');
+      }
       return;
     }
 
@@ -339,6 +605,11 @@ function setupTimezoneConverter() {
   }
 }
 
-// Make timezone offsets and functions available globally
+// Make timezone functions available globally for other scripts
 window.TIMEZONE_OFFSETS = TIMEZONE_OFFSETS;
 window.getTimezoneOffset = getTimezoneOffset;
+window.updateTimezones = updateTimezones;
+window.updateLastRefreshedTime = updateLastRefreshedTime;
+window.addRefreshControls = addRefreshControls;
+window.initAutoRefresh = initAutoRefresh;
+window.initializeTimezoneManagement = initializeTimezoneManagement;
