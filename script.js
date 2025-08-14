@@ -20,37 +20,42 @@ function updateTimezones() {
       if (typeof window.getTimezoneOffset === 'function') {
         offset = window.getTimezoneOffset(timezoneText);
       } else {
-        // Fallback if the function isn't available yet
+        // Fallback if the function isn't available yet - calculate relative to EST
         console.warn("Timezone offset function not available, using fallback");
+        const EST_OFFSET = -5; // EST is UTC-5
         if (timezoneText === "GMT" || timezoneText === "UTC") {
-          offset = 0;
+          offset = 0 - EST_OFFSET; // GMT relative to EST = +5
         } else if (timezoneText === "EST") {
-          offset = -5; // Eastern Standard Time UTC-5
+          offset = 0; // EST relative to EST = 0
         } else if (timezoneText === "CST") {
-          offset = -6; // Central Standard Time UTC-6
+          offset = -6 - EST_OFFSET; // CST relative to EST = -1
         } else if (timezoneText === "IST") {
-          offset = 5.5; // Indian Standard Time UTC+5:30
+          offset = 5.5 - EST_OFFSET; // IST relative to EST = +10.5
         } else if (timezoneText === "AEDT") {
-          offset = 11; // Australian Eastern Daylight Time UTC+11
+          offset = 11 - EST_OFFSET; // AEDT relative to EST = +16
         } else if (timezoneText === "GREECE") {
-          offset = -2; // Greece Time UTC
+          offset = 2 - EST_OFFSET; // Greece relative to EST = +7
         } else if (timezoneText.startsWith("GMT+")) {
-          offset = parseFloat(timezoneText.substring(4)); // GMT+X is UTC+X
+          const utcOffset = parseFloat(timezoneText.substring(4));
+          offset = utcOffset - EST_OFFSET; // Convert from UTC to EST-relative
         } else if (timezoneText.startsWith("GMT-")) {
-          offset = -parseFloat(timezoneText.substring(4)); // GMT-X is UTC-X
+          const utcOffset = -parseFloat(timezoneText.substring(4));
+          offset = utcOffset - EST_OFFSET; // Convert from UTC to EST-relative
         } else if (timezoneText.includes("+")) {
-          offset = parseFloat(timezoneText.split("+")[1]); // Extract positive offset
+          const utcOffset = parseFloat(timezoneText.split("+")[1]);
+          offset = utcOffset - EST_OFFSET; // Convert from UTC to EST-relative
         } else if (timezoneText.includes("-")) {
-          offset = -parseFloat(timezoneText.split("-")[1]); // Extract negative offset
+          const utcOffset = -parseFloat(timezoneText.split("-")[1]);
+          offset = utcOffset - EST_OFFSET; // Convert from UTC to EST-relative
         }
       }
 
-      // Get current UTC time and apply timezone offset
-      const utcTime = now.getTime();
+      // Get current EST time (our base time)
+      const estTime = new Date(now.getTime() + (-5 * 3600000)); // EST is UTC-5
       const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
       
-      // Create timezone-adjusted time
-      time = new Date(utcTime + offsetMilliseconds);
+      // Create timezone-adjusted time relative to EST
+      time = new Date(estTime.getTime() + offsetMilliseconds);
 
       // Format the time in 12-hour format with AM/PM
       let hours = time.getHours();
