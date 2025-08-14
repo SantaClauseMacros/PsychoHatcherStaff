@@ -50,8 +50,8 @@ function updateTimezones() {
         }
       }
 
-      // Get current EST time (our base time)
-      const estTime = new Date(now.getTime() + (-5 * 3600000)); // EST is UTC-5
+      // Get current EST time (our base time) - subtract 5 hours from UTC
+      const estTime = new Date(now.getTime() - (5 * 3600000)); // EST is UTC-5
       const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
       
       // Create timezone-adjusted time relative to EST
