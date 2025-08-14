@@ -59,7 +59,7 @@ const TIMEZONE_OFFSETS = {
   'WGT': -3,     // West Greenland Time (UTC-3)
   'AZOT': -1,    // Azores Time (UTC-1)
   'CVT': -1,     // Cape Verde Time (UTC-1)
-  'GREECE': 0,   // Greece Time (UTC+2) - Added for Santa
+  'GREECE': -2,   // Greece Time (UTC+2) - Added for Santa
   'GMT+1': 1,    // GMT+1
   'GMT+2': 2,    // GMT+2
   'GMT+3': 3,    // GMT+3
@@ -94,24 +94,27 @@ const TIMEZONE_OFFSETS = {
   'GMT-12': -12  // GMT-12
 };
 
-// Function to get timezone offset relative to EST
+// Function to get timezone offset relative to EST (EST is our base = 0)
 function getTimezoneOffset(timezone) {
+  const EST_OFFSET = -5; // EST is UTC-5
+  
   // Check if the timezone is directly in our mapping
   if (TIMEZONE_OFFSETS.hasOwnProperty(timezone)) {
-    return TIMEZONE_OFFSETS[timezone];
+    // Return offset relative to EST (subtract EST's UTC offset)
+    return TIMEZONE_OFFSETS[timezone] - EST_OFFSET;
   }
 
   // For custom GMT+X or GMT-X formats not in our mapping
   if (timezone.startsWith('GMT+')) {
     const offset = parseFloat(timezone.substring(4));
-    return offset; // GMT+X is UTC+X
+    return offset - EST_OFFSET; // Convert from UTC to EST-relative
   }
   if (timezone.startsWith('GMT-')) {
     const offset = parseFloat(timezone.substring(4));
-    return -offset; // GMT-X is UTC-X
+    return -offset - EST_OFFSET; // Convert from UTC to EST-relative
   }
 
-  // Default to EST if unknown
+  // Default to EST if unknown (EST relative to EST = 0)
   console.warn(`Unknown timezone: ${timezone}, defaulting to EST`);
   return 0;
 }
@@ -263,27 +266,27 @@ function setupTimezoneConverter() {
     // Get all available timezones from staff list and our predefined list
     const timezones = getStaffTimezones();
 
-    // Get UTC offset for source timezone
-    const sourceOffset = getTimezoneOffset(inputTimezone);
+    // Get EST-relative offset for source timezone
+    const sourceOffsetFromEST = getTimezoneOffset(inputTimezone);
 
-    // Convert input time to UTC first
-    // Assume input time is in local browser timezone initially, then adjust for source timezone
-    const utcTime = new Date(inputTime.getTime() - (sourceOffset * 3600000));
+    // Convert input time to EST first (our base time)
+    const estTime = new Date(inputTime.getTime() - (sourceOffsetFromEST * 3600000));
 
     // Convert to all staff timezones
-    let resultsHTML = `<h4>Time in all staff timezones:</h4><div class="timezone-results">`;
+    let resultsHTML = `<h4>Time in all staff timezones (based on EST):</h4><div class="timezone-results">`;
 
     timezones.forEach(tz => {
-      const targetOffset = getTimezoneOffset(tz);
+      const targetOffsetFromEST = getTimezoneOffset(tz);
       
-      // Convert from UTC to target timezone
-      const adjustedTime = new Date(utcTime.getTime() + (targetOffset * 3600000));
+      // Convert from EST to target timezone
+      const adjustedTime = new Date(estTime.getTime() + (targetOffsetFromEST * 3600000));
 
       // Format the time
       const formattedTime = formatTime(adjustedTime);
       const timeOfDay = getTimeOfDay(adjustedTime.getHours());
 
-      const offsetDisplay = targetOffset >= 0 ? `UTC+${targetOffset}` : `UTC${targetOffset}`;
+      // Display offset relative to EST
+      const offsetDisplay = targetOffsetFromEST >= 0 ? `EST+${targetOffsetFromEST}` : `EST${targetOffsetFromEST}`;
 
       resultsHTML += `
         <div class="timezone-result-item">
