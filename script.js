@@ -51,9 +51,9 @@ function updateTimezones() {
       }
 
       // Get current EST time (our base time)
-      // EST is UTC-5, so we need to get the current UTC time and adjust it to EST
-      const utcTime = new Date();
-      const estTime = new Date(utcTime.getTime() + (utcTime.getTimezoneOffset() * 60000) - (5 * 3600000));
+      // Create a date in EST timezone directly
+      const now = new Date();
+      const estTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
       const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
       
       // Create timezone-adjusted time relative to EST
