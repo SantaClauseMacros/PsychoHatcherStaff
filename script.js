@@ -1,265 +1,4 @@
-// Function to update timezone times
-function updateTimezones() {
-  const staffRows = document.querySelectorAll(".staff-table tbody tr");
-
-  staffRows.forEach((row) => {
-    const timezoneCell = row.querySelector("td:nth-child(4)"); // 4th column is timezone
-    if (!timezoneCell) return;
-
-    const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
-    if (!timezoneText || timezoneText === "-") return;
-
-    // Get current time for this timezone
-    try {
-      // Get current UTC time
-      const now = new Date();
-      let time;
-
-      // Use the centralized timezone offset system
-      let offset = 0;
-      if (typeof window.getTimezoneOffset === 'function') {
-        offset = window.getTimezoneOffset(timezoneText);
-      } else {
-        // Fallback if the function isn't available yet
-        console.warn("Timezone offset function not available, using fallback");
-        if (timezoneText === "GMT" || timezoneText === "UTC") {
-          offset = 0;
-        } else if (timezoneText === "EST") {
-          offset = -5; // Eastern Standard Time UTC-5
-        } else if (timezoneText === "CST") {
-          offset = -6; // Central Standard Time UTC-6
-        } else if (timezoneText === "IST") {
-          offset = 5.5; // Indian Standard Time UTC+5:30
-        } else if (timezoneText === "AEDT") {
-          offset = 11; // Australian Eastern Daylight Time UTC+11
-        } else if (timezoneText === "GREECE") {
-          offset = 0; // Greece Time UTC+2
-        } else if (timezoneText.startsWith("GMT+")) {
-          offset = parseFloat(timezoneText.substring(4)); // GMT+X is UTC+X
-        } else if (timezoneText.startsWith("GMT-")) {
-          offset = -parseFloat(timezoneText.substring(4)); // GMT-X is UTC-X
-        } else if (timezoneText.includes("+")) {
-          offset = parseFloat(timezoneText.split("+")[1]); // Extract positive offset
-        } else if (timezoneText.includes("-")) {
-          offset = -parseFloat(timezoneText.split("-")[1]); // Extract negative offset
-        }
-      }
-
-      // Get current UTC time and apply timezone offset
-      const utcTime = now.getTime();
-      const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
-      
-      // Create timezone-adjusted time
-      time = new Date(utcTime + offsetMilliseconds);
-
-      // Format the time in 12-hour format with AM/PM
-      let hours = time.getHours();
-      const minutes = time.getMinutes().toString().padStart(2, "0");
-      const ampm = hours >= 12 ? "PM" : "AM";
-      hours = hours % 12;
-      hours = hours ? hours : 12; // the hour '0' should be '12'
-      const formattedTime = `${hours}:${minutes} ${ampm}`;
-
-      // Determine time of day indicator
-      let timeOfDay = "";
-      const hour24 = time.getHours();
-      if (hour24 >= 5 && hour24 < 12) {
-        timeOfDay = '<span class="time-day">🌅 Day</span>';
-      } else if (hour24 >= 12 && hour24 < 18) {
-        timeOfDay = '<span class="time-midday">☀️ Mid-day</span>';
-      } else {
-        timeOfDay = '<span class="time-night">🌙 Night</span>';
-      }
-
-      // Update cell content with timezone, current time, and day/night indicator
-      if (!timezoneCell.innerHTML.includes("(")) {
-        timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
-      } else {
-        // Update just the time part and day/night indicator
-        const timeSpan = timezoneCell.querySelector(".current-time");
-        if (timeSpan) {
-          // Find and remove existing time of day indicator if present
-          const existingTimeOfDay = timezoneCell.querySelector(
-            ".time-day, .time-midday, .time-night",
-          );
-          if (existingTimeOfDay) {
-            existingTimeOfDay.remove();
-          }
-          timeSpan.textContent = `(${formattedTime})`;
-          // Append the time of day indicator after the time span
-          timeSpan.insertAdjacentHTML("afterend", ` ${timeOfDay}`);
-        } else {
-          timezoneCell.innerHTML = `${timezoneText} <span class="current-time">(${formattedTime})</span> ${timeOfDay}`;
-        }
-      }
-    } catch (error) {
-      console.error(`Error calculating time for ${timezoneText}:`, error);
-    }
-  });
-
-  // Update last refreshed indicator
-  updateLastRefreshedTime();
-}
-
-// Function to update the last refreshed time indicator
-function updateLastRefreshedTime() {
-  const lastRefreshedElement = document.getElementById("last-refreshed-time");
-  if (lastRefreshedElement) {
-    const now = new Date();
-    let hours = now.getHours();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    const minutes = now.getMinutes().toString().padStart(2, "0");
-    const seconds = now.getSeconds().toString().padStart(2, "0");
-    lastRefreshedElement.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
-
-    // Add a visual indicator that the refresh occurred
-    lastRefreshedElement.style.color = "#ED1F27";
-    lastRefreshedElement.style.fontWeight = "bold";
-
-    setTimeout(() => {
-      lastRefreshedElement.style.color = "";
-      lastRefreshedElement.style.fontWeight = "";
-    }, 2000);
-
-    console.log(
-      "Last refreshed time updated to:",
-      `${hours}:${minutes}:${seconds} ${ampm}`,
-    );
-  }
-}
-
-// Function to add refresh controls to the staff list section
-function addRefreshControls() {
-  const staffSection = document.getElementById("staff-list");
-  if (!staffSection) return;
-
-  // Create refresh controls container
-  const refreshControls = document.createElement("div");
-  refreshControls.className = "refresh-controls";
-  refreshControls.innerHTML = `
-    <div class="refresh-info">
-      <span>Last refreshed at: <span id="last-refreshed-time">--:--:--</span></span>
-      <button id="refresh-times-btn">
-        <i class="fas fa-sync-alt"></i> Refresh Now
-      </button>
-    </div>
-    <div class="auto-refresh-toggle">
-      <label for="auto-refresh-checkbox">Auto-refresh every minute</label>
-      <input type="checkbox" id="auto-refresh-checkbox" checked>
-    </div>
-  `;
-
-  // Create a proper container for the refresh controls
-  const refreshContainer = document.createElement("div");
-  refreshContainer.style.width = "100%";
-  refreshContainer.style.display = "flex";
-  refreshContainer.style.justifyContent = "center";
-  refreshContainer.appendChild(refreshControls);
-
-  // Insert at the top of the staff list section
-  const staffTitle = staffSection.querySelector("h2");
-  if (staffTitle && staffTitle.nextSibling) {
-    staffSection.insertBefore(refreshContainer, staffTitle.nextSibling);
-  } else {
-    staffSection.appendChild(refreshContainer);
-  }
-
-  // Add event listener for manual refresh with enhanced animation
-  const refreshBtn = document.getElementById("refresh-times-btn");
-  if (refreshBtn) {
-    refreshBtn.addEventListener("click", function () {
-      // Visual feedback before starting the refresh
-      this.classList.add("refreshing");
-      const icon = this.querySelector("i");
-      if (icon) {
-        // Show loading indicator
-        icon.className = "fas fa-circle-notch fa-spin";
-      }
-      this.disabled = true;
-
-      // Perform the refresh
-      updateTimezones();
-
-      // Add smooth transition back
-      setTimeout(() => {
-        if (icon) {
-          icon.className = "fas fa-check";
-        }
-        this.style.backgroundColor = "#4CAF50";
-
-        setTimeout(() => {
-          if (icon) {
-            icon.className = "fas fa-sync-alt";
-          }
-          this.classList.remove("refreshing");
-          this.disabled = false;
-          this.style.backgroundColor = "";
-
-          // Show notification
-          showNotification("Timezone times refreshed successfully!", "success");
-        }, 1000);
-      }, 800);
-    });
-  }
-
-  // Initialize auto-refresh functionality
-  initAutoRefresh();
-
-  // Set initial last refreshed time
-  updateLastRefreshedTime();
-
-  // Immediately update timezones on page load
-  updateTimezones();
-}
-
-// Function to initialize auto-refresh functionality
-function initAutoRefresh() {
-  let refreshInterval;
-  const autoRefreshCheckbox = document.getElementById("auto-refresh-checkbox");
-  if (!autoRefreshCheckbox) return;
-
-  // Function to start or stop the interval
-  function toggleAutoRefresh() {
-    // Clear any existing interval first
-    if (refreshInterval) {
-      clearInterval(refreshInterval);
-      refreshInterval = null;
-    }
-
-    if (autoRefreshCheckbox.checked) {
-      // Set to refresh every minute (60000 ms)
-      refreshInterval = setInterval(() => {
-        updateTimezones();
-        console.log(
-          "Auto refresh executed at:",
-          new Date().toLocaleTimeString(),
-        );
-      }, 60000);
-      localStorage.setItem("autoRefreshEnabled", "true");
-    } else {
-      localStorage.setItem("autoRefreshEnabled", "false");
-    }
-  }
-
-  // Add event listener for checkbox
-  autoRefreshCheckbox.addEventListener("change", toggleAutoRefresh);
-
-  // Initialize based on saved preference or default to enabled
-  const savedPreference = localStorage.getItem("autoRefreshEnabled");
-  if (savedPreference === "false") {
-    autoRefreshCheckbox.checked = false;
-  } else {
-    autoRefreshCheckbox.checked = true;
-  }
-
-  // Start auto-refresh if enabled
-  toggleAutoRefresh();
-
-  // Force an initial update
-  updateTimezones();
-}
+// Timezone functionality has been moved to timezone-converter.js for better organization
 
 // Mobile navigation enhancement
 document.addEventListener("DOMContentLoaded", function () {
@@ -283,23 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
   mobileMenuBtn.className = "mobile-menu-toggle";
   mobileMenuBtn.innerHTML = '<i class="fas fa-bars"></i> Menu';
 
-  // Initialize timezone display with priority
-  console.log("Checking for staff table");
-  if (document.querySelector(".staff-table")) {
-    console.log("Staff table found - initializing timezone display");
-
-    // Delay slightly to ensure DOM is fully processed
-    setTimeout(() => {
-      // Add refresh controls to the staff list section
-      addRefreshControls();
-
-      // Force initial update of timezones
-      updateTimezones();
-
-      // Show notification of initialization
-      showNotification("Staff timezone display initialized", "info");
-    }, 500);
-  }
+  // Timezone management is now handled by timezone-converter.js
+  console.log("Timezone functionality delegated to timezone-converter.js");
 
   if (window.innerWidth <= 768) {
     // Insert before the navigation
@@ -348,15 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 
-  // Add a direct refresh button click if it exists
-  const refreshButton = document.getElementById("refresh-times-btn");
-  if (refreshButton) {
-    console.log("Found refresh button - triggering initial click");
-    // Force a click after everything is loaded
-    setTimeout(() => {
-      refreshButton.click();
-    }, 1000);
-  }
+  // Refresh button handling is now managed by timezone-converter.js
 });
 
 // Site Security Enhancements
@@ -1065,33 +781,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Initialize tooltips
-function copyVIPTemplate() {
-    const template = `Hello <@userid>   Thank you so much for your support. Your \`30-day VIP trial\` starts now and expires on <t:1748825936:F>, which is <t:1748825936:R>. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.
 
-
-\`\`\`
-User ID: user@vip.psychohatcher
-Password: Pass
-\`\`\`
-
-## Things you need to know
-
-<#1283170782662627408> - keep up to date with the latest VIP news.
-<#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.
-<#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.
-<#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.
-https://psychohatcher.com/vip/ - additional information about VIP.
-
-Enjoy your VIP experience! 🌟`;
-
-    navigator.clipboard.writeText(template).then(() => {
-        const button = document.querySelector('.copy-template');
-        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
-        setTimeout(() => {
-            button.innerHTML = '<i class="fas fa-copy"></i> Copy Template';
-        }, 2000);
-    });
-}
 
 function initializeTooltips() {
   // Add hoverable class to existing tooltips
@@ -1113,31 +803,7 @@ document.addEventListener("DOMContentLoaded",function () {
     displaySuggestions();
   }
 
-  // Copy template functionality
-  document.querySelectorAll(".copy-template").forEach((button) => {
-    button.addEventListener("click", function () {
-      const templateType = this.getAttribute("data-template");
-      const contentDiv = this.closest(".template-content");
-      const paragraphs = contentDiv.querySelectorAll("p");
-
-      let templateText = "";
-      paragraphs.forEach((p) => {
-        // Remove quotes from the text
-        let cleanText = p.textContent.replace(/["']/g, "");
-        templateText += cleanText + "\n\n";
-      });
-
-      navigator.clipboard.writeText(templateText.trim()).then(() => {
-        showNotification("Template copied to clipboard!", "success");
-
-        // Visual feedback
-        this.textContent = "Copied!";
-        setTimeout(() => {
-          this.textContent = "Copy Template";
-        }, 2000);
-      });
-    });
-  });
+  
 });
 
 function submitSuggestion() {
@@ -2833,12 +2499,17 @@ function resetAllSiteData() {
     location.reload();
   }, 2000);
 }
-// Copy template to clipboard
-document.querySelectorAll(".copy-template").forEach((button) => {
-  button.addEventListener("click", function () {
-    const templateId = this.getAttribute("data-template");
+// Copy template to clipboard - Enhanced version
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.copy-template')) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const button = e.target.closest('.copy-template');
+    const templateId = button.getAttribute('data-template');
     let textToCopy = "";
 
+    // Handle special template cases
     if (templateId === "clan-requirements") {
       textToCopy = `Hey! 👋 To alliance with our server, you must meet these requirements:
 
@@ -2865,18 +2536,123 @@ Let me know if you're interested or have any questions! 😎`;
     } else if (templateId === "escalation") {
       textToCopy = `Thank you for your patience. I'll raise this to our developers' team.
 (Go to the support team forum and submit the issue along with a tag and the ticket link for tracking.)`;
+    } else if (templateId === "psycho-promo") {
+      textToCopy = `🚀 Introducing the #1 Automation Tool for Pet Simulator 99 & More!
+
+Skip the grind and let Psycho Hatcher App handle everything while you enjoy the rewards.
+
+Top Features:
+🚀 Auto-Rank Up
+🌟 Auto-Farming
+⚔️ Clan Mode – Use to automate the collection of clan points during clan battles. Functionality varies each clan battle.
+💪 Auto-Level Up
+💎 Market Snipe
+🔒 Exclusive Modes – Unlock powerful features found only in our app
+
+Take your gaming to the next level!
+Download Psycho Hatcher now and let us do the work for you! 🤙
+https://discord.gg/psychohatcher`;
+    } else if (templateId === "vip-welcome") {
+      textToCopy = `Hello <@userid>   Thank you so much for your support. Your \`30-day VIP trial\` starts now and expires on <t:1748825936:F>, which is <t:1748825936:R>. Your donation helps us pay for server costs, fund giveaways, and motivates us to keep delivering a great product.
+
+
+\`\`\`
+User ID: user@vip.psychohatcher
+Password: Pass
+\`\`\`
+
+## Things you need to know
+
+<#1283170782662627408> - keep up to date with the latest VIP news.
+<#1197624289042649161> - chat with other VIPs, discuss the latest beta products, provide suggestions for the VIP modes and help shape future versions of the modes.
+<#1295127287460663478> - dedicated, almost 24/7 support channel for VIPs.
+<#1221071146368372897> and <#1363624931618984177> - keep an eye out for exclusive VIP giveaways.
+https://psychohatcher.com/vip/ - additional information about VIP.
+
+Enjoy your VIP experience! 🌟`;
+    } else if (templateId === "interview") {
+      textToCopy = `Hi, please answer these questions below so we can get a better understanding of your knowledge!
+
+1. How well do you understand Psycho Hatcher? (How to run it, the different modes, different buttons to click.)
+2. Do you understand some solutions for issues with Psycho Hatcher?
+3. How patient are you /10?
+4. How active are /10?
+5. How professional would you say you are /10?
+6. Scenario: A member is asking how to change their font, how do you approach this situation and what steps would you give to the member to help them revert their font?
+7. If you are unsure on a solution, what would you do?
+8. Anything to add?
+9. What would you say to members if one of the macros is broken and doesn't work?
+10. What would you tell members if Psycho Hatcher is down completely?
+11. How would you fix Multi-Roblox errors?
+12. What would you tell someone asking if they can download Psycho Hatcher on MacBook/Mac?
+13. How would you help someone who doesn't know how to download Psycho Hatcher?
+14. What would you tell someone wanting to donate for VIP who doesn't know the link?
+15. How would you handle someone being rude to you in a ticket or public chat?
+16. What would you say to someone asking if they can pay with huges for VIP?
+17. If someone closed the Psycho Hatcher website and downloaded it without saving the file password, what instructions would you give them?
+18. What are the keybinds for the rankup macro?
+19. How would you fix the Connection Error issue with Psycho Hatcher?
+20. If the leaderboard keeps popping up during macro use, how would you instruct the user to fix it?
+21. If the macro wasn't being enabled from clicking "F1", what troubleshooting steps would you recommend?
+22. What would you tell people to do if the Fisch mode wasn't doing the mini games correctly?
+23. What would you tell people to do if the Fisch mode wasn't detecting water pools correctly?
+24. How do you manage your time between multiple Discord responsibilities?`;
+    } else if (button.getAttribute('data-template')) {
+      // Use the data-template attribute value directly
+      textToCopy = button.getAttribute('data-template');
     } else {
-      // For other templates, get the text directly from the data-template attribute
-      // This removes any indentation from the original HTML
-      textToCopy = this.getAttribute("data-template") || "";
+      // Try to extract text from the template content container
+      const templateContent = button.closest('.template-card, .template-content, .script-section');
+      if (templateContent) {
+        // Get all paragraph text, excluding button text
+        const paragraphs = templateContent.querySelectorAll('p, li');
+        const textParts = [];
+        
+        paragraphs.forEach(p => {
+          // Skip if this paragraph contains the button
+          if (!p.contains(button)) {
+            let text = p.textContent.trim();
+            // Clean up the text
+            text = text.replace(/["']/g, ''); // Remove quotes
+            if (text && text !== 'Copy Template' && text !== 'Copy Script' && !text.includes('Copy')) {
+              textParts.push(text);
+            }
+          }
+        });
+        
+        textToCopy = textParts.join('\n\n');
+      }
     }
 
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      showNotification("Template copied to clipboard!", "success");
-      this.innerHTML = '<i class="fas fa-check"></i> Copied!';
-      setTimeout(() => {
-        this.innerHTML = '<i class="fas fa-copy"></i> Copy Script';
-      }, 2000);
-    });
-  });
+    // Fallback: if still no text, try to get text from the closest content container
+    if (!textToCopy.trim()) {
+      const contentContainer = button.parentElement;
+      if (contentContainer) {
+        const allText = contentContainer.textContent;
+        // Remove button text and clean up
+        textToCopy = allText.replace(/Copy Template|Copy Script|Copy.*?/g, '').trim();
+      }
+    }
+
+    if (textToCopy.trim()) {
+      navigator.clipboard.writeText(textToCopy.trim()).then(() => {
+        showNotification("Template copied to clipboard!", "success");
+        
+        // Visual feedback
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        button.style.backgroundColor = '#4CAF50';
+        
+        setTimeout(() => {
+          button.innerHTML = originalHTML;
+          button.style.backgroundColor = '';
+        }, 2000);
+      }).catch(err => {
+        console.error('Copy failed:', err);
+        showNotification("Failed to copy template", "error");
+      });
+    } else {
+      showNotification("No template content found to copy", "error");
+    }
+  }
 });
