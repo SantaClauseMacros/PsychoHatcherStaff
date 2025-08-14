@@ -39,7 +39,7 @@ function updateTimezones() {
   const staffRows = document.querySelectorAll(".staff-table tbody tr");
 
   staffRows.forEach((row) => {
-    const timezoneCell = row.querySelector("td:nth-child(4)"); // 4th column is timezone
+    const timezoneCell = row.querySelector("td:nth-child(5)"); // 5th column is timezone
     if (!timezoneCell) return;
 
     const timezoneText = timezoneCell.textContent.trim().split(" ")[0]; // Get just the timezone part
