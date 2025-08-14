@@ -268,7 +268,31 @@ h3 {
 .staff-container {
   width: 100%;
   overflow-x: auto;
+  background: linear-gradient(135deg, #f8f9fa, #ffffff);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
+
+/* Role Colors System */
+.role-ceo { color: #0f0303 !important; font-weight: 700; }
+.role-head-of-developers { color: #ff0000 !important; font-weight: 700; }
+.role-head-of-staff { color: #0dff00 !important; font-weight: 700; }
+.role-supervisor, .role-supervisor-associate-developer { color: #6ebe68 !important; font-weight: 600; }
+.role-associate-developer { color: #ad1457 !important; font-weight: 600; }
+.role-junior-dev, .role-junior-dev-support { color: #5500ff !important; font-weight: 600; }
+.role-support { color: #ff6b6b !important; font-weight: 500; }
+.role-trial-support { color: #06ff00 !important; font-weight: 500; }
+
+/* Dark mode role colors adjustments */
+.dark-mode .role-ceo { color: #ff6b6b !important; }
+.dark-mode .role-head-of-developers { color: #ff4444 !important; }
+.dark-mode .role-head-of-staff { color: #4dff4d !important; }
+.dark-mode .role-supervisor, .dark-mode .role-supervisor-associate-developer { color: #8ed68e !important; }
+.dark-mode .role-associate-developer { color: #e91e63 !important; }
+.dark-mode .role-junior-dev, .dark-mode .role-junior-dev-support { color: #7d7dff !important; }
+.dark-mode .role-support { color: #ffaaaa !important; }
+.dark-mode .role-trial-support { color: #66ff66 !important; }
 
 /* Refresh Controls Styles */
 .refresh-controls {
@@ -444,38 +468,51 @@ h3 {
 .staff-table {
   width: 100%;
   border-collapse: collapse;
-  margin: 1rem 0;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  border-radius: var(--border-radius);
+  margin: 0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
   overflow: hidden;
   table-layout: fixed;
+  background: white;
 }
 
 .staff-table thead {
-  background-color: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: white;
 }
 
 .staff-table th {
-  padding: 1rem;
+  padding: 1.2rem 1rem;
   text-align: left;
-  font-weight: bold;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border: none;
 }
 
-.staff-table th:nth-child(1) { width: 20%; } /* Name */
-.staff-table th:nth-child(2) { width: 25%; } /* Roblox Username */
-.staff-table th:nth-child(3) { width: 15%; } /* Emoji */
-.staff-table th:nth-child(4) { width: 40%; } /* Timezone */
+.staff-table th:nth-child(1) { width: 22%; } /* Name */
+.staff-table th:nth-child(2) { width: 26%; } /* Role */
+.staff-table th:nth-child(3) { width: 22%; } /* Roblox Username */
+.staff-table th:nth-child(4) { width: 8%; } /* Emoji */
+.staff-table th:nth-child(5) { width: 22%; } /* Timezone */
 
 .staff-table td {
-  padding: 0.8rem 1rem;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
+  transition: all 0.3s ease;
 }
 
-.staff-table td:nth-child(3) { 
-  font-size: 1.5rem;
+.staff-table td:nth-child(4) { 
+  font-size: 1.8rem;
   text-align: center;
+  padding: 0.8rem;
+}
+
+.staff-table td:nth-child(2) {
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
 .current-time {
@@ -576,16 +613,46 @@ h3 {
 }
 
 .staff-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: #fafbfc;
 }
 
 .staff-table tbody tr:hover {
-  background-color: #f0f0f0;
+  background-color: #f0f8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .staff-name {
-  font-weight: bold;
+  font-weight: 700;
   color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-name::before {
+  content: '👨‍💼';
+  font-size: 1.2rem;
+}
+
+.dark-mode .staff-table {
+  background-color: #2d2d2d;
+}
+
+.dark-mode .staff-table thead {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+.dark-mode .staff-table td {
+  border-bottom-color: #404040;
+}
+
+.dark-mode .staff-table tbody tr:nth-child(even) {
+  background-color: #333;
+}
+
+.dark-mode .staff-table tbody tr:hover {
+  background-color: #404040;
 }
 
 /* Guides Styles */
