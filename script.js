@@ -22,48 +22,35 @@ function updateTimezones() {
       } else {
         // Fallback if the function isn't available yet
         console.warn("Timezone offset function not available, using fallback");
-        if (timezoneText === "GMT") {
-          offset = 4;
+        if (timezoneText === "GMT" || timezoneText === "UTC") {
+          offset = 0;
         } else if (timezoneText === "EST") {
-          offset = 0; // Eastern Standard Time baseline
+          offset = -5; // Eastern Standard Time UTC-5
         } else if (timezoneText === "CST") {
-          offset = -1; // Central Standard Time
+          offset = -6; // Central Standard Time UTC-6
         } else if (timezoneText === "IST") {
-          offset = 9.5;
+          offset = 5.5; // Indian Standard Time UTC+5:30
         } else if (timezoneText === "AEDT") {
-          offset = 11;
+          offset = 11; // Australian Eastern Daylight Time UTC+11
+        } else if (timezoneText === "GREECE") {
+          offset = 2; // Greece Time UTC+2
         } else if (timezoneText.startsWith("GMT+")) {
-          offset = 4 + parseFloat(timezoneText.substring(4)); // GMT+X is 4+X from EST
+          offset = parseFloat(timezoneText.substring(4)); // GMT+X is UTC+X
         } else if (timezoneText.startsWith("GMT-")) {
-          offset = 4 - parseFloat(timezoneText.substring(4)); // GMT-X is 4-X from EST
+          offset = -parseFloat(timezoneText.substring(4)); // GMT-X is UTC-X
         } else if (timezoneText.includes("+")) {
-          offset = 4 + parseFloat(timezoneText.split("+")[1]); // Same as GMT+X
+          offset = parseFloat(timezoneText.split("+")[1]); // Extract positive offset
+        } else if (timezoneText.includes("-")) {
+          offset = -parseFloat(timezoneText.split("-")[1]); // Extract negative offset
         }
       }
 
-      // Use direct UTC methods for more reliable timezone calculation
-      const utcYear = now.getUTCFullYear();
-      const utcMonth = now.getUTCMonth();
-      const utcDate = now.getUTCDate();
-      const utcHours = now.getUTCHours();
-      const utcMinutes = now.getUTCMinutes();
-      const utcSeconds = now.getUTCSeconds();
-
-      // Handle half-hour offsets correctly
-      const offsetHours = Math.floor(offset);
-      const offsetMinutes = (offset % 1) * 60; // Convert decimal part to minutes
-
-      // Create a new date using UTC time + the timezone offset
-      time = new Date(
-        Date.UTC(
-          utcYear,
-          utcMonth,
-          utcDate,
-          utcHours + offsetHours,
-          utcMinutes + offsetMinutes,
-          utcSeconds,
-        ),
-      );
+      // Get current UTC time and apply timezone offset
+      const utcTime = now.getTime();
+      const offsetMilliseconds = offset * 3600000; // Convert hours to milliseconds
+      
+      // Create timezone-adjusted time
+      time = new Date(utcTime + offsetMilliseconds);
 
       // Format the time in 12-hour format with AM/PM
       let hours = time.getHours();
