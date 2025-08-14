@@ -1,3 +1,39 @@
+// Role color mapping system
+const roleColorMap = {
+  'ceo': 'role-ceo',
+  'head of developers': 'role-head-of-developers',
+  'head of staff': 'role-head-of-staff',
+  'supervisor': 'role-supervisor',
+  'supervisor/associate developer': 'role-supervisor-associate-developer',
+  'associate developer': 'role-associate-developer',
+  'junior dev': 'role-junior-dev',
+  'junior dev/support': 'role-junior-dev-support',
+  'support': 'role-support',
+  'trial support': 'role-trial-support'
+};
+
+// Function to apply role colors automatically
+function applyRoleColors() {
+  const staffRows = document.querySelectorAll(".staff-table tbody tr");
+  
+  staffRows.forEach((row) => {
+    const roleCell = row.querySelector("td:nth-child(2)"); // Role column
+    if (!roleCell) return;
+    
+    const roleText = roleCell.textContent.toLowerCase().trim();
+    
+    // Remove any existing role classes
+    Object.values(roleColorMap).forEach(className => {
+      roleCell.classList.remove(className);
+    });
+    
+    // Apply the appropriate role class
+    if (roleColorMap[roleText]) {
+      roleCell.classList.add(roleColorMap[roleText]);
+    }
+  });
+}
+
 // Function to update timezone times
 function updateTimezones() {
   const staffRows = document.querySelectorAll(".staff-table tbody tr");
@@ -106,6 +142,9 @@ function updateTimezones() {
 
   // Update last refreshed indicator
   updateLastRefreshedTime();
+  
+  // Apply role colors after updating timezones
+  applyRoleColors();
 }
 
 // Function to update the last refreshed time indicator
@@ -219,6 +258,9 @@ function addRefreshControls() {
 
   // Immediately update timezones on page load
   updateTimezones();
+  
+  // Apply role colors on initial load
+  applyRoleColors();
 }
 
 // Function to initialize auto-refresh functionality
