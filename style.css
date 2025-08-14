@@ -491,11 +491,11 @@ h3 {
   border: none;
 }
 
-.staff-table th:nth-child(1) { width: 22%; } /* Name */
-.staff-table th:nth-child(2) { width: 26%; } /* Role */
-.staff-table th:nth-child(3) { width: 22%; } /* Roblox Username */
+.staff-table th:nth-child(1) { width: 18%; } /* Discord Name */
+.staff-table th:nth-child(2) { width: 28%; } /* Role */
+.staff-table th:nth-child(3) { width: 18%; } /* Roblox Name */
 .staff-table th:nth-child(4) { width: 8%; } /* Emoji */
-.staff-table th:nth-child(5) { width: 22%; } /* Timezone */
+.staff-table th:nth-child(5) { width: 28%; } /* Time */
 
 .staff-table td {
   padding: 1rem;
@@ -625,14 +625,6 @@ h3 {
 .staff-name {
   font-weight: 700;
   color: var(--primary-color);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.staff-name::before {
-  content: '👨‍💼';
-  font-size: 1.2rem;
 }
 
 .dark-mode .staff-table {
